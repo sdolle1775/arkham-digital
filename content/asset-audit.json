@@ -1,0 +1,19 @@
+{
+  "auditedAt": "2026-10-07T17:53:19.640Z",
+  "catalogVersion": "core_2026-4d33848bd5bc7f44",
+  "sourceRevision": "4ac7e1640dd75862b5e29bb6f9b604dc2e555355",
+  "manifestHash": "97a5df385ad43a287325621e63c59c2f748dc0b392a2a3288f6cf57e0ee95e20",
+  "sources": {
+    "arkhamdb.com": 45,
+    "assets.arkham.build": 200
+  },
+  "total": 245,
+  "ready": 245,
+  "checked": 245,
+  "phase": "ready",
+  "installed": true,
+  "failed": 0,
+  "queued": 0,
+  "downloading": false,
+  "failures": []
+}

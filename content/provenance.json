@@ -1,0 +1,10 @@
+{
+  "sourceRevision": "4ac7e1640dd75862b5e29bb6f9b604dc2e555355",
+  "fetchedAt": "2026-10-07T16:10:52.283Z",
+  "repository": "https://github.com/Kamalisk/arkhamdb-json-data",
+  "paths": [
+    "pack/core/core_2026.json",
+    "pack/core/core_2026_encounter.json"
+  ],
+  "imageMetadata": "https://arkhamdb.com/api/public/cards/core_2026.json"
+}

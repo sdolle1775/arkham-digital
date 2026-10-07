@@ -1,0 +1,1691 @@
+{
+  "12001/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12001.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12001/back": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12001b.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12002/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12002.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12003/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12003.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12004/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12004.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12004/back": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12004b.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12005/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12005.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12006/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12006.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12007/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12007.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12007/back": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12007b.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12008/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12008.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12009/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12009.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12010/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12010.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12010/back": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12010b.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12011/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12011.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12012/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12012.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12013/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12013.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12013/back": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12013b.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12014/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12014.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12015/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12015.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12016/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12016.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12017/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12017.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12018/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12018.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12019/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12019.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12020/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12020.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12021/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12021.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12022/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12022.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12023/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12023.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12024/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12024.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12025/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12025.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12026/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12026.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12027/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12027.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12028/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12028.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12029/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12029.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12030/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12030.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12031/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12031.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12032/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12032.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12033/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12033.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12034/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12034.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12035/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12035.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12036/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12036.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12037/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12037.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12038/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12038.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12039/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12039.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12040/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12040.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12041/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12041.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12042/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12042.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12043/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12043.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12044/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12044.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12045/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12045.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12046/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12046.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12047/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12047.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12048/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12048.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12049/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12049.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12050/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12050.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12051/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12051.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12052/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12052.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12053/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12053.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12054/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12054.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12055/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12055.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12056/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12056.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12057/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12057.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12058/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12058.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12059/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12059.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12060/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12060.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12061/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12061.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12062/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12062.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12063/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12063.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12064/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12064.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12065/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12065.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12066/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12066.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12067/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12067.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12068/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12068.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12069/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12069.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12070/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12070.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12071/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12071.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12072/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12072.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12073/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12073.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12074/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12074.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12075/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12075.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12076/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12076.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12077/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12077.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12078/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12078.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12079/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12079.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12080/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12080.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12081/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12081.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12082/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12082.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12083/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12083.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12084/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12084.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12085/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12085.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12086/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12086.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12087/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12087.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12088/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12088.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12089/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12089.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12090/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12090.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12091/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12091.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12092/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12092.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12093/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12093.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12094/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12094.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12095/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12095.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12096/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12096.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12097/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12097.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12098/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12098.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12099/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12099.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12100/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12100.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12101/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12101.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12102/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12102.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12103/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12103.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12104/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12104.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12105/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12105.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12105/back": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12105b.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12106/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12106.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12106/back": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12106b.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12107/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12107.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12107/back": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12107b.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12108/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12108.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12108/back": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12108b.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12109/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12109.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12109/back": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12109b.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12110/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12110.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12110/back": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12110b.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12111/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12111.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12111/back": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12111b.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12112/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12112.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12112/back": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12112b.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12113/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12113.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12113/back": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12113b.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12114/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12114.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12115/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12115.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12116/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12116.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12116/back": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12116b.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12117/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12117.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12117/back": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12117b.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12118/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12118.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12118/back": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12118b.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12119/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12119.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12119/back": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12119b.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12120/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12120.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12120/back": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12120b.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12121/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12121.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12122/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12122.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12123/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12123.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12124/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12124.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12125/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12125.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12126/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12126.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12127/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12127.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12128/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12128.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12129/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12129.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12130/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12130.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12131/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12131.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12132/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12132.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12133/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12133.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12133/back": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12133b.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12134/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12134.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12134/back": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12134b.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12135/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12135.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12135/back": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12135b.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12136/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12136.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12136/back": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12136b.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12137/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12137.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12138/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12138.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12139/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12139.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12140/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12140.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12141/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12141.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12142/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12142.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12143/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12143.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12144/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12144.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12145/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12145.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12145/back": {
+    "url": "https://assets.arkham.build/optimized/12145b.avif",
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12146/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12146.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12146/back": {
+    "url": "https://assets.arkham.build/optimized/12146b.avif",
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12147/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12147.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12147/back": {
+    "url": "https://assets.arkham.build/optimized/12147b.avif",
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12148/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12148.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12148/back": {
+    "url": "https://assets.arkham.build/optimized/12148b.avif",
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12149/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12149.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12149/back": {
+    "url": "https://assets.arkham.build/optimized/12149b.avif",
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12150/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12150.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12150/back": {
+    "url": "https://assets.arkham.build/optimized/12150b.avif",
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12151/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12151.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12151/back": {
+    "url": "https://assets.arkham.build/optimized/12151b.avif",
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12152/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12152.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12152/back": {
+    "url": "https://assets.arkham.build/optimized/12152b.avif",
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12153/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12153.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12153/back": {
+    "url": "https://assets.arkham.build/optimized/12153b.avif",
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12154/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12154.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12154/back": {
+    "url": "https://assets.arkham.build/optimized/12154b.avif",
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12155/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12155.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12155/back": {
+    "url": "https://assets.arkham.build/optimized/12155b.avif",
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12156/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12156.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12156/back": {
+    "url": "https://assets.arkham.build/optimized/12156b.avif",
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12157/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12157.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12158/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12158.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12159/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12159.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12160/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12160.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12161/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12161.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12162/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12162.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12163/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12163.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12164/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12164.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12165/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12165.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12166/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12166.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12167/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12167.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12168/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12168.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12168/back": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12168b.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12169/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12169.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12169/back": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12169b.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12170/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12170.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12170/back": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12170b.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12171/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12171.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12171/back": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12171b.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12172/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12172.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12172/back": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12172b.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12173/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12173.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12173/back": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12173b.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12174/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12174.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12174/back": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12174b.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12175/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12175.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12175/back": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12175b.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12176/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12176.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12177/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12177.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12178/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12178.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12179/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12179.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12179/back": {
+    "url": "https://assets.arkham.build/optimized/12179b.avif",
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12180/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12180.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12181/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12181.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12182/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12182.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12182/back": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12182b.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12183/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12183.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12183/back": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12183b.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12184/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12184.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12184/back": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12184b.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12185/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12185.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12185/back": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12185b.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12186/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12186.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12186/back": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12186b.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12187/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12187.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12187/back": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12187b.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12188/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12188.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12189/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12189.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12190/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12190.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12191/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12191.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12192/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12192.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12193/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12193.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12194/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12194.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  },
+  "12195/front": {
+    "fallbackUrls": [
+      "https://assets.arkham.build/optimized/12195.avif"
+    ],
+    "sourcePage": "https://github.com/5argon/arkham-suite/blob/dbfd5b5487597e80028520c5f1736dc7ea424edd/cards-json/scripts/constants.ts",
+    "reason": "Card-code image mapping documented by arkham-suite download-images.ts; pinned core card codes and linked_to_code preserve exact face identities. Verified by full decode audit."
+  }
+}
