@@ -1,8 +1,16 @@
-# Version 0.4.1 verification
+# Version 0.4.2 verification
 
 Verified on Windows x64 on October 7, 2026:
 
-- TypeScript checks, all 110 automated tests, and the production build pass.
+- The new bottom hand dock stays at the same screen coordinates during investigator focus and table zoom. Browser checks cover two and four hands at 1280×720, separate-player anonymous backs, mulligan replacement from the dock, and next-player opening progress.
+- Investigator dashboards and compact hand headers show derived skills, including permanent asset bonuses and temporary penalties. Projection tests cover all seats without revealing private hands.
+- Completed tests retain tokens and exact base/modifier/ability/commit/chaos arithmetic, difficulty, margin, automatic failure, and Scrape By overrides. Interrupted-boundary tests compare the entire final state after restoration, including costs, RNG, and deduplicated results.
+- Ask Player browser checks cover the compact 360px chooser, a legal out-of-turn Premonition option, Pass, and the original player's resumed turn. Engine tests cover cancel, no eligible abilities, turn-only exclusions, fast play, eliminated investigators, and historical pilot behavior. HTTP tests reject the host answering another seat's choice and round-trip the pending window through a portable archive.
+- Supplied player and encounter backs are bundled unchanged with the interface. Browser inspection confirms the images load locally in piles and hidden hands; right-clicking an anonymous hand shows only its generic back in the preview.
+
+Previous milestone coverage retained by this release:
+
+- TypeScript checks, all 122 automated tests, and the production build pass.
 - All 195 Chapter Two core definitions have pinned behavioral contracts. New campaigns use `chapter2-2`; the three scenarios are Spreading Flames, Smoke and Mirrors, and Queen of Ash.
 - Scenario tests cover setup for one through four investigators, difficulty-specific preparation, act and agenda advancement, hidden people, all six codex entries, harbinger records, Queen of Ash setup branches, Elokoss, and the four final resolution outcomes.
 - Card tests exercise every core treachery through success and failure, every enemy type, every non-permanent player asset, ordinary events, special commit windows, and conditional reactions. Specific regressions cover additional action/clue costs before opportunity attacks, Necronomicon restrictions, spell charges, two-hand slots, Premonition sealing, Twin .45s queued attacks, and cancellation of paid reaction events.
@@ -18,7 +26,7 @@ Verified on Windows x64 on October 7, 2026:
 
 The save format remains schema v2 and database schema v3. Optional chapter state persists hidden assignments, sealed tokens, delayed effects, scenario progress, resolutions, and pending campaign-log review. Optional structured log rows preserve their exact text and scenario grouping. Recorded `chapter2-1` keeps its original resolution behavior; later preparation uses the latest verified package. Old setup-only sessions remain setup-only. Replay playback and standalone mode remain unavailable.
 
-## Windows package smoke test
+## Previous 0.4.1 Windows package smoke test
 
 - Launched 0.4.1 through Windows PowerShell with Node removed from PATH, using the bundled runtime and native SQLite/Sharp bindings.
 - All 245 cached artwork faces verified. The catalog and image sources are unchanged; the matching complete October 7 asset audit is reused. Artwork is excluded from the ZIP.
@@ -32,3 +40,10 @@ The save format remains schema v2 and database schema v3. Optional chapter state
 ## Verification limits
 
 These are automated rule tests and targeted browser/package checks, not an exhaustive human playthrough of every card combination. A separate clean Windows virtual machine has not been tested. Live Cloudflare WSS transport was verified in 0.2.0; this patch repeats automated local privacy checks and packaged reconnect checks. No live import of a user-supplied legal Chapter Two deck was added to this release's checks. Removing log sections selects a scenario using current investigator records; exact XP/trauma restoration remains a History operation.
+
+## Version 0.4.2 Windows package smoke test
+
+- The bundled runtime launches with Node removed from PATH and verifies all 245 cached card faces; the two bundled generic backs match their source image hashes.
+- Packaged HTTP and WebSocket views retain completed test results and modified skills. Host and invited seats receive only their own hands and pending Ask Player choices.
+- Passing an asked window preserves the active investigator, actions, resources, and turn. The pending window and completed results round-trip through export/import; rollback preserves the prior continuation.
+- Test sessions, credentials, caches, and screenshots are excluded from the ZIP. The temporary smoke server is shut down after verification.

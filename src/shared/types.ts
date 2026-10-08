@@ -1,5 +1,5 @@
 import type * as Legacy from './legacy-types.js';
-export const BUILD_VERSION = '0.4.1';
+export const BUILD_VERSION = '0.4.2';
 export const SCHEMA_VERSION = 2;
 export const SCRIPT_VERSION = 'chapter2-2';
 export const SUPPORTED_SCRIPT_VERSIONS = ['pilot-1', 'pilot-2', 'pilot-3', 'chapter2-1', SCRIPT_VERSION] as const;
@@ -30,7 +30,8 @@ export interface PaymentSource { id: string; label: string; available: number; c
 /** A scripted permission to spend a card's counters, never inferred from artwork or arbitrary tokens. */
 export interface PaymentAbility { token: string; scope: 'controller'|'location'; cardTypes?: string[]; traits?: string[]; maximum?: number; exhaust?: boolean; }
 export interface ResolutionFrame extends Effect { id: string; step: number; paidCosts?: { resources: number; actions: number; contributions?: PaymentContribution[] }; }
-export interface SkillTest { id: string; actor: string; source?: string; target?: string; skill: Skill; difficulty: number; bonus: number; damage: number; action: string; stage: number; committed: string[]; tokens: string[]; tokenModifier: number; success?: boolean; margin?: number; elderSign?: boolean; peril?: boolean; participants: string[]; data?: Record<string, any>; }
+export interface TestResult { id:string; actor:string; skill:Skill; action:string; base:number; modifiers:number; bonus:number; committed:number; tokens:string[]; tokenModifier:number; calculatedTotal:number; total:number; difficulty:number; success:boolean; margin:number; automaticFailure:boolean; override?:string; }
+export interface SkillTest { id: string; actor: string; source?: string; target?: string; skill: Skill; difficulty: number; bonus: number; damage: number; action: string; stage: number; committed: string[]; tokens: string[]; tokenModifier: number; success?: boolean; margin?: number; result?:TestResult; elderSign?: boolean; peril?: boolean; participants: string[]; data?: Record<string, any>; }
 export interface Modifier { id: string; source: string; target: string; stat: string; amount: number; expires: 'test'|'phase'|'round'|'game'; }
 export interface AbilityDefinition { id: string; cardCode: string; timing: 'action'|'fast'|'reaction'|'forced'|'constant'|'revelation'; label: string; payment?: PaymentAbility; }
 export interface AllowedAction { id: string; investigatorId: string; label: string; source?: string; target?: string; }
@@ -41,7 +42,7 @@ export interface GameState {
   scenario: { id: 'spreading_flames'|'smoke_and_mirrors'|'queen_of_ash'; name: string; locations: LocationState[]; chaosBag: string[] };
   campaign: Omit<Legacy.GameState['campaign'],'scenarioNumber'|'log'> & { scenarioNumber: 1|2|3; log:CampaignLog }; rng: Legacy.GameState['rng']; pendingChoices: PendingChoice[];
   setup: { order: string[]; completed: string[] }; resolutionStack: ResolutionFrame[]; queuedTests: SkillTest[]; test: SkillTest|null;
-  engine: { pilot: boolean; round: number; phase: 'investigation'|'enemy'|'upkeep'|'mythos'; activeInvestigatorId: string|null; nextId: number; actionDepth: number; log: string[]; blockedReason?: string; limits: Record<string, number>; attacked: Record<string, number>; modifiers: Modifier[]; experiencePenalty: Record<string,number>; outcomes: { kind: string; value: string }[]; chapter?: ChapterProgress };
+  engine: { pilot: boolean; round: number; phase: 'investigation'|'enemy'|'upkeep'|'mythos'; activeInvestigatorId: string|null; nextId: number; actionDepth: number; log: string[]; testResults?:TestResult[]; blockedReason?: string; limits: Record<string, number>; attacked: Record<string, number>; modifiers: Modifier[]; experiencePenalty: Record<string,number>; outcomes: { kind: string; value: string }[]; chapter?: ChapterProgress };
 }
 export interface ChapterProgress {
   turn: number; actionsTaken: number; pendingEndTurn: Effect[]; sealedTokens: Record<string,string>;
@@ -57,13 +58,14 @@ export interface PileView { id: string; kind: ZoneKind; owner: string; count: nu
 export interface PromptView extends Omit<PendingChoice, 'context'> { presentation: 'cards'|'popup'|'search'|'mulligan'|'payment'; }
 export interface PaymentView { choiceId: string; investigatorId: string; cardId: string; cost: number; sources: PaymentSource[]; defaults: PaymentContribution[]; }
 export interface SearchView { choiceId: string; investigatorId: string; cards: string[]; legalCardIds: string[]; }
-export interface InvestigatorView extends InvestigatorState { deckCount: number; handCount: number; hand: string[]; assets: string[]; threat: string[]; discard: string[]; canControl: boolean; }
+export interface InvestigatorView extends InvestigatorState { skills:Record<Skill,{base:number;value:number}>; deckCount: number; handCount: number; hand: string[]; assets: string[]; threat: string[]; discard: string[]; canControl: boolean; }
 export interface SessionView extends Omit<GameState, 'rng'|'investigators'|'cards'|'zones'|'scenario'|'resolutionStack'|'queuedTests'|'test'|'engine'|'pendingChoices'> {
+  waitingFor?:string|null;
   investigators: InvestigatorView[]; cards: Record<string, CardInstance>; checkpointId: string;
   scenario: Omit<Legacy.GameState['scenario'], 'encounterDeck'|'id'|'locations'> & { locations: (LocationState & {facedownCount?:number})[]; id: GameState['scenario']['id']; encounterDeckCount: number; actCount: number; agendaCount: number; removed: string[]; enemies: string[] };
-  pendingChoices: PromptView[]; piles: PileView[]; search: SearchView|null; payment: PaymentView|null; allowedActions: AllowedAction[]; engine: Pick<GameState['engine'],'pilot'|'round'|'phase'|'activeInvestigatorId'|'log'|'blockedReason'>;
+  pendingChoices: PromptView[]; piles: PileView[]; search: SearchView|null; payment: PaymentView|null; allowedActions: AllowedAction[]; engine: Pick<GameState['engine'],'pilot'|'round'|'phase'|'activeInvestigatorId'|'log'|'testResults'|'blockedReason'>;
   campaignProgress?: {outcome?:string;canContinue:boolean;nextScenario:1|2|3|null;missing:string[];review?:{entries:string[];pending:boolean};killed:string[];earned:string[]};
-  test: Pick<SkillTest,'actor'|'skill'|'difficulty'|'tokens'|'stage'|'success'|'margin'>|null;
+  test: Pick<SkillTest,'id'|'actor'|'skill'|'difficulty'|'tokens'|'tokenModifier'|'stage'|'success'|'margin'|'result'>|null;
 }
 export type SessionSummary = Legacy.SessionSummary;
 export type HistoryEntry = Legacy.HistoryEntry;

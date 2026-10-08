@@ -11,7 +11,7 @@ Arkham Horror Digital is an unofficial, independent fan application. Arkham Horr
 - [Fantasy Flight Games' Brethren of Ash campaign guide](https://images-cdn.fantasyflightgames.com/filer_public/f0/22/f022ac7c-9c30-4521-ac16-1f74f00e1d31/ahc100_campaign_guide-web.pdf) supplies functional campaign/scenario setup data.
 - [Fantasy Flight Games' Chapter Two rulebook](https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/ahc100_rulebook-web.pdf) is the rules reference for opening setup.
 
-Card artwork is downloaded directly into each installation's local cache and is not redistributed in the portable application archive. A release's `ASSET-COVERAGE.json` records the image source URLs used for its catalog. Availability and continued access depend on those sources.
+Card-face artwork is downloaded directly into each installation's local cache and is not redistributed in the portable application archive. The generic player and encounter backs supplied by Sam are bundled unchanged as `src/client/assets/player_back.png` and `encounter_back.png`; their artwork belongs to the respective game rights holders. A release's `ASSET-COVERAGE.json` records the image source URLs used for its catalog. Availability and continued access depend on those sources.
 
 ## Software
 

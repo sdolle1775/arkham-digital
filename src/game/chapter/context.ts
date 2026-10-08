@@ -62,7 +62,7 @@ export function stat(x:Ctx,actor:string,skill:Skill):number {
  for(const id of assets(x,actor))if(boost[code(x,id)!]?.includes(skill))n++;
  n-=enemies(x,i.locationId).filter(id=>code(x,id)==='12166').length;
  n+=x.s.engine.modifiers.filter(m=>m.target===actor&&m.stat===skill).reduce((n,m)=>n+m.amount,0);
- if(x.s.test?.action==='investigate'&&skill==='intellect')n+=assets(x,actor).filter(id=>code(x,id)==='12034').length;
+ if(x.s.test?.actor===actor&&x.s.test.action==='investigate'&&skill==='intellect')n+=assets(x,actor).filter(id=>code(x,id)==='12034').length;
  return n;
 }
 export function health(x:Ctx,id:string):number{return number(x,id,'health')*(definition(x,id).raw.health_per_investigator?x.s.investigators.length:1)+(code(x,id)==='12179'?5*x.s.investigators.length:0);}

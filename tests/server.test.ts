@@ -94,6 +94,24 @@ test('host seat selected at creation controls private projection and commands in
   }finally{await h.cleanup();}
 });
 
+test('Ask Player persists across archive loading and only the invited seat may answer its window',async()=>{
+ const h=await harness();try{
+  let view=await h.start();const sid=view.sessionId,invites=(await h.app.inject({method:'POST',url:`/api/sessions/${sid}/invites`,headers:h.host})).json().seats;
+  const guest={authorization:'Bearer '+invites.find((i:any)=>i.investigatorId==='investigator-2').token};
+  const submit=async(command:unknown,headers=h.host)=>{const response=await h.app.inject({method:'POST',url:`/api/sessions/${sid}/commands`,headers,payload:{commandId:randomUUID(),expectedRevision:h.storage.current(sid).state.revision,command}});assert.equal(response.statusCode,200,response.body);return response.json<SessionView>();};
+  await submit({type:'mulligan',investigatorId:'investigator-1',cardIds:[]});await submit({type:'mulligan',investigatorId:'investigator-2',cardIds:[]},guest);
+  let state=h.storage.current(sid).state;while(state.pendingChoices.length){const p=state.pendingChoices[0];await submit({type:'choose',investigatorId:p.investigatorId,choiceId:p.id,optionIds:[p.options!.some(o=>o.id==='investigator-1')?'investigator-1':p.options![0].id]},p.investigatorId==='investigator-2'?guest:h.host);state=h.storage.current(sid).state;}
+  view=(await h.app.inject({url:`/api/sessions/${sid}`,headers:h.host})).json();const before=structuredClone(h.storage.current(sid).state);
+  view=await submit({type:'action',investigatorId:'investigator-1',actionId:view.allowedActions.find(a=>a.label==='Ask Player')!.id});view=await submit({type:'choose',investigatorId:'investigator-1',choiceId:view.pendingChoices[0].id,optionIds:['investigator-2']});
+  assert.equal(view.waitingFor,'investigator-2');assert.equal(view.pendingChoices.length,0);
+  const pending=h.storage.current(sid).state.pendingChoices[0],revision=h.storage.current(sid).state.revision,history=h.storage.history(sid).length;
+  const denied=await h.app.inject({method:'POST',url:`/api/sessions/${sid}/commands`,headers:h.host,payload:{commandId:randomUUID(),expectedRevision:revision,command:{type:'pass',investigatorId:'investigator-2',choiceId:pending.id}}});assert.equal(denied.statusCode,403);assert.equal(h.storage.history(sid).length,history);
+  const guestView=(await h.app.inject({url:`/api/sessions/${sid}`,headers:guest})).json<SessionView>();assert.equal(guestView.pendingChoices[0].id,pending.id);assert.equal(guestView.investigators[0].hand.length,0);
+  const archived=h.storage.exportSession(sid);const imported=h.storage.importSession(archived);assert.deepEqual(imported.state.pendingChoices,[pending]);
+  await submit({type:'pass',investigatorId:'investigator-2',choiceId:pending.id},guest);const after=h.storage.current(sid).state;assert.deepEqual(after.investigators,before.investigators);assert.equal(after.engine.activeInvestigatorId,before.engine.activeInvestigatorId);assert.equal(after.engine.actionDepth,0);
+ }finally{await h.cleanup();}
+});
+
 test('real WebSockets send only the assigned view and reconnect to the current checkpoint',async()=>{
   const h=await harness();const sockets:WebSocket[]=[];
   try {

@@ -6,6 +6,10 @@ export interface ViewPreferences { allHands:boolean; filter:ViewFilter; pinned:b
 export const defaultPreferences:ViewPreferences={allHands:true,filter:'all',pinned:true,previews:true,text:false,sort:'table'};
 export interface Camera { x:number; y:number; zoom:number; }
 export const clampZoom=(zoom:number)=>Math.max(.2,Math.min(1.8,zoom));
+export function handFanLayout(width:number,count:number) {
+  const stride=count>1?Math.max(22,Math.min(118,(width-110)/(count-1))):0;
+  return {stride,width:Math.max(width,110+Math.max(0,count-1)*stride)};
+}
 export function movementActions(session:SessionView,investigatorId:string) {
   return session.allowedActions.filter(a=>a.investigatorId===investigatorId&&a.id.startsWith('move|')&&a.target);
 }
@@ -48,8 +52,7 @@ export function tableLayout(session:SessionView) {
   }
   const publicRows=Math.max(0,...session.investigators.map(i=>Math.ceil((i.assets.length+i.threat.length+Object.values(session.cards).filter(c=>c.attachedTo&&[...i.assets,...i.threat].includes(c.attachedTo)).length)/4)));
   const investigatorsY=mapTop+mapHeight+90+publicRows*300;
-  const handRows=Math.max(1,...session.investigators.map(i=>Math.ceil(i.handCount/10)));
-  return {width,height:investigatorsY+390+handRows*235,positions,locationZones,investigatorsY,publicRows,
+  return {width,height:investigatorsY+430,positions,locationZones,investigatorsY,publicRows,
     seats:Object.fromEntries(session.investigators.map((i,index)=>[i.id,{x:(width-session.investigators.length*700)/2+index*700+25,y:investigatorsY}]))};
 }
 export function fitCamera(width:number,height:number,viewport:{width:number;height:number}):Camera {

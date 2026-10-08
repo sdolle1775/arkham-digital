@@ -7,6 +7,7 @@ import { type Ctx, type Action, ask, assets, choose, clue, code, connections, cu
 import { resolveCard, resolveHook } from './scripts.js';
 import { resolveTest } from './tests.js';
 import { resolveScenario, scenarioCheck } from './scenarios.js';
+import { numericReadings, recordNumbers } from './reporting.js';
 export type Boundary=(s:GameState,label:string)=>void;
 export const EFFECT_TYPES=['c-action-costs','c-pay-event','c-limit','c-exhaust','c-token','c-modifier','c-hook','c-card','c-choice','c-gain','c-spend','c-heal','c-draw','c-drawn','c-return','c-discard','c-move','c-engage','c-auto-engage','c-spawn','c-attack','c-attack-resolve','c-attack-after','c-enemy-damage','c-defeat-enemy','c-damage','c-assignment','c-check-defeat','c-eliminate','c-play','c-asset-enter','c-play-offer','c-test','c-test-step','c-test-end','c-commit','c-window','c-invoke','c-action-end','c-clue','c-drop-clue','c-evade','c-encounter-draw','c-encounter','c-revelation','c-encounter-cleanup','c-search','c-search-finish','c-shuffle','c-turn-next','c-turn-begin','c-turn-end','c-phase-end','c-enemy-phase','c-enemy-attacks','c-hunter','c-enemy-move','c-upkeep','c-hand-limit','c-round-end','c-next-round','c-investigation-begin','c-group-clues','c-order','c-scenario','c-doom','c-agenda','c-act','c-finish','c-random-discard'] as const;
 export const allowedActions=(s:GameState,c:Catalog,actor:string,window=false)=>actions({s,c},actor,window).map(({effects,actions,resources,costs,fast,noOpportunity,additional,...a})=>a);
@@ -217,8 +218,15 @@ function resolve(x:Ctx,e:Effect):void {
   }
   case 'c-test-step':case 'c-test-end':case 'c-commit':resolveTest(x,e);break;
   case 'c-window':{
-   const actors:string[]=e.data?.actors??living(x),who=actors[0];if(!who)break;
-   const choices=actions(x,who,true);if(!choices.length){push(x,[{...e,data:{...e.data,actors:actors.slice(1)}}]);break;}
+   const actors:string[]=e.data?.actors??living(x),who=actors[0],requestedBy=e.data?.requestedBy;
+   if(!who){if(requestedBy)log(x,'Ask Player finished · return to '+name(x,investigator(x,requestedBy).cardId)+'’s turn.');break;}
+   const choices=actions(x,who,true);
+   if(requestedBy){
+    if(investigator(x,who).eliminated){push(x,[{...e,data:{...e.data,actors:actors.slice(1)}}]);break;}
+    const options=[...choices.map(a=>({id:a.id,label:a.label,cardId:a.source,effects:[{type:'c-invoke',actor:who,data:{actionId:a.id,window:true}},e]})),{id:'pass',label:'Pass — return to '+name(x,investigator(x,requestedBy).cardId),effects:[{...e,data:{...e.data,actors:actors.slice(1)}}]}];
+    ask(x,who,choices.length?'Ask Player — use an available ability or pass':'Ask Player — no available abilities; pass to return',options.map(({effects,...option})=>option),Object.fromEntries([['kind','effects'],...options.map(o=>[o.id,JSON.stringify(o.effects)])]),1,1,true);break;
+   }
+   if(!choices.length){push(x,[{...e,data:{...e.data,actors:actors.slice(1)}}]);break;}
    choose(x,who,'Player window',[...choices.map(a=>({id:a.id,label:a.label,cardId:a.source,effects:[{type:'c-invoke',actor:who,data:{actionId:a.id,window:true}},e]})),{id:'pass',label:'Pass',effects:[{...e,data:{...e.data,actors:actors.slice(1)}}]}]);break;
   }
   case 'c-invoke':{const a=e.data?.reaction?fightActions(x,actor!,target??e.data!.actionId.split('|')[2],true).find(a=>a.id===e.data!.actionId):actions(x,actor!,true).find(a=>a.id===e.data!.actionId);if(!a)throw new Error('This ability is no longer legal.');if(e.data?.reaction)a.actions=Math.max(0,a.actions-1);if(a.id.startsWith('play|')&&(a.resources??0)>0){ask(x,actor!,'Pay for '+name(x,a.source!),[],{kind:'payment',actionId:a.id,cost:String(a.resources),effect:'invoke',reaction:e.data?.reaction?'yes':'no'},0,0,true);}else init(x,a,undefined,{},e.data?.reaction?1:0);break;}
@@ -294,11 +302,11 @@ function resolve(x:Ctx,e:Effect):void {
 }
 export function advance(s:GameState,c:Catalog,boundary?:Boundary):void {
  const x={s,c};let n=0;
- while(s.phase==='playing'&&!s.pendingChoices.length&&s.resolutionStack.length){if(++n>3000)throw new Error('Resolution exceeded its safe effect limit.');const e=s.resolutionStack.pop()!;resolve(x,e);boundary?.(s,'Resolved '+e.type);}
+ while(s.phase==='playing'&&!s.pendingChoices.length&&s.resolutionStack.length){if(++n>3000)throw new Error('Resolution exceeded its safe effect limit.');const e=s.resolutionStack.pop()!,before=numericReadings(s,c);resolve(x,e);recordNumbers(x,before);boundary?.(s,'Resolved '+e.type);}
 }
 export function begin(s:GameState,c:Catalog,boundary?:Boundary):void {s.phase='playing';s.resolutionStack.unshift({type:'c-turn-next',id:next({s,c}),step:0});advance(s,c,boundary);}
 export function applyEngineCommand(s:GameState,command:GameCommand,c:Catalog,boundary?:Boundary):void {
- if(s.phase!=='playing'||!s.engine.chapter)throw new Error('The scenario is not in progress.');const x={s,c};
+ if(s.phase!=='playing'||!s.engine.chapter)throw new Error('The scenario is not in progress.');const x={s,c},before=numericReadings(s,c);
  if(command.type==='action'){
   const a=actions(x,command.investigatorId).find(a=>a.id===command.actionId);if(!a)throw new Error('This action is not currently legal.');
   if((a.additional?.clues??0)+(a.additional?.discardHand??0)>0)push(x,[{type:'c-action-costs',actor:a.investigatorId,data:{actionId:a.id}}]);
@@ -329,5 +337,5 @@ export function applyEngineCommand(s:GameState,command:GameCommand,c:Catalog,bou
    push(x,effects);
   }else if(ctx.kind==='payment'&&ctx.cancelEffects)push(x,JSON.parse(ctx.cancelEffects));else if(ctx.kind!=='payment')throw new Error('Unknown pending choice.');
  }else throw new Error('Unsupported engine command.');
- boundary?.(s,'Accepted '+command.type);advance(s,c,boundary);
+ recordNumbers(x,before);boundary?.(s,'Accepted '+command.type);advance(s,c,boundary);
 }

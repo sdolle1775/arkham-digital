@@ -148,5 +148,7 @@ export function actions(x:Ctx,actor:string,window=false):Action[]{
    if(i.actions>0||extra)out.push(action(actor,'evade','Evade '+name(x,target),undefined,target,[test(actor,'agility',number(x,target,'enemy_evade'),'evade',undefined,target)],{actions:extra?0:1,noOpportunity:true,costs:extra?[{type:'c-limit',data:{key:'trish:'+actor,scope:'turn'}}]:[]}));
   }else if(i.actions>0&&!keyword(x,target,'Massive'))out.push(action(actor,'engage','Engage '+name(x,target),undefined,target,[{type:'c-engage',actor,target}]));
  }
+ const others=living(x).filter(id=>id!==actor);
+ if(others.length)out.push(action(actor,'ask-player','Ask Player',i.cardId,undefined,[{type:'c-choice',actor,data:{prompt:'Ask Player',options:[...others.map(id=>({id,label:'P'+investigator(x,id).seat+' · '+name(x,investigator(x,id).cardId),effects:[{type:'c-window',data:{actors:[id],requestedBy:actor}}]})),{id:'cancel',label:'Cancel',effects:[]}]}}],{actions:0,fast:true,noOpportunity:true}));
  out.push(action(actor,'end-turn','End turn',undefined,undefined,[{type:'c-turn-end',actor}],{actions:0,noOpportunity:true}));return out;
 }

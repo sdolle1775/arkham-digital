@@ -2,7 +2,9 @@ import type { Effect, SkillTest } from '../../shared/types.js';
 import { cardsIn, discardCard, moveCard, zone } from '../zones.js';
 import { randomIndex, shuffle } from '../random.js';
 import { cardEffect, canPay } from './actions.js';
-import { type Ctx, type Option, ask, assets, choose, clue, code, damage, definition, discard, draw, enemies, engaged, has, enemyDamage, exhaust, gain, heal, hook, inPlay, investigator, keyword, living, mark, name, number, push, ready, select, shroud, stat, test, token, trait, used, weakness } from './context.js';
+import { calculateReport, recordTest } from './reporting.js';
+import { signed, tokenName } from '../../shared/test-results.js';
+import { type Ctx, type Option, ask, assets, choose, clue, code, damage, definition, discard, draw, enemies, engaged, has, enemyDamage, exhaust, gain, heal, hook, inPlay, investigator, keyword, living, log, mark, name, number, push, ready, select, shroud, stat, test, token, trait, used, weakness } from './context.js';
 
 const singleCommit=(x:Ctx,id:string)=>/Max 1 committed per skill test/i.test(definition(x,id).faces[0].text);
 export function commitEligible(x:Ctx,t:SkillTest,actor:string,late=false,discarded=false):string[]{
@@ -46,6 +48,7 @@ function reveal(x:Ctx,t:SkillTest):void {
 }
 function acceptToken(x:Ctx,t:SkillTest,value:string,mask?:string):void {
  t.tokens.push(value);x.s.engine.outcomes.push({kind:'chaos',value});const result=chaosValue(x,t,value);t.tokenModifier+=result.value;if(result.fail)t.data!.autoFail=true;if(value==='elder-sign')t.elderSign=true;
+ log(x,`${x.c.cards[investigator(x,t.actor).investigatorCode].name} revealed ${tokenName(value)}: ${signed(result.value)}; chaos modifier ${signed(t.tokenModifier)}${result.fail?'; automatic failure':''}${result.again?'; reveal another token':''}.`);
  t.stage=result.again?3:4;const effects:Effect[]=[];
  if(mask&&!/^[+-]?\d+$/.test(value))effects.push(damage(t.actor,0,1));
  if(['12059','12071'].includes(code(x,t.source)!)&&value==='skull')effects.push(cardEffect(t.actor,t.source!,'spell-token'));
@@ -144,7 +147,7 @@ export function resolveTest(x:Ctx,e:Effect):void {
  }
  if(e.data?.op==='token-selected'){acceptToken(x,t,e.data.value,e.source);return;}
  if(e.data?.op==='mask-pass'){t.data.maskDeclined=true;reveal(x,t);return;}
- if(e.data?.op==='scrape'){t.data.scraped=true;t.success=true;t.margin=0;return;}
+ if(e.data?.op==='scrape'){t.data.scraped=true;t.success=true;t.margin=0;if(t.result)t.result={...t.result,success:true,margin:0,override:'Scrape By changes the result to success by 0'};return;}
  if(e.data?.op==='boost'){t.data[e.data.key]=(t.data[e.data.key]??0)+e.data.amount;return;}
  if(investigator(x,t.actor).eliminated){push(x,[{type:'c-test-end'}]);return;}
  if(t.stage===0){t.stage=1;push(x,[{type:'c-window',data:{actors:t.peril?[t.actor]:living(x)}},{type:'c-test-step'}]);return;}
@@ -164,6 +167,7 @@ export function resolveTest(x:Ctx,e:Effect):void {
  if(t.stage===5){
   const icons=t.committed.reduce((n,id)=>n+number(x,id,'skill_'+t.skill)+number(x,id,'skill_wild'),0),score=Math.max(0,stat(x,t.actor,t.skill)+t.bonus+icons+t.tokenModifier);
   t.success=!t.data.autoFail&&score>=t.difficulty;t.margin=(t.data.autoFail?0:score)-t.difficulty;t.stage=6;
+  t.result=calculateReport(x,t);
   push(x,[{type:'c-test-step'}]);
   if(!t.success&&t.tokens.some(token=>token!=='auto-fail')){const scrap=cardsIn(s,'hand',t.actor).filter(id=>code(x,id)==='12082'&&canPay(x,t.actor,id));if(scrap.length)choose(x,t.actor,'Play Scrape By to succeed by 0?',scrap.map(id=>({id,label:'Scrape By (1 resource)',cardId:id,effects:[{type:'c-pay-event',actor:t.actor,source:id,data:{effects:[{type:'c-test-step',data:{op:'scrape'}},...(t.tokens.some(token=>!/^[+-]?\d+$/.test(token))?[damage(t.actor,0,1)]:[])]}}]})),true,true);}return;
  }
@@ -177,7 +181,7 @@ export function resolveTest(x:Ctx,e:Effect):void {
   if(cd==='12088')options.push({id:'flashlight',label:'Discard Hand-Crank Flashlight: -1 shroud this round',effects:[discard(t.source),{type:'c-modifier',source:t.source,target:t.target,amount:-1,data:{stat:'shroud',expires:'round'}}]});
   choose(x,t.actor,'Apply a successful-test ability?',options,true);return;
  }
- if(t.stage===7){t.stage=8;results(x,t);return;}
+ if(t.stage===7){t.stage=8;recordTest(x,t);results(x,t);return;}
  // A nested commit continuation may reach an already-resolved stage; it must not
  // apply the result twice. The explicit c-test-end frame owns cleanup.
 }

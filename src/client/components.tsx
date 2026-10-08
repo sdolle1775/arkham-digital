@@ -28,10 +28,10 @@ export function Sigil({ small = false }: { small?: boolean }) {
   return <svg className={`sigil ${small ? 'small' : ''}`} viewBox="0 0 140 140" fill="none" aria-hidden="true"><circle cx="70" cy="70" r="61"/><circle cx="70" cy="70" r="53"/><path d="m70 3 6 8-6 8-6-8zM70 121l6 8-6 8-6-8zM3 70l8-6 8 6-8 6zM121 70l8-6 8 6-8 6zM70 23 110 93H30zM70 117 30 47h80z"/><path d="M38 70s14-16 32-16 32 16 32 16-14 16-32 16-32-16-32-16Z"/><circle cx="70" cy="70" r="12"/><circle cx="70" cy="70" r="4"/><path d="M70 58V37M70 103V82M49 61 38 49M91 61l11-12M49 79 38 91M91 79l11 12"/></svg>;
 }
 
-export function Modal({ title, eyebrow, children, onClose, wide = false }: { title: string; eyebrow?: string; children: ReactNode; onClose: () => void; wide?: boolean }) {
+export function Modal({ title, eyebrow, children, onClose, wide = false, compact = false }: { title: string; eyebrow?: string; children: ReactNode; onClose: () => void; wide?: boolean; compact?:boolean }) {
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => { const dialog = ref.current!; dialog.showModal(); return () => { dialog.close(); }; }, []);
-  return <dialog className={`modal ${wide ? 'wide' : ''}`} ref={ref} onCancel={e => { e.preventDefault(); onClose(); }} onClick={e => { if (e.target === e.currentTarget) { const rect = e.currentTarget.getBoundingClientRect(); if (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom) onClose(); } }}>
+  return <dialog className={`modal ${wide ? 'wide' : ''} ${compact?'compact':''}`} ref={ref} onCancel={e => { e.preventDefault(); onClose(); }} onClick={e => { if (e.target === e.currentTarget) { const rect = e.currentTarget.getBoundingClientRect(); if (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom) onClose(); } }}>
     <header className="modal-heading"><div>{eyebrow && <div className="eyebrow">{eyebrow}</div>}<h2>{title}</h2></div><button className="icon-button" onClick={onClose} aria-label="Close dialog"><Icon name="close"/></button></header><div className="modal-body">{children}</div>
   </dialog>;
 }

@@ -3,6 +3,7 @@ import { defaultPayment, paymentSources, RESOURCE_POOL, spendPayment, usesPaymen
 import { abilities, cardEffects, cardNumber, scripted } from './cards.js';
 import { attachCard, cardsIn, discardCard, locationOf, moveCard, zone } from './zones.js';
 import { randomIndex, shuffle } from './random.js';
+import { numericReadings, recordNumbers, recordTest } from './chapter/reporting.js';
 
 export type Boundary=(state:GameState,label:string)=>void;
 const inv=(s:GameState,id:string)=>{const i=s.investigators.find(i=>i.id===id);if(!i)throw new Error('Unknown investigator.');return i;};
@@ -69,6 +70,7 @@ export function allowedActions(s:GameState,c:Catalog,actor:string,window=false):
     for(const id of cardsIn(s,'attachments'))if(code(s,id)==='12129'&&s.cards[id].attachedTo===i.locationId)add('fire-test','Extinguish Fire!',id);
     const agenda=cardsIn(s,'agendas')[0];if(code(s,agenda)==='12106')for(const e of here.filter(e=>e.code==='12123'))add('agenda-parley','Parley with Bystander',agenda,e.id);
   }
+  if(playerOrder(s).some(id=>id!==actor))add('ask-player','Ask Player',i.cardId);
   add('end-turn','End turn');return out;
 }
 function startTest(s:GameState,e:Effect):void {
@@ -78,7 +80,7 @@ function startTest(s:GameState,e:Effect):void {
 function testEffect(actor:string,skill:Skill,difficulty:number,action:string,source?:string,target?:string,bonus=0,damage=1):Effect {return {type:'test',actor,source:source||undefined,target:target||undefined,data:{skill,difficulty,action,bonus,damage}};}
 function initiate(s:GameState,c:Catalog,actor:string,id:string,reaction=false,contributions?:PaymentContribution[]):void {
   const [action,source,target]=id.split('|');const i=inv(s,actor);
-  const fast=['wrench-lure','quad-move'].includes(action),free=fast||action==='end-turn'||reaction;
+  const fast=['wrench-lure','quad-move','ask-player'].includes(action),free=fast||action==='end-turn'||reaction;
   const cost=action==='play'?cardNumber(c,code(s,source)!,'cost'):0;
   if(!free&&i.actions<1)throw new Error('The full cost cannot be paid.');
   if(action==='pistol-fight'&&(s.cards[source]?.tokens.ammo??0)<1)throw new Error('No ammo remaining.');
@@ -102,6 +104,7 @@ function initiate(s:GameState,c:Catalog,actor:string,id:string,reaction=false,co
     case 'agenda-parley':effects.push(testEffect(actor,'intellect',2,'parley',source,target));break;
     case 'play':moveCard(s,source,'resolving');effects.push({type:'play',actor,source});break;
     case 'end-turn':i.turnEnded=true;effects.push({type:'turn-next'});break;
+    case 'ask-player':chooseEffects(s,actor,'Ask Player',[...playerOrder(s).filter(id=>id!==actor).map(id=>({id,label:'P'+inv(s,id).seat+' · '+label(s,c,inv(s,id).cardId),effects:[{type:'window',data:{actors:[id],continuation:[],requestedBy:actor}}]})),{id:'cancel',label:'Cancel',effects:[]}]);break;
     default:throw new Error('Unsupported action.');
   }
   if(!free&&!['fight','wrench-fight','pistol-fight','evade','room-engage','agenda-parley'].includes(action))effects.unshift(...engaged(s,c,actor).filter(id=>usable(s,id)).map(source=>({type:'attack',actor,source})));
@@ -109,9 +112,14 @@ function initiate(s:GameState,c:Catalog,actor:string,id:string,reaction=false,co
   s.resolutionStack[s.resolutionStack.length-effects.length-1].paidCosts={resources:cost,actions:free?0:1,...(usesPaymentChoices(s)?{contributions:payment}:{})};
   log(s,i.name+' — '+action);
 }
-function window(s:GameState,c:Catalog,actors:string[],continuation:Effect[]):void {
-  const actor=actors[0];if(!actor){pushEffects(s,continuation);return;}
+function window(s:GameState,c:Catalog,actors:string[],continuation:Effect[],requestedBy?:string):void {
+  const actor=actors[0];if(!actor){if(requestedBy)log(s,'Ask Player finished · return to '+label(s,c,inv(s,requestedBy).cardId)+'’s turn.');pushEffects(s,continuation);return;}
   const choices=allowedActions(s,c,actor,true);
+  if(requestedBy){
+    if(inv(s,actor).eliminated){window(s,c,actors.slice(1),continuation,requestedBy);return;}
+    const options=[...choices.map(a=>({id:a.id,label:a.label,cardId:a.source,effects:[{type:'invoke',actor,data:{actionId:a.id}},{type:'window',data:{actors,continuation,requestedBy}}]})),{id:'pass',label:'Pass — return to '+label(s,c,inv(s,requestedBy).cardId),effects:[{type:'window',data:{actors:actors.slice(1),continuation,requestedBy}}]}];
+    ask(s,actor,choices.length?'Ask Player — use an available ability or pass':'Ask Player — no available abilities; pass to return',options.map(({effects,...option})=>option),Object.fromEntries([['kind','effects'],...options.map(o=>[o.id,JSON.stringify(o.effects)])]),1,1,true);return;
+  }
   if(!choices.length){window(s,c,actors.slice(1),continuation);return;}
   chooseEffects(s,actor,'Player window',[
     ...choices.map(a=>({id:a.id,label:a.label,effects:[{type:'invoke',actor,data:{actionId:a.id}},{type:'window',data:{actors,continuation}}]})),
@@ -185,7 +193,9 @@ function testStep(s:GameState,c:Catalog):void {
     const icons=t.committed.reduce((n,id)=>n+cardNumber(c,code(s,id)!,'skill_'+t.skill)+cardNumber(c,code(s,id)!,'skill_wild'),0);
     const score=Math.max(0,stat(s,c,t.actor,t.skill)+t.bonus+icons+t.tokenModifier);
     t.success=!t.tokens.includes('auto-fail')&&score>=t.difficulty;t.margin=(t.tokens.includes('auto-fail')?0:score)-t.difficulty;t.stage=7;
-    log(s,(t.success?'Succeeded':'Failed')+' at '+t.action+' ('+score+' against '+t.difficulty+').');
+    const base=cardNumber(c,inv(s,t.actor).investigatorCode,'skill_'+t.skill),automaticFailure=t.tokens.includes('auto-fail');
+    t.result={id:t.id,actor:t.actor,skill:t.skill,action:t.action,base,modifiers:stat(s,c,t.actor,t.skill)-base,bonus:t.bonus,committed:icons,tokens:[...t.tokens],tokenModifier:t.tokenModifier,calculatedTotal:score,total:automaticFailure?0:score,difficulty:t.difficulty,success:t.success,margin:t.margin,automaticFailure};
+    recordTest({s,c},t);
     const effects:Effect[]=[];
     if(t.success){
       if(t.action==='fight')effects.push({type:'enemy-damage',actor:t.actor,target:t.target,amount:t.damage+t.committed.filter(id=>code(s,id)==='12025').length});
@@ -214,7 +224,7 @@ function resolve(s:GameState,c:Catalog,e:Effect):void {
   switch(e.type){
     case 'order':ordered(s,e.data!.effects,e.data!.prompt);break;
     case 'invoke':initiate(s,c,actor!,e.data!.actionId,e.data?.reaction);break;
-    case 'window':window(s,c,e.data!.actors,e.data!.continuation);break;
+    case 'window':window(s,c,e.data!.actors,e.data!.continuation,e.data?.requestedBy);break;
     case 'gain':i!.resources+=e.amount??0;break;
     case 'heal':i!.damage=Math.max(0,i!.damage-(e.amount??0));i!.horror=Math.max(0,i!.horror-(e.data?.horror??0));break;
     case 'lose-resources':i!.resources=0;break;
@@ -372,7 +382,7 @@ export function advance(s:GameState,c:Catalog,boundary?:Boundary):void {
   let steps=0;
   while(s.phase==='playing'&&!s.pendingChoices.length&&s.resolutionStack.length){
     if(++steps>1000)throw new Error('Resolution exceeded the safe effect limit.');
-    const e=s.resolutionStack.pop()!;
+    const e=s.resolutionStack.pop()!,before=numericReadings(s,c);
     if(e.type==='enemy-damage'&&e.data?.fire){
       const location=s.cards[e.source!].attachedTo!;const effects:Effect[]=[];
       for(const i of s.investigators.filter(i=>!i.eliminated&&i.locationId===location))effects.push({type:'damage',actor:i.id,amount:1,data:{direct:true,horror:0}});
@@ -381,12 +391,13 @@ export function advance(s:GameState,c:Catalog,boundary?:Boundary):void {
       pushEffects(s,effects);
     }else if(e.type==='clue'&&e.amount===-1)inv(s,e.actor!).clues--;
     else resolve(s,c,e);
-    boundary?.(s,'Resolved '+e.type);
+    recordNumbers({s,c},before);boundary?.(s,'Resolved '+e.type);
   }
 }
 export function beginPilot(s:GameState,c:Catalog,boundary?:Boundary):void {s.phase='playing';s.engine.pilot=true;pushEffects(s,[{type:'turn-next'}]);advance(s,c,boundary);}
 export function applyEngineCommand(s:GameState,command:GameCommand,c:Catalog,boundary?:Boundary):void {
   if(!s.engine.pilot||s.phase!=='playing')throw new Error('Gameplay is available only in the developer pilot.');
+  const before=numericReadings(s,c);
   if(command.type==='action'){
     if(!allowedActions(s,c,command.investigatorId).some(a=>a.id===command.actionId))throw new Error('This action is not currently legal.');
     const [action,source]=command.actionId.split('|');
@@ -422,5 +433,5 @@ export function applyEngineCommand(s:GameState,command:GameCommand,c:Catalog,bou
       default:throw new Error('Unsupported pending choice.');
     }
   }else throw new Error('Unsupported engine command.');
-  boundary?.(s,'Accepted '+command.type);advance(s,c,boundary);
+  recordNumbers({s,c},before);boundary?.(s,'Accepted '+command.type);advance(s,c,boundary);
 }

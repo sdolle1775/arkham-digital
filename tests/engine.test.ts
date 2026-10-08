@@ -25,6 +25,10 @@ function settle(s:GameState,decide?:(s:GameState)=>string[]|undefined){let guard
 function locate(s:GameState,cardCode:string,owner?:string){const id=Object.values(s.cards).find(c=>c.code===cardCode&&(!owner||c.owner===owner))?.id;assert.ok(id,cardCode);return id;}
 function act(s:GameState,action:string,source='',target='',actor='investigator-1'){return applyCommand(s,{type:'action',investigatorId:actor,actionId:[action,source,target].join('|')},catalog,ss=>validateGameState(ss,catalog));}
 
+test('historical pilot Ask Player can pass without changing the current investigator or spending actions',()=>{
+ let {state:s}=fixture();const before=structuredClone(s);s=act(s,'ask-player',s.investigators[0].cardId);s=choose(s,['investigator-2']);assert.equal(s.pendingChoices[0].investigatorId,'investigator-2');assert.ok(s.pendingChoices[0].prompt?.startsWith('Ask Player'));const saved=JSON.parse(JSON.stringify(s));s=choose(s,['pass']);assert.deepEqual(choose(saved,['pass']),s);assert.deepEqual(s.investigators,before.investigators);assert.deepEqual(s.rng,before.rng);assert.equal(s.engine.activeInvestigatorId,before.engine.activeInvestigatorId);assert.equal(s.engine.actionDepth,0);
+});
+
 test('schema v2 conserves cards in canonical zones and enforces lead-first mulligans',()=>{
  const f=createPilot(catalog,rules.identity);const input={sessionId:randomUUID(),name:'Order',difficulty:'standard' as const,mode:'separate' as const,leadSeat:2,seats:f.decks.map(d=>({deckRevisionId:d.id,playerName:d.name})),seed:42};
  let s=createGame(input,catalog,f.decks,rules.identity);validateGameState(s,catalog);
@@ -97,7 +101,8 @@ test('queued skill tests wait for the enclosing action and resolve FIFO',()=>{
  pushEffects(s,[{type:'test',actor:'investigator-1',data:{skill:'agility',difficulty:1,action:'second'}},{type:'test',actor:'investigator-2',data:{skill:'intellect',difficulty:1,action:'third'}}]);advance(s,catalog);assert.deepEqual(s.queuedTests.map(t=>t.action),['second','third']);s.pendingChoices=choice;
  s=settle(s);assert.equal(s.test,null);assert.equal(s.queuedTests.length,2);
  pushEffects(s,[{type:'action-end'}]);advance(s,catalog);assert.equal(s.test?.action,'second');s=settle(s);assert.equal(s.queuedTests.length,0);
- const results=s.engine.log.filter(l=>l.includes('Succeeded'));assert.ok(results[0].includes('first')&&results[1].includes('second')&&results[2].includes('third'));
+ const results=s.engine.log.filter(l=>l.includes('SUCCESS'));assert.ok(results[0].includes('first')&&results[1].includes('second')&&results[2].includes('third'));
+ assert.deepEqual(s.engine.testResults?.map(r=>r.action),['first','second','third']);
 });
 test('Cosmic Evils peril stays private; Fire attaches; Doomed advances after defeat',()=>{
  let {state:s}=fixture();const cosmic=locate(s,'12124');pushEffects(s,[{type:'encounter',actor:'investigator-1',source:cosmic}]);advance(s,catalog);

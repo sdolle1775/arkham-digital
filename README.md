@@ -1,4 +1,4 @@
-# Arkham Horror Digital 0.4.1
+# Arkham Horror Digital 0.4.2
 
 A local TypeScript application for the **2026 Chapter Two core box** and **Brethren of Ash**. New campaigns use the automated **chapter2-2** engine for all **195 core card definitions**, including **Spreading Flames**, **Smoke and Mirrors**, and **Queen of Ash**.
 
@@ -6,7 +6,7 @@ Standalone play, local deckbuilding, campaign-book narrative, and replay playbac
 
 ## Windows application
 
-1. Extract `Arkham-Horror-Digital-0.4.1-windows-x64.zip` completely.
+1. Extract `Arkham-Horror-Digital-0.4.2-windows-x64.zip` completely.
 2. Run **Launch Arkham Horror Digital.cmd**. Node.js 24 and SQLite are bundled; no installation is required.
 3. The application verifies and installs **all 245 supported card faces** before displaying its menu. Internet is required for missing images. Complete caches work offline.
 4. In **Decks**, choose Published or Shared and enter an ArkhamDB code. Set the deck's Taboo selection to ArkhamDB's latest list before importing.
@@ -69,7 +69,7 @@ Normal `npm run dev` / `npm start` uses port 4917. For live UI work, run `npm ru
 
 ## Artwork installation
 
-The pinned catalog has **195 physical definitions and 245 faces**. ArkhamDB is the primary source, with reviewed explicit arkham.build fallbacks. Image metadata and provenance are under `content/`. Artwork is downloaded separately and excluded from the package.
+The pinned catalog has **195 physical definitions and 245 faces**. ArkhamDB is the primary source, with reviewed explicit arkham.build fallbacks. Image metadata and provenance are under `content/`. Card-face artwork is downloaded separately and excluded from the package. The supplied generic player and encounter backs are bundled with the interface and load locally without an artwork download.
 
 On every startup, four workers decode and hash-check existing images. Only missing, corrupt, or changed-source assets download. Bytes and source/hash metadata commit atomically. Failed faces retry after 2 and 10 seconds, then show errors with Retry and Exit. There is no skip and no fetching during card inspection. The server independently blocks table access until installation completes. An interrupted install reuses valid completed faces. Credits can verify and repair the entire cache.
 
@@ -85,7 +85,13 @@ Left-click a visible card to show its legal actions on the right edge; it does n
 
 Unengaged enemies, treacheries, and attached player cards appear beside their location without overlapping. Their thin borders are red, orange, and blue respectively. Hovering a location highlights its full area in light gray. The layout expands and contracts as nearby cards arrive and leave.
 
-The right edge holds confirmations, legal actions, and Table menu (log, history, undo, saves, sharing, main menu). Trigger ordering and multiple-choice decisions open centered popups. Minimize keeps a decision pending; Open choices returns to it.
+Hands stay docked to the bottom of the viewport while the table pans and zooms. All/One hand and display-only sorting still apply, and separate-player hands remain anonymous card backs. Investigator dashboards and compact hand headers show current willpower, intellect, combat, and agility, with green increases, orange reductions, and printed values in their tooltips.
+
+The latest skill test stays visible above the hands after resolution. It shows the revealed tokens, cumulative chaos modifier, base skill, active modifiers, ability bonus, committed icons, total, difficulty, and success/failure margin. Click its heading to minimize or expand it; previous/next buttons inspect the last 20 tests. The game log records the same calculation plus exact resource, action, damage/horror, clue, doom, use, experience, and trauma changes. Automatic failure and card effects that override a result are explicit.
+
+Select the active investigator and choose **Ask Player** to give another living investigator a legal out-of-turn player window. They may use available fast abilities or pass back to the original turn. Turn-only actions remain unavailable; reactions still require their actual trigger. Asking and passing spend no resources or actions. The prompt persists through saves and reconnects; only that investigator's controller sees and answers it.
+
+The right edge holds confirmations, legal actions, and Table menu (log, history, undo, saves, sharing, main menu). Trigger ordering and multiple-choice decisions open centered popups; optional windows use compact popups. Minimize keeps a decision pending; Open choices returns to it.
 
 In new Chapter Two sessions and recorded pilot-3 sessions, playing a card with a resource cost opens payment controls on the right. Resources are selected first; eligible card-script sources can cover any shortfall or be combined manually. Pay confirms the exact total, then spends resources/counters and the action together. Cancel spends nothing. The pending payment survives saves and reconnects. Zero-cost plays proceed immediately. No additional cards (including Schoffner's Catalogue) are enabled by this payment infrastructure. Recorded pilot-1/pilot-2 sessions retain immediate resource-pool payment under their saved rules.
 
@@ -101,7 +107,7 @@ Use **Players & sharing** to create seat links and optionally start the bundled 
 
 ## Persistence and debugging
 
-Save schema **v2** stores canonical zones, rules/catalog/script identities and hashes, immutable deck revisions, setup progress, effect stack, queued tests, choices, paid costs, modifiers, limits, and RNG state. Each player decision and effect boundary is a complete checkpoint. SQLite commits the state, history, and head in one transaction before broadcasting.
+Save schema **v2** stores canonical zones, rules/catalog/script identities and hashes, immutable deck revisions, setup progress, effect stack, queued tests, choices, paid costs, modifiers, limits, and RNG state. Optional structured test results persist in the same schema, including interrupted calculations and the last 20 completed tests. Older snapshots remain loadable without these fields; past test details are not reconstructed. Each player decision and effect boundary is a complete checkpoint. SQLite commits the state, history, and head in one transaction before broadcasting.
 
 **Undo** restores the preceding player decision. **History** exposes individual effect checkpoints for debugging. Rollback creates a branch and preserves the original continuation. Loading an interrupted resolution continues from its saved boundary without paying again or repeating a random draw. Named saves and portable `.arkham-save` exports include complete history and the required Taboo data, but exclude artwork and connection credentials. Exports contain entered player names and campaign notes.
 

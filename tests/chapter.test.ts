@@ -13,6 +13,7 @@ import { cardsIn, moveCard, zone } from '../src/game/zones.js';
 import { campaignLogFlags } from '../src/game/campaigns/brethren.js';
 import { cardActions, playUses } from '../src/game/chapter/actions.js';
 import { continueCampaign, upgradeCost } from '../src/game/chapter/campaign.js';
+import { handFanLayout } from '../src/client/table-model.js';
 const rules=compileRules(loadCatalog('content'),bundledTaboo()),c=rules.catalog;
 const actor='investigator-1';
 function fixture(count=1,investigatorCode='12001'):GameState {
@@ -28,6 +29,90 @@ function choose(s:GameState,ids?:string[]):GameState {const p=s.pendingChoices[0
 function settle(s:GameState):GameState{for(let n=0;s.pendingChoices.length;n++){assert.ok(n<250,'Choice loop');s=choose(s);}validateGameState(s,c);return s;}
 function run(s:GameState,effects:Effect[]):GameState {s=structuredClone(s);push({s,c},effects);advance(s,c,ss=>validateGameState(ss,c));return settle(s);}
 function act(s:GameState,id:string):GameState{return settle(applyCommand(s,{type:'action',investigatorId:actor,actionId:id},c,ss=>validateGameState(ss,c)));}
+
+test('completed tests retain the exact base, modifiers, ability, commitment and chaos arithmetic',()=>{
+ let s=fixture();add(s,'12018','assets');const skill=add(s,'12025');s.scenario.chaosBag=['-1'];
+ s.engine.modifiers.push({id:'test-buff',source:s.investigators[0].cardId,target:actor,stat:'combat',amount:2,expires:'test'});
+ s=beginEffects(s,[{type:'c-test',actor,data:{skill:'combat',difficulty:4,action:'report-check',bonus:1}}]);
+ s=decisions(s,ss=>ss.pendingChoices[0].context?.kind==='commit'?[skill]:undefined);
+ const r=s.engine.testResults!.at(-1)!;assert.equal(s.test,null);assert.equal(r.base,5);assert.equal(r.modifiers,3);assert.equal(r.bonus,1);assert.equal(r.committed,1);assert.equal(r.tokenModifier,-1);assert.equal(r.total,9);assert.equal(r.difficulty,4);assert.equal(r.margin,5);assert.equal(r.success,true);
+ assert.ok(s.engine.log.some(l=>l.includes('5 base +3 modifiers +1 ability +1 committed -1 chaos = 9')&&l.includes('SUCCESS by 5')));
+ assert.ok(s.engine.log.some(l=>l.includes('revealed -1: -1; chaos modifier -1')));
+ const view=projectState(s,{role:'host'},'result',c);assert.deepEqual(view.engine.testResults,s.engine.testResults);assert.deepEqual(view.investigators[0].skills.combat,{base:5,value:6});
+});
+
+test('automatic failure, minimum zero and symbol redraws report the resolved total and margin',()=>{
+ for(const token of ['auto-fail','-20']){
+  let s=fixture();s.scenario.chaosBag=[token];s=run(s,[{type:'c-test',actor,data:{skill:'combat',difficulty:3,action:'report-check'}}]);
+  const r=s.engine.testResults![0];assert.equal(r.total,0);assert.equal(r.margin,-3);assert.equal(r.success,false);assert.equal(r.automaticFailure,token==='auto-fail');assert.equal(r.calculatedTotal,token==='auto-fail'?5:0);
+  assert.ok(s.engine.log.some(l=>l.includes(token==='auto-fail'?'automatic failure (total 0)':'minimum 0')));
+ }
+ let s=fixture();s.scenario.chaosBag=['tablet','-1'];s.test={id:'report-redraw',actor,skill:'combat',difficulty:4,bonus:0,damage:1,action:'report-check',stage:3,committed:[],participants:[actor],tokens:['tablet'],tokenModifier:-1,data:{}};
+ s=run(s,[{type:'c-test-step'}]);const r=s.engine.testResults![0];assert.deepEqual(r.tokens,['tablet','-1']);assert.equal(r.tokenModifier,-2);assert.equal(r.margin,-1);assert.ok(s.engine.log.some(l=>l.includes('tokens [Tablet, -1]')));
+});
+
+test('Scrape By preserves the failed calculation and reports the changed success by zero',()=>{
+ let s=fixture();const scrape=add(s,'12082');s.scenario.chaosBag=['-1'];s=beginEffects(s,[{type:'c-test',actor,data:{skill:'intellect',difficulty:5,action:'report-check'}}]);
+ s=decisions(s,ss=>ss.pendingChoices[0].prompt?.startsWith('Play Scrape By')?[scrape]:undefined);
+ const r=s.engine.testResults![0];assert.equal(r.total,1);assert.equal(r.success,true);assert.equal(r.margin,0);assert.match(r.override!,/Scrape By/);assert.ok(s.engine.log.some(l=>l.includes('SUCCESS by 0')&&l.includes('Scrape By')));
+});
+
+test('resource, action, ammo, damage, clue and doom changes log exact public numbers',()=>{
+ let s=fixture();const gun=add(s,'12019','assets');s.cards[gun].tokens.ammo=4;const enemy=add(s,'12114','enemies','scenario');s.cards[enemy].tokens.locationIndex=0;
+ s=act(s,'weapon-0|'+gun+'|'+enemy);s=run(s,[{type:'c-gain',actor,amount:2},{type:'c-clue',actor,target:s.investigators[0].locationId,amount:1},{type:'c-doom',amount:1}]);
+ const log=s.engine.log.join('\n');for(const expected of ['actions: 3 → 2','ammo: 4 → 3','damage: 0 → 2','resources: 30 → 32','clues: 0 → 1','clues: 2 → 1','doom: 0 → 1'])assert.ok(log.includes(expected),expected);
+ const asset=add(s,'12070','assets');s.cards[asset].tokens.charge=1;s=run(s,[{type:'c-token',source:asset,amount:-1,data:{key:'charge'}},{type:'c-discard',source:asset}]);assert.ok(s.engine.log.some(l=>l.includes('charge: 1 → 0')));
+});
+
+test('modified skills are projected for every seat without exposing hidden hands or search results',()=>{
+ const s=fixture(2);s.mode='separate';add(s,'12018','assets');add(s,'12030','assets','investigator-2');s.engine.modifiers.push({id:'lower-will',source:s.investigators[0].cardId,target:actor,stat:'willpower',amount:-1,expires:'round'});
+ const view=projectState(s,{role:'host',investigatorId:actor},'skills',c);assert.deepEqual(view.investigators[0].skills.combat,{base:5,value:6});assert.deepEqual(view.investigators[0].skills.willpower,{base:3,value:2});assert.equal(view.investigators[1].skills.intellect.value,view.investigators[1].skills.intellect.base+1);
+ assert.equal(view.investigators[1].hand.length,0);assert.equal(view.investigators[1].handCount,5);for(const id of cardsIn(s,'hand','investigator-2'))assert.ok(!JSON.stringify(view).includes(id));
+ add(s,'12034','assets');add(s,'12034','assets','investigator-2');s.test={id:'stat-test',actor,skill:'intellect',difficulty:3,action:'investigate',bonus:0,damage:1,stage:1,committed:[],participants:[],tokens:[],tokenModifier:0};
+ const duringTest=projectState(s,{role:'host',investigatorId:actor},'skills',c);assert.equal(duringTest.investigators[0].skills.intellect.value,3);assert.equal(duringTest.investigators[1].skills.intellect.value,5,'investigate-only bonuses apply to the investigator taking that test');
+});
+
+test('test results survive every interrupted boundary without duplicating payments, chaos draws or results',()=>{
+ let s=fixture();const gun=add(s,'12019','assets');s.cards[gun].tokens.ammo=4;const enemy=add(s,'12114','enemies','scenario');s.cards[enemy].tokens.locationIndex=0;const checkpoints:GameState[]=[];
+ const capture=(ss:GameState)=>{validateGameState(ss,c);checkpoints.push(structuredClone(ss));};
+ s=applyCommand(s,{type:'action',investigatorId:actor,actionId:'weapon-0|'+gun+'|'+enemy},c,capture);
+ while(s.pendingChoices.length){const p=s.pendingChoices[0];s=applyCommand(s,{type:'choose',investigatorId:p.investigatorId,choiceId:p.id,optionIds:p.options?.some(o=>o.id==='pass')?['pass']:p.min===0?[]:[p.options![0].id]},c,capture);}
+ for(const saved of checkpoints){let resumed=JSON.parse(JSON.stringify(saved));advance(resumed,c);resumed=settle(resumed);assert.deepEqual(resumed,s);assert.equal(resumed.engine.testResults.length,1);assert.equal(resumed.cards[gun].tokens.ammo,3);}
+ const malformed=structuredClone(s);malformed.engine.testResults![0].total++;assert.throws(()=>validateGameState(malformed,c),/total differs/);
+ const old=structuredClone(s);delete old.engine.testResults;validateGameState(old,c);
+});
+
+test('hand fans retain accessible card edges and overflow for large hands at laptop widths',()=>{
+ for(const width of [240,290,610,850])for(const count of [0,1,5,8,20]){const layout=handFanLayout(width,count);assert.ok(layout.width>=width);if(count>1){assert.ok(layout.stride>=22&&layout.stride<=118);assert.ok(110+(count-1)*layout.stride<=layout.width+.001);}}
+});
+
+test('Ask Player opens a private legal window and passing restores the current turn without a cost',()=>{
+ let s=fixture(2);s.mode='separate';const before=structuredClone(s),other='investigator-2',ask=allowedActions(s,c,actor).find(a=>a.label==='Ask Player')!;
+ assert.ok(ask);assert.equal(ask.source,s.investigators[0].cardId);assert.ok(!allowedActions(s,c,other).some(a=>a.label==='Ask Player'));
+ s=applyCommand(s,{type:'action',investigatorId:actor,actionId:ask.id},c);assert.equal(s.pendingChoices[0].prompt,'Ask Player');s=choose(s,[other]);
+ assert.equal(s.pendingChoices[0].investigatorId,other);assert.deepEqual(s.pendingChoices[0].options!.map(o=>o.id),['pass']);
+ assert.equal(s.engine.activeInvestigatorId,actor);assert.equal(s.investigators[0].actions,before.investigators[0].actions);
+ const host=projectState(s,{role:'host',investigatorId:actor},'ask',c),guest=projectState(s,{role:'seat',investigatorId:other,sessionId:s.sessionId},'ask',c);
+ assert.equal(host.pendingChoices.length,0);assert.equal(host.waitingFor,other);assert.equal(host.allowedActions.length,0);assert.equal(guest.pendingChoices[0].investigatorId,other);
+ assert.throws(()=>applyCommand(s,{type:'choose',investigatorId:actor,choiceId:s.pendingChoices[0].id,optionIds:['pass']},c),/not yours/);
+ const resumed=JSON.parse(JSON.stringify(s));validateGameState(resumed,c);s=choose(s,['pass']);assert.deepEqual(choose(resumed,['pass']),s);
+ assert.deepEqual(s.investigators,before.investigators);assert.deepEqual(s.rng,before.rng);assert.equal(s.engine.chapter!.actionsTaken,before.engine.chapter!.actionsTaken);assert.equal(s.engine.actionDepth,0);assert.ok(s.engine.log.some(l=>l.includes('return to Daniela Reyes')));
+});
+
+test('Ask Player offers only legal out-of-turn abilities and resumes after one is used',()=>{
+ let s=fixture(2);s.mode='separate';const other='investigator-2',fast=add(s,'12064','hand',other),ordinary=add(s,'12089','hand',other),turnOnly=add(s,'12038','hand',other),before=structuredClone(s);
+ s=applyCommand(s,{type:'action',investigatorId:actor,actionId:allowedActions(s,c,actor).find(a=>a.label==='Ask Player')!.id},c);s=choose(s,[other]);
+ const options=s.pendingChoices[0].options!.map(o=>o.id);assert.ok(options.includes('play|'+fast+'|'));assert.ok(!options.includes('play|'+ordinary+'|'));assert.ok(!options.includes('play|'+turnOnly+'|'));
+ const json=JSON.stringify(projectState(s,{role:'host',investigatorId:actor},'ask',c));assert.ok(!json.includes(fast));assert.ok(!json.includes('Premonition'));
+ assert.throws(()=>choose(s,['play|'+ordinary+'|']),/legal set/);
+ s=choose(s,['play|'+fast+'|']);assert.ok(cardsIn(s,'assets',other).includes(fast));assert.equal(s.pendingChoices[0].investigatorId,other);assert.ok(s.pendingChoices[0].options?.some(o=>o.id==='pass'));
+ const saved=JSON.parse(JSON.stringify(s));s=choose(s,['pass']);assert.deepEqual(choose(saved,['pass']),s);assert.equal(s.engine.activeInvestigatorId,actor);assert.equal(s.engine.round,before.engine.round);assert.equal(s.engine.chapter!.turn,before.engine.chapter!.turn);assert.deepEqual(s.investigators.map(i=>i.actions),before.investigators.map(i=>i.actions));assert.equal(Object.keys(s.engine.chapter!.sealedTokens).length,1);
+});
+
+test('Ask Player cancellation leaves the turn intact and eliminated investigators cannot be asked',()=>{
+ let s=fixture(2),before=structuredClone(s);s=applyCommand(s,{type:'action',investigatorId:actor,actionId:allowedActions(s,c,actor).find(a=>a.label==='Ask Player')!.id},c);s=choose(s,['cancel']);assert.deepEqual(s.investigators,before.investigators);assert.equal(s.engine.actionDepth,0);
+ s.investigators[1].eliminated=true;assert.ok(!allowedActions(s,c,actor).some(a=>a.label==='Ask Player'));assert.ok(!allowedActions(fixture(),c,actor).some(a=>a.label==='Ask Player'));
+});
 
 test('new normal campaigns enter the full engine, while historical setup stays versioned',()=>{const s=fixture();assert.equal(s.phase,'playing');assert.equal(s.engine.pilot,false);assert.ok(allowedActions(s,c,actor).some(a=>a.id.startsWith('end-turn')));validateGameState(s,c);});
 test('every core treachery revelation resolves through both success and failure without losing a card or leaving an invalid checkpoint',()=>{

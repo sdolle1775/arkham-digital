@@ -1,7 +1,9 @@
 import { createContext, useContext, type CSSProperties, type ReactNode } from 'react';
 import type { Catalog, SessionView } from '../shared/types';
-import { CardArt, Sigil } from './components';
+import { CardArt } from './components';
 import { cardText } from './api';
+import playerBack from './assets/player_back.png';
+import encounterBack from './assets/encounter_back.png';
 
 export interface Preview { id:string; code?:string; face:'front'|'back'; reverse:boolean; back?:'player'|'encounter'; x:number; }
 export interface TableCardsContext {
@@ -12,7 +14,7 @@ export interface TableCardsContext {
 }
 export const CardsContext=createContext<TableCardsContext>(null!);
 export function CardBack({kind='player'}:{kind?:'player'|'encounter'}) {
-  return <div className={`table-card-back ${kind}`} aria-hidden="true"><div className="back-frame"><span>ARKHAM HORROR</span><Sigil/><small>{kind==='player'?'INVESTIGATOR':'ENCOUNTER'}</small></div></div>;
+  return <div className={`table-card-back ${kind}`} aria-hidden="true"><img src={kind==='player'?playerBack:encounterBack} alt="" draggable={false}/></div>;
 }
 export function TableCard({id,hidden=false,back='player',style,children,mapCard=false}:{mapCard?:boolean;id:string;hidden?:boolean;back?:'player'|'encounter';style?:CSSProperties;children?:ReactNode}) {
   const c=useContext(CardsContext),instance=hidden?undefined:c.session.cards[id],definition=instance?c.catalog.cards[instance.code]:undefined;
