@@ -49,22 +49,33 @@ export function parseDeck(source: DeckSource, code: string, value: unknown, cata
   if(investigator?.type!=='investigator')throw new Error('The selected investigator is unsupported.');
   if(investigator.raw.taboo_forbidden)throw new Error(`${investigator.name} (${investigatorCode}) is forbidden by the latest Taboo.`);
   if(!Object.keys(slots).length)throw new Error('The imported deck has no cards.');
-  let xp=0;
+  let xp=0;const collectorUsed:Record<string,number>={};
   for(const [zone,contents] of Object.entries({deck:slots,sideboard:sideSlots}))for(const [c,count]of Object.entries(contents)){
     if(c==='01000'){if(count!==1)throw new Error('Use one random basic weakness placeholder.');continue;}
     const card=rules.catalog.cards[c];
-    if(card.encounterCode||card.type==='investigator')throw new Error(`${card.name} (${c}) cannot be imported into the ${zone}.`);
+    const story=['12115','12137','12181'].includes(c);
+    if(card.encounterCode&&!story||card.type==='investigator')throw new Error(`${card.name} (${c}) cannot be imported into the ${zone}.`);
     if(card.raw.taboo_forbidden)throw new Error(`${card.name} (${c}) is forbidden by the latest Taboo.`);
     if(count>Number(card.raw.deck_limit??2))throw new Error(`${card.name} (${c}) exceeds its latest deck limit after combining equivalent printings.`);
     const signatures=investigator.deckRequirements?.signatures??[];
     const signatureOwner=Object.values(rules.catalog.cards).find(i=>i.deckRequirements?.signatures.includes(c));
     if(signatureOwner&&signatureOwner.code!==investigatorCode)throw new Error(`${card.name} belongs to another investigator.`);
-    if(!card.subtype&&!signatures.includes(c)){
+    if(!card.subtype&&!signatures.includes(c)&&!story){
       const options=investigator.raw.deck_options as {faction?:string[];level?:{min:number;max:number}}[];
-      if(!options?.some(o=>o.faction?.includes(card.faction)&&Number(card.raw.xp??0)>=(o.level?.min??0)&&Number(card.raw.xp??0)<=(o.level?.max??5)))throw new Error(`${card.name} is outside this investigator's deckbuilding options.`);
+      if(!options?.some(o=>o.faction?.includes(card.faction)&&Number(card.raw.xp??0)>=(o.level?.min??0)&&Number(card.raw.xp??0)<=(o.level?.max??5))){
+        const collector=slots['12181']===1&&card.type==='asset'&&Number(card.raw.xp??0)<=3&&/\b(Relic|Charm)\./.test(String(card.raw.traits));
+        collectorUsed[zone]=(collectorUsed[zone]??0)+count;
+        if(!collector||collectorUsed[zone]>1)throw new Error(`${card.name} is outside this investigator's deckbuilding options.`);
+      }
     }
     if(zone==='deck')xp+=purchaseXp(card.raw)*count;
   }
+  const signatures=investigator.deckRequirements?.signatures??[];
+  const deckSize=Object.entries(slots).reduce((total,[code,count])=>{
+    const card=rules.catalog.cards[code];return total+(!card||card.subtype||card.encounterCode||card.raw.permanent||signatures.includes(code)?0:count);
+  },0);
+  const requiredSize=Number((investigator.raw.deck_requirements as Record<string,unknown>)?.size??30)+(slots['12181']?5:0);
+  if(deckSize!==requiredSize)throw new Error(`This investigator requires ${requiredSize} cards counting toward deck size; the imported main deck has ${deckSize}. Fix the deck on ArkhamDB.`);
   return {id:randomUUID(),...identity,source,sourceCode:code,name:deck.name.trim(),investigatorCode,slots,sideSlots,unsupported:[],importedAt:new Date().toISOString(),sourceSlots,sourceSideSlots,sourceInvestigatorCode:deck.investigator_code,sourceTabooId:deck.taboo_id as number,rules:rules.identity,purchaseXp:xp};
 }
 

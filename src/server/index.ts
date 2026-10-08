@@ -1,3 +1,4 @@
+import { BUILD_VERSION } from '../shared/types.js';
 import { homedir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { mkdirSync, writeFileSync, unlinkSync } from 'node:fs';
@@ -21,7 +22,7 @@ service=await createApp({appDir,dataDir,catalog,port,pilot,logger:true,onShutdow
 try {
   await service.app.listen({port,host});
   const url=`http://127.0.0.1:${port}/#host=${service.hostToken}`;
-  if(readyFile)writeFileSync(readyFile,JSON.stringify({url,pid:process.pid,port,dataDir,version:'0.2.0'}),{mode:0o600});
+  if(readyFile)writeFileSync(readyFile,JSON.stringify({url,pid:process.pid,port,dataDir,version:BUILD_VERSION}),{mode:0o600});
   if (readyFile) console.log(`Arkham Horror Digital is ready on port ${port}. Data: ${dataDir}`);
   else console.log(`\nArkham Horror Digital\nOpen this host link in your browser:\n${url}\nData: ${dataDir}\n`);
 }catch(error){await service.app.close();console.error((error as Error).message);process.exitCode=1;}

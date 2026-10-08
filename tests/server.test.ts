@@ -26,8 +26,8 @@ async function harness() {
   await service.app.ready();await service.assets.install();
   const host={authorization:`Bearer ${service.hostToken}`};
   const decks=[fixtureDeck('12001'),fixtureDeck('12004')];decks.forEach(d=>service.storage.storeDeck(d));
-  const start=async()=>{
-    const response=await service.app.inject({method:'POST',url:'/api/sessions',headers:host,payload:{name:'Integration campaign',difficulty:'standard',mode:'separate',leadSeat:1,seats:decks.map((d,i)=>({deckRevisionId:d.id,playerName:`Player ${i+1}`}))}});
+  const start=async(hostSeat=1)=>{
+    const response=await service.app.inject({method:'POST',url:'/api/sessions',headers:host,payload:{name:'Integration campaign',difficulty:'standard',mode:'separate',leadSeat:1,hostSeat,seats:decks.map((d,i)=>({deckRevisionId:d.id,playerName:`Player ${i+1}`}))}});
     assert.equal(response.statusCode,200,response.body);return response.json<SessionView>();
   };
   const cleanup=async()=>{await service.app.close();rmSync(dataDir,{recursive:true,force:true});};
@@ -40,6 +40,7 @@ test('HTTP authority, scoped player views, idempotency and stale-state handling 
     assert.equal((await h.app.inject('/api/decks')).statusCode,401);
     assert.equal((await h.app.inject({method:'POST',url:'/api/auth',payload:{hostToken:'wrong'}})).statusCode,401);
     const started=await h.start();const sid=started.sessionId;
+    assert.equal(started.investigators[1].hand.length,0,'separate host cannot inspect other hands');
     const initial=h.storage.current(sid);
     const invites=await h.app.inject({method:'POST',url:`/api/sessions/${sid}/invites`,headers:h.host});
     const seats=invites.json().seats;
@@ -55,12 +56,14 @@ test('HTTP authority, scoped player views, idempotency and stale-state handling 
     for(const path of [`/api/sessions/${sid}/history`,`/api/sessions/${sid}/export`,'/api/decks','/api/saves','/api/tunnel']) assert.equal((await h.app.inject({url:path,headers:player})).statusCode,403,path);
     const denied=await h.app.inject({method:'POST',url:`/api/sessions/${sid}/commands`,headers:player,payload:{commandId:randomUUID(),expectedRevision:0,command:{type:'mulligan',investigatorId:started.investigators[1].id,cardIds:[]}}});
     assert.equal(denied.statusCode,403);assert.equal(h.storage.history(sid).length,1);
+    const deniedHost=await h.app.inject({method:'POST',url:`/api/sessions/${sid}/commands`,headers:h.host,payload:{commandId:randomUUID(),expectedRevision:0,command:{type:'mulligan',investigatorId:started.investigators[1].id,cardIds:[]}}});
+    assert.equal(deniedHost.statusCode,403);assert.equal(h.storage.history(sid).length,1);
     const command={commandId:randomUUID(),expectedRevision:0,command:{type:'mulligan',investigatorId:started.investigators[0].id,cardIds:[started.investigators[0].hand[0]]}};
     const result=await h.app.inject({method:'POST',url:`/api/sessions/${sid}/commands`,headers:player,payload:command});
     assert.equal(result.statusCode,200,result.body);assert.equal(result.json().revision,1);
     const duplicate=await h.app.inject({method:'POST',url:`/api/sessions/${sid}/commands`,headers:player,payload:command});
     assert.equal(duplicate.statusCode,200);assert.equal(h.storage.history(sid).length,2);
-    const stale=await h.app.inject({method:'POST',url:`/api/sessions/${sid}/commands`,headers:h.host,payload:{...command,commandId:randomUUID(),command:{type:'mulligan',investigatorId:started.investigators[1].id,cardIds:[]}}});
+    const stale=await h.app.inject({method:'POST',url:`/api/sessions/${sid}/commands`,headers:h.host,payload:{...command,commandId:randomUUID(),command:{type:'mulligan',investigatorId:started.investigators[0].id,cardIds:[]}}});
     assert.equal(stale.statusCode,409);assert.equal(h.storage.history(sid).length,2);
     const restore=await h.app.inject({method:'POST',url:`/api/sessions/${sid}/rollback`,headers:h.host,payload:{checkpointId:initial.id,expectedRevision:1,commandId:randomUUID()}});
     assert.equal(restore.statusCode,200,restore.body);
@@ -73,6 +76,23 @@ test('HTTP authority, scoped player views, idempotency and stale-state handling 
   } finally {await h.cleanup();}
 });
 
+test('host seat selected at creation controls private projection and commands independently of lead and administration',async()=>{
+  const h=await harness();try{
+    const s=await h.start(2),sid=s.sessionId;
+    assert.equal(s.investigators[0].canControl,false);assert.equal(s.investigators[0].hand.length,0);
+    assert.equal(s.investigators[1].canControl,true);assert.equal(s.investigators[1].hand.length,5);assert.equal(s.pendingChoices.length,0);
+    assert.equal(h.storage.sessionViewer(h.storage.current(sid).state,{role:'host'}).investigatorId,s.investigators[1].id);
+    const denied=await h.app.inject({method:'POST',url:`/api/sessions/${sid}/commands`,headers:h.host,payload:{commandId:randomUUID(),expectedRevision:0,command:{type:'mulligan',investigatorId:s.investigators[0].id,cardIds:[]}}});
+    assert.equal(denied.statusCode,403);
+    assert.equal((await h.app.inject({url:`/api/sessions/${sid}/history`,headers:h.host})).statusCode,200);
+    const token=(await h.app.inject({method:'POST',url:`/api/sessions/${sid}/invites`,headers:h.host})).json().seats[0].token;
+    const first=await h.app.inject({method:'POST',url:`/api/sessions/${sid}/commands`,headers:{authorization:'Bearer '+token},payload:{commandId:randomUUID(),expectedRevision:0,command:{type:'mulligan',investigatorId:s.investigators[0].id,cardIds:[]}}});
+    assert.equal(first.statusCode,200);
+    const second=await h.app.inject({method:'POST',url:`/api/sessions/${sid}/commands`,headers:h.host,payload:{commandId:randomUUID(),expectedRevision:1,command:{type:'mulligan',investigatorId:s.investigators[1].id,cardIds:[]}}});
+    assert.equal(second.statusCode,200);assert.equal(second.json().phase,'playing');
+  }finally{await h.cleanup();}
+});
+
 test('real WebSockets send only the assigned view and reconnect to the current checkpoint',async()=>{
   const h=await harness();const sockets:WebSocket[]=[];
   try {
@@ -80,13 +100,14 @@ test('real WebSockets send only the assigned view and reconnect to the current c
     const invites=(await h.app.inject({method:'POST',url:`/api/sessions/${started.sessionId}/invites`,headers:h.host})).json().seats;
     await h.app.listen({host:'127.0.0.1',port:0});
     const address=h.app.server.address();assert.ok(address&&typeof address==='object');
-    const connect=()=>new Promise<{socket:WebSocket;state:SessionView}>((resolve,reject)=>{
-      const socket=new WebSocket(`ws://127.0.0.1:${address.port}/api/ws?sessionId=${started.sessionId}`,['arkham-v1',`arkham-auth.${invites[1].token}`]);sockets.push(socket);
+    const connect=(token=invites[1].token)=>new Promise<{socket:WebSocket;state:SessionView}>((resolve,reject)=>{
+      const socket=new WebSocket(`ws://127.0.0.1:${address.port}/api/ws?sessionId=${started.sessionId}`,['arkham-v1',`arkham-auth.${token}`]);sockets.push(socket);
       const timer=setTimeout(()=>reject(new Error('WebSocket timed out')),5000);
       socket.once('error',e=>{clearTimeout(timer);reject(e);});
       socket.once('message',message=>{clearTimeout(timer);resolve({socket,state:JSON.parse(message.toString()).state});});
     });
     const first=await connect();assert.equal(first.state.investigators[0].hand.length,0);assert.equal(first.state.investigators[1].hand.length,5);
+    const hostConnection=await connect(h.hostToken);assert.equal(hostConnection.state.investigators[0].hand.length,5);assert.equal(hostConnection.state.investigators[1].hand.length,0);hostConnection.socket.close();
     const updated=new Promise<SessionView>(resolve=>first.socket.once('message',data=>resolve(JSON.parse(data.toString()).state)));
     await h.app.inject({method:'POST',url:`/api/sessions/${started.sessionId}/commands`,headers:h.host,payload:{commandId:randomUUID(),expectedRevision:0,command:{type:'mulligan',investigatorId:started.investigators[0].id,cardIds:[]}}});
     assert.equal((await updated).revision,1);first.socket.close();
@@ -325,4 +346,19 @@ test('a late SQLite write failure rolls back the checkpoint, head, and command t
     assert.equal(retry.revision,1);
     assert.equal(h.storage.history(sid).length,2);
   }finally{await h.cleanup();}
+});
+
+test('campaign continuation is host-only, pins latest revisions, preserves private seats and keeps scenario history restorable',async()=>{
+ const h=await harness();try{
+  const started=await h.start(2),sid=started.sessionId;
+  h.storage.apply(sid,randomUUID(),started.revision,{type:'fixture-resolution'},'Scenario completion fixture',s=>{s.phase='ended';s.pendingChoices=[];s.engine.chapter!.outcome='Scenario 1 complete';s.campaign.log.entries='Miskatonic University burned.';s.campaign.log.flags=['university-burned'];return s;});
+  const ended=h.storage.current(sid),invites=(await h.app.inject({method:'POST',url:`/api/sessions/${sid}/invites`,headers:h.host})).json();
+  const payload={commandId:randomUUID(),expectedRevision:ended.state.revision,deckRevisionIds:h.decks.map(d=>d.id)};
+  const denied=await h.app.inject({method:'POST',url:`/api/sessions/${sid}/continue`,headers:{authorization:`Bearer ${invites.seats[0].token}`},payload});assert.equal(denied.statusCode,403);assert.equal(h.storage.current(sid).id,ended.id);
+  const continued=await h.app.inject({method:'POST',url:`/api/sessions/${sid}/continue`,headers:h.host,payload});assert.equal(continued.statusCode,200,continued.body);const view=continued.json<SessionView>();assert.equal(view.campaign.scenarioNumber,2);assert.equal(view.phase,'opening');assert.equal(view.investigators[0].hand.length,0);assert.equal(view.investigators[1].hand.length,5);
+  const repeat=await h.app.inject({method:'POST',url:`/api/sessions/${sid}/continue`,headers:h.host,payload});assert.equal(repeat.statusCode,200);assert.equal(repeat.json().revision,view.revision);
+  const stale=await h.app.inject({method:'POST',url:`/api/sessions/${sid}/continue`,headers:h.host,payload:{...payload,commandId:randomUUID()}});assert.equal(stale.statusCode,409);
+  const archive=h.storage.exportSession(sid),copy=h.storage.importSession(archive);assert.equal(copy.state.campaign.scenarioNumber,2);assert.equal(h.storage.getRules(copy.state.rules.id).identity.scriptVersion,'chapter2-1');
+  h.storage.rollback(sid,ended.id,view.revision,randomUUID());assert.equal(h.storage.current(sid).state.campaign.scenarioNumber,1);assert.ok(h.storage.history(sid).some(point=>point.id===view.checkpointId));
+ }finally{await h.cleanup();}
 });

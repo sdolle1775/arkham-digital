@@ -7,12 +7,13 @@ import { join } from 'node:path';
 import { z } from 'zod';
 import type { WebSocket } from 'ws';
 import { BUILD_VERSION, type Catalog, type Viewer, type GameCommand, type SetupOptions } from '../shared/types.js';
-import { createGame, applyCommand, projectState } from '../game/setup.js';
+import { createGame, applyCommand, projectState, controlsInvestigator } from '../game/setup.js';
 import { Storage, AppError, type Checkpoint } from './storage.js';
 import { AssetManager } from './assets.js';
 import { deckUrl, fetchDeck } from './deck-import.js';
 import { fetchLatestRules, RulesUpdateRequired, type RulesPackage } from './rules.js';
 import { createPilot } from '../game/pilot.js';
+import { continueCampaign } from '../game/chapter/campaign.js';
 import { Tunnel } from './tunnel.js';
 
 const idSchema = z.string().min(1).max(100);
@@ -20,10 +21,11 @@ const revisionSchema = z.number().int().min(0).max(Number.MAX_SAFE_INTEGER);
 const actionSchema = z.object({ expectedRevision: revisionSchema, commandId: z.string().uuid() });
 const logRecordSchema = z.object({ experience:z.number().int().min(0).max(999), physicalTrauma:z.number().int().min(0).max(99), mentalTrauma:z.number().int().min(0).max(99), notes:z.string().max(10000) });
 const commandSchema = z.discriminatedUnion('type', [
-  z.object({type:z.literal('mulligan'),investigatorId:idSchema,cardIds:z.array(idSchema).max(5)}),
+  z.object({type:z.literal('mulligan'),investigatorId:idSchema,cardIds:z.array(idSchema).max(20)}),
   z.object({type:z.literal('action'),investigatorId:idSchema,actionId:z.string().max(500)}),
   z.object({type:z.literal('choose'),investigatorId:idSchema,choiceId:idSchema,optionIds:z.array(z.string().max(500)).max(100)}),
   z.object({type:z.literal('pass'),investigatorId:idSchema,choiceId:idSchema}),
+  z.object({type:z.literal('pay'),investigatorId:idSchema,choiceId:idSchema,contributions:z.array(z.object({sourceId:z.string().min(1).max(300),amount:z.number().int().positive().max(1000000)}).strict()).max(100)}),
   z.object({type:z.literal('campaign-log'),entries:z.string().max(100000),records:z.record(z.string().max(100),logRecordSchema)})
 ]);
 export interface AppOptions {
@@ -67,7 +69,7 @@ export async function createApp(options: AppOptions) {
     if (viewer.role === 'player' && viewer.sessionId !== id) throw new AppError('This invitation is for a different campaign.',403);
     return {viewer,id};
   };
-  const present = (cp:Checkpoint, viewer:Viewer) => projectState(cp.state, viewer, cp.id,cp.state.rules.id==='legacy-setup-v1'?options.catalog:storage.getRules(cp.state.rules.id).catalog);
+  const present = (cp:Checkpoint, viewer:Viewer) => projectState(cp.state, storage.sessionViewer(cp.state,viewer), cp.id,cp.state.rules.id==='legacy-setup-v1'?options.catalog:storage.getRules(cp.state.rules.id).catalog);
   const broadcast = (sessionId:string) => {
     const cp = storage.current(sessionId);
     for (const [socket, client] of clients) {
@@ -141,12 +143,13 @@ export async function createApp(options: AppOptions) {
   app.post('/api/sessions', async req => {
     const viewer=viewerFor(req,true);
     if(storage.rulesProblem())throw new AppError(storage.rulesProblem()!,422);
-    const body=z.object({name:z.string().trim().min(1).max(100),mode:z.enum(['hotseat','separate']),difficulty:z.enum(['easy','standard','hard','expert']),leadSeat:z.number().int().min(1).max(4),seats:z.array(z.object({deckRevisionId:idSchema,playerName:z.string().trim().min(1).max(60)})).min(1).max(4),logEntries:z.string().max(100000).optional()}).parse(req.body);
+    const body=z.object({name:z.string().trim().min(1).max(100),mode:z.enum(['hotseat','separate']),difficulty:z.enum(['easy','standard','hard','expert']),leadSeat:z.number().int().min(1).max(4),hostSeat:z.number().int().min(1).max(4).optional(),seats:z.array(z.object({deckRevisionId:idSchema,playerName:z.string().trim().min(1).max(60)})).min(1).max(4),logEntries:z.string().max(100000).optional()}).parse(req.body);
+    if((body.hostSeat??body.leadSeat)>body.seats.length)throw new AppError('Choose a valid host seat.');
     const decks=body.seats.map(s=>storage.getDeckRevision(s.deckRevisionId));
     const setup:SetupOptions={...body,sessionId:randomUUID(),createdAt:new Date().toISOString(),seed:randomBytes(4).readUInt32LE()};
     let state;
     try {state=createGame(setup,storage.latestRules().catalog,decks,storage.latestRules().identity);}catch(e){throw new AppError((e as Error).message);}
-    return present(storage.createSession(state,{type:'setup',options:setup}),viewer);
+    return present(storage.createSession(state,{type:'setup',options:setup},state.investigators.find(i=>i.seat===(body.hostSeat??body.leadSeat))!.id),viewer);
   });
   if(options.pilot)app.post('/api/pilot',async req=>{
     const viewer=viewerFor(req,true);const body=z.object({fixture:z.enum(['opening','locations']).default('opening')}).parse(req.body??{});
@@ -154,10 +157,19 @@ export async function createApp(options: AppOptions) {
     return storage.db.transaction(()=>{decks.forEach(d=>storage.storeDeck(d));return present(storage.createSession(state,{type:'pilot-fixture',fixture:body.fixture}),viewer);})();
   });
   app.get('/api/sessions/:id', async req => {const {id,viewer}=sessionAccess(req);return present(storage.resume(id),viewer);});
+  app.post('/api/sessions/:id/continue',async req=>{
+    const {id,viewer}=sessionAccess(req,true);
+    const body=actionSchema.extend({deckRevisionIds:z.array(idSchema).min(1).max(4)}).parse(req.body);
+    const rules=await verifyLatestRules(),decks=body.deckRevisionIds.map(id=>storage.getDeckRevision(id));
+    const cp=storage.apply(id,body.commandId,body.expectedRevision,{type:'continue-campaign',deckRevisionIds:body.deckRevisionIds},'Next scenario prepared',(previous)=>{
+      try{return continueCampaign(previous,decks,previous.investigators.map(i=>storage.getDeckRevision(i.deckRevisionId)),rules.catalog,rules.identity);}catch(error){throw new AppError((error as Error).message,422);}
+    });broadcast(id);return present(cp,viewer);
+  });
   app.post('/api/sessions/:id/commands', async req => {
     const {id,viewer}=sessionAccess(req);
     const body=actionSchema.extend({command:commandSchema}).parse(req.body);
-    if (viewer.role==='player' && (body.command.type==='campaign-log' || body.command.investigatorId!==viewer.investigatorId)) throw new AppError('You can only control your assigned investigator.',403);
+    const current=storage.current(id).state,seatViewer=storage.sessionViewer(current,viewer);
+    if(body.command.type==='campaign-log'?viewer.role!=='host':!controlsInvestigator(current,seatViewer,body.command.investigatorId))throw new AppError('You can only control your assigned investigator.',403);
     const command=body.command as GameCommand;
     const label=command.type==='campaign-log' ? 'Campaign log updated' : command.type!=='mulligan'? 'Player decision: '+command.type : `${storage.current(id).state.investigators.find(i=>i.id===command.investigatorId)?.name ?? 'Investigator'} kept an opening hand`;
     const cp=storage.apply(id,body.commandId,body.expectedRevision,command,label,(state,boundary)=>{

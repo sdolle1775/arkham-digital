@@ -1,4 +1,4 @@
-# Version 0.2 API contract (save schema v2)
+# Version 0.4 API contract (save schema v2)
 
 All JSON errors: `{error:string}` with appropriate status. Authenticated fetch calls carry `Authorization: Bearer TOKEN`.
 Catalog definitions are public data; gameplay views and history require authentication. Host token is received via `#host=...`, seat invitation via `#join=...`; POST `/api/auth` with `{hostToken}` or `{joinToken}` returns `{viewer,token}`. Store token in sessionStorage `arkhamToken` (per-tab); remove fragment after auth. Cookies are not used, so independent investigator tabs in the same browser remain independent.
@@ -29,7 +29,7 @@ Catalog definitions are public data; gameplay views and history require authenti
 - POST `/api/shutdown` => `{ok:true}` (host)
 - WS `/api/ws?sessionId=...` with subprotocols `['arkham-v1','arkham-auth.TOKEN']` (server selects arkham-v1); messages `{type:'state',state:SessionView}`, `{type:'error',error}`. Client reconnects and resyncs via GET; server pings. Send command over HTTP with UUID commandId and expectedRevision.
 
-Host controls all setup seats. Players can submit their own ordered mulligan, legal pilot action, choice response, or pass. Log edits, rollback, library, downloads, invites, saves, import/export, tunnel, shutdown are host-only. A player bootstrap only lists their bound session. UI pan/zoom/inspection are local view state.
+Host controls all investigators in hotseat. In separate mode, `SetupOptions.hostSeat` selects its one-based investigator seat (default: leadSeat), stored in session access metadata. Host administration and investigator permissions are independent; HTTP and WebSocket projections and command authorization use the same seat binding. Players can submit their own ordered mulligan, legal action, payment, choice response, or pass. Log edits, rollback, library, downloads, invites, saves, import/export, tunnel, shutdown are host-only. A player bootstrap only lists their bound session. UI pan/zoom/inspection are local view state.
 
 Game module exports `createGame(options:SetupOptions,catalog:Catalog,decks:DeckRevision[]):GameState`, `applyCommand(state:GameState,command:GameCommand,catalog:Catalog):GameState`, `projectState(state:GameState,viewer:Viewer,checkpointId:string):SessionView`, and `validateGameState(state:unknown,catalog:Catalog): asserts state is GameState` from `src/game/setup.ts` (or reexports there). Public setup/command functions are deterministic and clone their input state. Internal engine and zone helpers mutate only the transaction-owned working state. Server increments revision for each accepted decision, internal effect boundary, and rollback.
 
@@ -37,7 +37,7 @@ Catalog/asset module API (server owns lifecycle): `loadCatalog(contentDir:string
 
 ## Rules, engine, and installation
 
-- POST `/api/pilot` `{fixture:'opening'|'locations'}` creates a fixed developer fixture (only registered with `--pilot`). Normal servers reject pilot save imports and gameplay commands.
+- POST `/api/pilot` `{fixture:'opening'|'locations'}` creates a fixed developer fixture (only registered with `--pilot`). Normal servers reject pilot save imports and pilot-session commands; normal Chapter Two sessions use the full engine.
 - Commands extend mulligan and campaign-log with `{type:'action',investigatorId,actionId}`, `{type:'choose',investigatorId,choiceId,optionIds:string[]}`, and `{type:'pass',investigatorId,choiceId}`. IDs must come from the current projected legal actions/options.
 - `SessionView` exposes legal actions, permitted choices without continuation context, public test progress, and the effective rules identity. It never serializes the canonical state wholesale.
 - `AssetStatus` adds `phase:'checking'|'downloading'|'error'|'ready'`, `installed:boolean`, and `checked:number`. Installation starts automatically; table/save/import/WebSocket routes return 503 until complete. GET artwork is local-only. No on-demand download route exists.
@@ -45,3 +45,30 @@ Catalog/asset module API (server owns lifecycle): `loadCatalog(contentDir:string
 - `RulesPackage` stores its Taboo, effective catalog, explicit alias map, and identity: list ID/date/update date/hash, catalog version, script version. Saved games request that exact identity.
 - Save archives embed v2 canonical states, rules data, all checkpoints/branches, and immutable deck revisions. Schema-v1 imports migrate into new sessions. Every checkpoint and the archive payload are hash checked and validated before the import transaction.
 - GET session, WebSocket reconnect, named-load, rollback, undo, and archive import resume interrupted effects to the next pending choice. Undo skips internal effect boundaries; History can select them individually.
+
+## Table presentation
+
+- `SessionView.piles`: ordered zone summaries `{id,kind,owner,count,cards,visibility}`. Concealed piles always have an empty `cards` list. Act/agenda stacks expose only their current card.
+- `SessionView.search`: null or `{choiceId,investigatorId,cards,legalCardIds}` for the authorized searching seat; includes the entire permitted search pool and only its legal target subset.
+- Projected pending choices add `presentation: 'mulligan'|'cards'|'search'|'popup'|'payment'`. Server continuations remain private. Search inspection with no matches is an ordinary persisted choice with min/max zero; confirm it with an empty `optionIds` array.
+- `pilot-1`, `pilot-2`, and `pilot-3` rules hashes remain distinct and loadable. New decks use `chapter2-1`. Database schema v3 adds `session_access`; game save schema remains v2. Imported sessions bind the host to the lead, excluding original access metadata and credentials.
+- Table preferences, camera, display sorting, preview face, and unsubmitted selections are client presentation state; only confirmed game decisions create checkpoints.
+
+## Card actions and payments
+
+- Left-click card selection filters legal actions by source/target, with basic actions on investigator identities. End turn is displayed independently and enabled only from the current authorized action list. Inspection remains available by keyboard (`I`).
+- In chapter2-1 and recorded pilot-3 sessions, positive-cost play actions create a private persisted `payment` continuation before costs are spent. `SessionView.payment` is null for other seats, or `{choiceId,investigatorId,cardId,cost,sources,defaults}` for the payer. Defaults spend investigator resources first, then eligible scripted sources if needed.
+- Submit `{type:'pay',investigatorId,choiceId,contributions:[{sourceId,amount}]}` using current source IDs and an exact integer total. `{type:'pass',investigatorId,choiceId}` cancels a pending payment without spending; ordinary `choose` cannot bypass payment validation. Envelope revision, idempotency, and investigator authority checks apply unchanged.
+- Constant `AbilityDefinition.payment` entries register eligible counter sources with a token type, controller/location scope, optional card-type and trait restrictions, a per-payment maximum, and optional exhaustion. The engine derives availability from current in-play cards and validates all pools before spending. Arbitrary counters and unsupported cards never grant payment permission. No additional payment-source card is scripted in this release.
+- Confirmed contributions are recorded with paid costs on the serialized resolution frame. Interrupted resolution resumes after spending. Existing pilot-1/pilot-2 payments retain their original flow; no saved rules package is substituted.
+
+
+## Chapter Two engine (0.4.0)
+
+New rules packages use `chapter2-1`; `pilot-1`, `pilot-2`, and `pilot-3` still dispatch to their historical engine. All 195 core definitions have reviewed behavioral contracts. The chapter interpreter, actions, hooks, tests, scenario modules and campaign continuation are under `src/game/chapter/`.
+
+`POST /api/sessions/:id/continue` (host only) takes `{commandId, expectedRevision, deckRevisionIds}` in seat order. It verifies live latest rules, validates XP and investigator continuity, and prepares the next scenario's opening choices in the existing branched session. No active-scenario rules substitution occurs. Failed validation leaves the session head untouched.
+
+Schema v2's optional `engine.chapter` records per-turn progress, delayed end-turn effects, sealed tokens, hidden location assignments, harbinger identity, under-act cards, resignations/deaths, earned rewards, story assignments and resolution outcome. `underAct` is a public ordered zone. Queued test data can include cleanup continuations. All fields remain serializable and validated on import; older snapshots need none of these fields.
+
+The projection exposes `campaignProgress` (outcome, continuation availability, deaths and earned rewards) and only a count for cards beneath locations. It never exposes hidden assignments or the harbinger. Search pools can include encounter deck and discard; each unchosen card returns to its recorded origin before the required shuffle. Payment choices also support fast events and reaction-granted plays, retaining cancellation continuations.

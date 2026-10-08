@@ -1,12 +1,12 @@
-# Arkham Horror Digital 0.2.0
+# Arkham Horror Digital 0.4.0
 
-A local TypeScript application for the **2026 Chapter Two core box** and **Brethren of Ash**. Normal campaigns prepare **Spreading Flames**, starting resources, opening hands, and ordered mulligans. A separate developer pilot exercises the first 26 card scripts and the automated interaction engine.
+A local TypeScript application for the **2026 Chapter Two core box** and **Brethren of Ash**. New campaigns use the automated **chapter2-1** engine for all **195 core card definitions**, including **Spreading Flames**, **Smoke and Mirrors**, and **Queen of Ash**.
 
-Normal campaigns remain setup and inspection only. Later scenarios, complete scenario scripting, standalone play, local deckbuilding, campaign-book narrative, and replay playback are outside this milestone.
+Standalone play, local deckbuilding, campaign-book narrative, and replay playback remain unavailable. Historical pilot and setup sessions retain their recorded engine; start a new campaign to use the full Chapter Two scripts.
 
 ## Windows application
 
-1. Extract `Arkham-Horror-Digital-0.2.0-windows-x64.zip` completely.
+1. Extract `Arkham-Horror-Digital-0.4.0-windows-x64.zip` completely.
 2. Run **Launch Arkham Horror Digital.cmd**. Node.js 24 and SQLite are bundled; no installation is required.
 3. The application verifies and installs **all 245 supported card faces** before displaying its menu. Internet is required for missing images. Complete caches work offline.
 4. In **Decks**, choose Published or Shared and enter an ArkhamDB code. Set the deck's Taboo selection to ArkhamDB's latest list before importing.
@@ -33,7 +33,7 @@ Imports reject unsupported investigators, main-deck cards, and sideboard cards, 
 
 Successful refreshes create immutable revisions. Failed refreshes leave existing deck revisions untouched. Stored incompatible decks remain inspectable/removable but cannot start new campaigns. Printed level and Taboo-adjusted purchase XP are distinct; new campaigns reject decks requiring XP. Missing required signatures are added during setup, and supported random basic weaknesses are assigned once and saved.
 
-Live verification failure blocks importing. Existing local sessions use their recorded rules offline. A newly discovered unsupported behavioral change requires an application update and blocks new campaigns, while historical sessions retain their package. Between-scenario progression is unavailable until later scenario modules and their required rules update are implemented.
+Live verification failure blocks importing. Existing local sessions use their recorded rules offline. A newly discovered unsupported behavioral change requires an application update and blocks new campaigns, while historical sessions retain their package. After a resolution, **Next scenario** verifies the latest live rules and lets the host select stored ArkhamDB deck revisions. XP costs, trauma, assigned weaknesses, story cards, chaos-bag changes, and campaign records carry forward. Upgrade decks on ArkhamDB, then refresh their library entries; no local deck editing is provided. An unavailable latest rules package blocks advancement without changing the completed scenario.
 
 ## Rules and card engine
 
@@ -41,9 +41,11 @@ Live verification failure blocks importing. Existing local sessions use their re
 
 The game separates catalog definitions, effective versioned rules, physical card instances, abilities, and deck revisions. `src/game/zones.ts` owns ordered zones and card movement. Ownership, control, bearer, attachments, face, counters, and exhaustion persist independently. Scenario set-aside, temporary opening/search zones, and removed cards are distinct.
 
-`src/game/engine.ts` interprets a serializable LIFO effect stack, FIFO queued tests, costs, pending choices, modifiers, limits, and deterministic random outcomes. Pure card effects in `src/game/cards.ts` have no network or database access. The pilot exercises actions, opportunity attacks, tests/commits/chaos tokens, enemy engagement/attacks/hunter movement, damage/horror assignment, defeat, slots/ammo, clues/doom, phases, and the first act/agenda transitions. Unsupported content stops explicitly.
+`src/game/engine.ts` dispatches to the saved script version. The full interpreter and pure card handlers live in `src/game/chapter/`; the frozen `pilot-engine.ts` preserves historical behavior. Both use serializable LIFO effects and FIFO queued tests. Scripts have no networking or database access.
 
-The pilot covers Daniela Reyes and Joe Diamond with their signatures, M1911, Right Tool for the Job, Vicious Blow, Laboratory Assistant, Emergency Cache, Perception, Paranoia, Spreading Flames, Past Curfew, Where There's Smoke, Your Friend's Room, Miskatonic Quad, Dormitories, Servant of Flame, Cantor of Flame, Bystander, Cosmic Evils, Fire!, Noxious Smoke, and Mutated Experiment. The following act and agenda stop at explicit unsupported boundaries.
+The engine handles costs and split-source payments, opportunity attacks, commits and chaos tokens, forced/reaction ordering, searches, enemy engagement and movement, damage/horror assignment, slots and uses, clues/doom, phase progression, acts/agendas, and scenario resolutions. Chapter state also records sealed tokens, hidden suspects, under-act cards, delayed effects, rewards, and campaign outcomes. All 195 card contracts are pinned separately from the historical pilot contracts.
+
+Scenario setup follows the supplied campaign guide's functional instructions: random locations and hidden people in Smoke and Mirrors, the harbinger and codex rewards, and the sewers, ritual, Elokoss faces and alternative endings in Queen of Ash. Narrative remains in your book. Campaign records generated by a resolution can be reviewed in the manual log.
 
 ## Developer pilot
 
@@ -71,9 +73,25 @@ The pinned catalog has **195 physical definitions and 245 faces**. ArkhamDB is t
 
 On every startup, four workers decode and hash-check existing images. Only missing, corrupt, or changed-source assets download. Bytes and source/hash metadata commit atomically. Failed faces retry after 2 and 10 seconds, then show errors with Retry and Exit. There is no skip and no fetching during card inspection. The server independently blocks table access until installation completes. An interrupted install reuses valid completed faces. Credits can verify and repair the entire cache.
 
+## Unified tabletop
+
+The board is one continuous surface with visible card piles and unbordered investigator areas. Drag empty table space to pan, use Ctrl + wheel to zoom, or use Fit table, Map, and P1–P4 on the left edge. These buttons change your view, never your seat permissions. Arrow keys pan when the table has keyboard focus.
+
+Left-edge controls show all hands or one hand, cycle All / Relevant / Focused cards, pin the controls, and configure previews, effective text, and display-only sorting. Hover shows a large card image; right-click or F previews its reverse without changing the game. I opens effective rules in the detailed inspector. Visible scenario cards allow both faces; concealed cards always stay anonymous backs.
+
+Left-click a visible card to show its legal actions on the right edge; it does not open the inspector. Click All actions or empty table space to return to the investigator's action list. Card selection is local and creates no checkpoint. End turn remains visible and is enabled only when the server permits ending the active investigator's turn.
+
+The right edge holds confirmations, legal actions, and Table menu (log, history, undo, saves, sharing, main menu). Trigger ordering and multiple-choice decisions open centered popups. Minimize keeps a decision pending; Open choices returns to it.
+
+In new Chapter Two sessions and recorded pilot-3 sessions, playing a card with a resource cost opens payment controls on the right. Resources are selected first; eligible card-script sources can cover any shortfall or be combined manually. Pay confirms the exact total, then spends resources/counters and the action together. Cancel spends nothing. The pending payment survives saves and reconnects. Zero-cost plays proceed immediately. No additional cards (including Schoffner's Catalogue) are enabled by this payment infrastructure. Recorded pilot-1/pilot-2 sessions retain immediate resource-pool payment under their saved rules.
+
+Click a public discard to spread it on the table. Searches automatically display every inspected card, with legal targets highlighted. Top-nine searches show nine cards, not the rest of the deck. Minimize/Open search and reloading preserve a pending search. Games using `pilot-2` or later also wait for Done when a search finds no matching cards. Historical `pilot-1` saves retain their original automatic continuation and rules identity.
+
+Pan, zoom, filters, and sorting stay local to the browser; they create no game checkpoints. Save schema stays v2; database schema v3 adds separate host-seat access metadata without rewriting historical snapshots.
+
 ## Multiplayer
 
-One local server owns all decisions. Hotseat controls every investigator. Separate-player invitations expose only that seat's hand, searches, and private choices; other hands show counts. Hidden deck order, RNG, effect continuations, future act/agenda cards, and private choices are filtered on the server.
+One local server owns all decisions. Hotseat controls every investigator. Separate-player invitations expose only that seat's hand, searches, and private choices; other hands show the correct number of face-down cards. In separate-player mode, choose the host investigator at setup (default: lead). Host administration does not grant control or private views of other seats. Older sessions default the host seat to their lead investigator. Hidden deck order, RNG, effect continuations, future act/agenda cards, and private choices are filtered on the server.
 
 Use **Players & sharing** to create seat links and optionally start the bundled Cloudflare Tunnel. Share seat invitations, not the host capability link. Each tab stores its own login. New invitations revoke previous ones. Heartbeats and reconnects recover the committed state; duplicate command IDs are idempotent and stale revisions cannot overwrite newer decisions. Stop the tunnel to end remote access.
 
@@ -85,7 +103,7 @@ Save schema **v2** stores canonical zones, rules/catalog/script identities and h
 
 Existing schema-v1 sessions migrate into new sessions, copying their history and named saves while retaining original rows. Legacy setup rules stay explicitly marked. Unknown schema, catalog, or script versions fail rather than silently substituting current rules. Keep the original application package alongside historical saves if their script package becomes unavailable.
 
-The manual campaign log preserves original text. Registered conditions match case-insensitive, whitespace-normalized whole entries. Scenario 1 has no invented log-dependent effects.
+The manual campaign log preserves original text; generated resolution records append functional outcomes. Registered conditions match case-insensitive, whitespace-normalized whole entries. Scenario 1 has no invented log-dependent effects.
 
 For a backup, stop the server and copy the data folder (`arkham.sqlite` and `assets`). Launcher readiness files and logs are in the LocalAppData launcher subfolder. Readiness files contain host credentials and are not part of save exports.
 

@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { SCRIPT_VERSION, type Catalog, type RulesIdentity } from '../shared/types.js';
+import { SCRIPT_VERSION, SUPPORTED_SCRIPT_VERSIONS, type Catalog, type RulesIdentity } from '../shared/types.js';
 import { fetchJson } from './catalog.js';
 
 export interface Taboo { id: number; active: number; date_start: string; date_update?: string; cards: Record<string, any>[]; }
@@ -17,9 +17,12 @@ export function parseTaboo(value: any): Taboo {
 }
 export function latestTaboo(value: unknown, today = new Date().toISOString().slice(0,10)): Taboo {
   if (!Array.isArray(value) || !value.length) throw new Error('ArkhamDB did not provide a Taboo list.');
-  const lists=value.map(parseTaboo).filter(t=>t.active===1 && t.date_start<=today).sort((a,b)=>b.date_start.localeCompare(a.date_start)||b.id-a.id);
+  // Historical payloads are not the rules being verified. Select by metadata first,
+  // then strictly validate the selected list; never fall back from a broken latest list.
+  for(const t of value)if(!t||!Number.isSafeInteger(t.id)||t.id<1||![0,1].includes(t.active)||!/^\d{4}-\d{2}-\d{2}$/.test(t.date_start))throw new Error('ArkhamDB returned invalid Taboo metadata.');
+  const lists=value.filter(t=>t.active===1 && t.date_start<=today).sort((a,b)=>b.date_start.localeCompare(a.date_start)||b.id-a.id);
   if (!lists[0]) throw new Error('ArkhamDB has no effective active Taboo list.');
-  return lists[0];
+  return parseTaboo(lists[0]);
 }
 export function cardAliases(catalog:Catalog):Record<string,string> {
   const aliases:Record<string,string>={};
@@ -35,7 +38,8 @@ export function cardAliases(catalog:Catalog):Record<string,string> {
 export function bundledTaboo(contentDir=join(resolve(process.env.ARKHAM_APP_DIR ?? process.cwd()),'content')):Taboo {
   return parseTaboo(JSON.parse(readFileSync(join(contentDir,'upstream','taboo.json'),'utf8')));
 }
-export function compileRules(base:Catalog, taboo:Taboo, reviewed=bundledTaboo()):RulesPackage {
+export function compileRules(base:Catalog, taboo:Taboo, reviewed=bundledTaboo(), scriptVersion:string=SCRIPT_VERSION):RulesPackage {
+  if(!SUPPORTED_SCRIPT_VERSIONS.some(v=>v===scriptVersion))throw new RulesUpdateRequired('The saved script version is unavailable in this build.');
   const aliases=cardAliases(base), catalog=structuredClone(base);
   const known=new Map(reviewed.cards.map(c=>[c.code,c]));
   for(const patch of taboo.cards) {
@@ -52,14 +56,15 @@ export function compileRules(base:Catalog, taboo:Taboo, reviewed=bundledTaboo())
     for(const key of ['deck_limit','exceptional','deck_options','deck_requirements'])if(patch[key]!==undefined)card.raw[key]=patch[key];
     if(patch.replacement_text)card.faces[0].text=patch.replacement_text;
   }
-  const contracts=JSON.parse(readFileSync(join(resolve(process.env.ARKHAM_APP_DIR??process.cwd()),'content','script-contracts.json'),'utf8')) as {scriptVersion:string;fields:string[];records:Record<string,string>};
-  if(contracts.scriptVersion!==SCRIPT_VERSION)throw new Error('Card scripts and reviewed contracts have different versions.');
+  const contracts=JSON.parse(readFileSync(join(resolve(process.env.ARKHAM_APP_DIR??process.cwd()),'content',scriptVersion==='chapter2-1'?'script-contracts.json':'script-contracts-pilot.json'),'utf8')) as {scriptVersion:string;fields:string[];records:Record<string,string>};
+  if(contracts.scriptVersion!==(scriptVersion==='chapter2-1'?SCRIPT_VERSION:'pilot-3'))throw new Error('Card scripts and reviewed contracts have different versions.');
+  if(scriptVersion==='chapter2-1'&&Object.keys(catalog.cards).some(code=>!contracts.records[code]))throw new RulesUpdateRequired('Update required: a core card has no reviewed script contract.');
   for(const [code,expected]of Object.entries(contracts.records)){
     const card=catalog.cards[code];if(!card)continue;
     const fingerprint=contentHash({faces:card.faces.map(f=>({id:f.id,text:f.text})),...Object.fromEntries(contracts.fields.filter(k=>card.raw[k]!==undefined).map(k=>[k,card.raw[k]]))});
     if(fingerprint!==expected)throw new RulesUpdateRequired('Update required: effective ArkhamDB card '+code+' does not match its reviewed script.');
   }
-  const tabooHash=contentHash(taboo), identity={id:'rules-'+contentHash({tabooHash,catalog:base.version,script:SCRIPT_VERSION}).slice(0,24),tabooId:taboo.id,tabooDate:taboo.date_start,tabooUpdated:taboo.date_update??taboo.date_start,tabooHash,catalogVersion:base.version,scriptVersion:SCRIPT_VERSION};
+  const tabooHash=contentHash(taboo), identity={id:'rules-'+contentHash({tabooHash,catalog:base.version,script:scriptVersion}).slice(0,24),tabooId:taboo.id,tabooDate:taboo.date_start,tabooUpdated:taboo.date_update??taboo.date_start,tabooHash,catalogVersion:base.version,scriptVersion};
   catalog.rules=identity;
   return {identity,taboo,catalog,aliases};
 }

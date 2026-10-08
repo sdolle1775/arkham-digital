@@ -32,7 +32,24 @@ export function interpretLog(entries: string, registered: Readonly<Record<string
     .map(([flag]) => flag).sort();
 }
 
-export function campaignLogFlags(entries: string): string[] {
-  // Scenario I has no log conditions. Later scenario modules register actual phrases.
-  return interpretLog(entries);
+export const LOG_PHRASES:Readonly<Record<string,string>>={
+  'university-burned':'Miskatonic University burned',
+  'university-saved':'the investigators saved Miskatonic University',
+  'cult-found':'the investigators discovered the cult’s whereabouts',
+  'scoured-arkham':'the investigators scoured Arkham for answers',
+  'trouble':'the investigators stirred up trouble',
+  'servant-killed':'the investigators killed the Servant of Flame',
+  'harbinger-renfield':'David Renfield is the harbinger of Elokoss',
+  'harbinger-cornelia':'Cornelia Akely is the harbinger of Elokoss',
+  'harbinger-naomi':'Naomi O’Bannion is the harbinger of Elokoss',
+  'harbinger-monroe':'Sgt. Earl Monroe is the harbinger of Elokoss',
+  'harbinger-abigail':'Abigail Foreman is the harbinger of Elokoss',
+  'harbinger-margaret':'Margaret Liu is the harbinger of Elokoss',
+};
+export function campaignLogFlags(entries: string, chapter=false): string[] {
+  if(!chapter)return [];
+  // A terminal period and straight/curly apostrophes are explicit registered
+  // variants; arbitrary substrings still never activate a condition.
+  const lines=new Set(entries.split(/\r?\n/u).map(normalizeLogEntry));
+  return Object.entries(LOG_PHRASES).filter(([,phrase])=>[phrase,phrase+'.',phrase.replaceAll('’',"'"),phrase.replaceAll('’',"'")+'.'].some(p=>lines.has(normalizeLogEntry(p)))).map(([flag])=>flag).sort();
 }

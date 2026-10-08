@@ -13,7 +13,8 @@ import { cardsIn, moveCard, zone, attachCard } from '../src/game/zones.js';
 import { Storage, hashState } from '../src/server/storage.js';
 import type { GameState } from '../src/shared/types.js';
 
-const catalog=loadCatalog('content'),rules=compileRules(catalog,bundledTaboo());
+// Keep regression coverage for historical sessions with immediate resource payment.
+const catalog=loadCatalog('content'),rules=compileRules(catalog,bundledTaboo(),bundledTaboo(),'pilot-2');
 function fixture(){const f=createPilot(catalog,rules.identity);let s=f.state;for(const id of s.setup.order)s=applyCommand(s,{type:'mulligan',investigatorId:id,cardIds:[]},catalog);s=choose(s,['investigator-1']);s.scenario.chaosBag=['0'];return {...f,state:s};}
 function choose(s:GameState,ids?:string[]):GameState {
  const p=s.pendingChoices[0];assert.ok(p,'expected a pending choice');
@@ -107,7 +108,7 @@ test('Cosmic Evils peril stays private; Fire attaches; Doomed advances after def
  pushEffects(s,[{type:'enemy-damage',actor:'investigator-1',target:enemy,amount:1}]);advance(s,catalog);s=settle(s);assert.equal(s.phase,'unsupported');assert.match(s.engine.blockedReason!,/next agenda/);
 });
 test('all effect boundaries are transactional checkpoints and archives preserve pending choices',()=>{
- const directory=mkdtempSync(join(tmpdir(),'arkham-engine-'));const store=new Storage(directory,catalog);
+ const directory=mkdtempSync(join(tmpdir(),'arkham-engine-'));const store=new Storage(directory,catalog);store.storeRules(rules,false);
  try{
   const f=fixture();f.decks.forEach(d=>store.storeDeck(d));let s=f.state;const event=locate(s,'12023','investigator-1');moveCard(s,event,'hand','investigator-1');const initial=store.createSession(s,{type:'pilot'});
   const command={type:'action' as const,investigatorId:'investigator-1',actionId:'play|'+event+'|'},commandId=randomUUID();
@@ -162,7 +163,7 @@ test('Dormitories heals after opportunity attacks and cannot prevent a prior def
 });
 
 test('mid-payment rollback resumes without paying twice or redrawing a chaos result',()=>{
- const directory=mkdtempSync(join(tmpdir(),'arkham-resume-'));const store=new Storage(directory,catalog);
+ const directory=mkdtempSync(join(tmpdir(),'arkham-resume-'));const store=new Storage(directory,catalog);store.storeRules(rules,false);
  try{
   const f=fixture();f.decks.forEach(d=>store.storeDeck(d));const s=f.state;const gun=locate(s,'12019','investigator-1');moveCard(s,gun,'hand','investigator-1');store.createSession(s,{type:'pilot'});
   const command={type:'action' as const,investigatorId:'investigator-1',actionId:'play|'+gun+'|'};

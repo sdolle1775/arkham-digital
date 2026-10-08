@@ -3,7 +3,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import { mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { unzipSync, zipSync, strToU8, strFromU8 } from 'fflate';
-import { BUILD_VERSION, type Catalog, type DeckRevision, type GameState, type HistoryEntry, type SaveSummary, type SessionSummary, type Viewer } from '../shared/types.js';
+import { BUILD_VERSION, SCRIPT_VERSION, SUPPORTED_SCRIPT_VERSIONS, type Catalog, type DeckRevision, type GameState, type HistoryEntry, type SaveSummary, type SessionSummary, type Viewer } from '../shared/types.js';
 import { validateGameState } from '../game/setup.js';
 import { validateGameState as validateLegacy } from '../game/legacy-validation.js';
 import { advance } from '../game/engine.js';
@@ -41,7 +41,7 @@ export class Storage {
     this.db.pragma('foreign_keys = ON');
     this.db.pragma('busy_timeout = 5000');
     const version = this.db.pragma('user_version', { simple: true }) as number;
-    if (version > 2) { this.db.close(); throw new Error('This data folder was created by a newer application version.'); }
+    if (version > 3) { this.db.close(); throw new Error('This data folder was created by a newer application version.'); }
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS deck_library(id TEXT PRIMARY KEY, current_id TEXT NOT NULL, removed INTEGER NOT NULL DEFAULT 0);
       CREATE TABLE IF NOT EXISTS deck_revisions(id TEXT PRIMARY KEY, library_id TEXT NOT NULL, data TEXT NOT NULL);
@@ -54,9 +54,12 @@ export class Storage {
       CREATE TABLE IF NOT EXISTS rules_packages(id TEXT PRIMARY KEY, data TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS migrations(original_id TEXT PRIMARY KEY, migrated_id TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS app_settings(key TEXT PRIMARY KEY, value TEXT NOT NULL);
-      PRAGMA user_version = 2;
+      CREATE TABLE IF NOT EXISTS session_access(session_id TEXT PRIMARY KEY REFERENCES sessions(id), host_investigator_id TEXT NOT NULL);
+      PRAGMA user_version = 3;
     `);
-    this.storeRules(compileRules(catalog,bundledTaboo()),false);
+    for(const script of SUPPORTED_SCRIPT_VERSIONS)this.storeRules(compileRules(catalog,bundledTaboo(),bundledTaboo(),script),false);
+    const previousLatest=this.db.prepare('SELECT value FROM app_settings WHERE key=?').get('latestRules') as {value:string}|undefined;
+    if(previousLatest){const previous=this.getRules(previousLatest.value);if(previous.identity.scriptVersion!==SCRIPT_VERSION){const problem=this.rulesProblem();this.storeRules(compileRules(catalog,previous.taboo));if(problem)this.requireRulesUpdate(problem);}}
     for(const row of this.db.prepare('SELECT s.id,c.state_json FROM sessions s JOIN checkpoints c ON c.id=s.head_id LEFT JOIN migrations m ON m.original_id=s.id WHERE m.original_id IS NULL').all() as {id:string;state_json:string}[]) {
       if(JSON.parse(row.state_json).schemaVersion===1)this.db.transaction(()=>{const migrated=this.importSession(this.exportSession(row.id));this.db.prepare('INSERT INTO migrations VALUES(?,?)').run(row.id,migrated.state.sessionId);})();
     }
@@ -70,9 +73,8 @@ export class Storage {
   getRules(id:string):RulesPackage {
     const row=this.db.prepare('SELECT data FROM rules_packages WHERE id=?').get(id) as {data:string}|undefined;
     if(!row)throw new AppError('The exact saved rules package is unavailable. Open this save with its original application version.',422);
-    const rules=compileRules(this.catalog,JSON.parse(row.data));
-    if(rules.identity.id!==id)throw new AppError('The saved script version is unavailable in this build.',422);
-    return rules;
+    for(const script of SUPPORTED_SCRIPT_VERSIONS){const rules=compileRules(this.catalog,JSON.parse(row.data),bundledTaboo(),script);if(rules.identity.id===id)return rules;}
+    throw new AppError('The saved script version is unavailable in this build.',422);
   }
   latestRules():RulesPackage {
     const row=this.db.prepare('SELECT value FROM app_settings WHERE key=?').get('latestRules') as {value:string}|undefined;
@@ -115,7 +117,7 @@ export class Storage {
   current(sessionId: string): Checkpoint { return this.checkpoint(this.sessionRow(sessionId).head_id); }
   resume(sessionId:string):Checkpoint {
     const cp=this.current(sessionId),s=cp.state;
-    if(s.schemaVersion===2&&s.engine.pilot&&s.phase==='playing'&&!s.pendingChoices.length&&s.resolutionStack.length){
+    if(s.schemaVersion===2&&(s.engine.pilot||s.rules.scriptVersion==='chapter2-1')&&s.phase==='playing'&&!s.pendingChoices.length&&s.resolutionStack.length){
       const rules=this.getRules(s.rules.id);
       return this.apply(sessionId,randomUUID(),s.revision,{type:'resume'},'Resumed resolution',(state,boundary)=>{advance(state,rules.catalog,boundary);return state;});
     }
@@ -133,10 +135,17 @@ export class Storage {
     this.db.prepare('UPDATE sessions SET head_id=?,revision=?,updated_at=? WHERE id=?').run(cp.id, state.revision, cp.createdAt, state.sessionId);
     return cp;
   }
-  createSession(state: GameState, command: unknown): Checkpoint {
+  sessionViewer(state:GameState,viewer:Viewer):Viewer {
+    if(viewer.role!=='host')return viewer;
+    const access=this.db.prepare('SELECT host_investigator_id FROM session_access WHERE session_id=?').get(state.sessionId) as {host_investigator_id:string}|undefined;
+    return {...viewer,sessionId:state.sessionId,investigatorId:access?.host_investigator_id??state.leadInvestigatorId};
+  }
+  createSession(state: GameState, command: unknown, hostInvestigatorId=state.leadInvestigatorId): Checkpoint {
     validateGameState(state, this.catalog);
+    if(!state.investigators.some(i=>i.id===hostInvestigatorId))throw new AppError('Choose a valid host investigator.');
     return this.db.transaction(() => {
       this.db.prepare('INSERT INTO sessions VALUES(?,?,?,?,?,?)').run(state.sessionId, state.name, '', state.revision, state.createdAt, state.createdAt);
+      this.db.prepare('INSERT INTO session_access VALUES(?,?)').run(state.sessionId,hostInvestigatorId);
       return this.insertCheckpoint(state, null, randomUUID(), 'Opening setup prepared', command);
     })();
   }
@@ -248,7 +257,7 @@ export class Storage {
     if (manifest.catalogVersion !== this.catalog.version) throw new AppError('This save requires a different card catalog. Open it with its original application release.', 422);
     if (!shortString(payload.sessionId, 100) || !shortString(payload.headCheckpointId, 100) || !Array.isArray(payload.checkpoints) || !payload.checkpoints.length || payload.checkpoints.length > 20000 || !Array.isArray(payload.deckRevisions) || payload.deckRevisions.length > 100) throw new AppError('The save contains invalid campaign data.', 422);
     const incomingRules:RulesPackage[]=[];
-    for(const taboo of payload.rulesPackages??[]){try{incomingRules.push(compileRules(this.catalog,taboo));}catch(e){throw new AppError((e as Error).message,422);}}
+    for(const taboo of payload.rulesPackages??[]){try{for(const script of SUPPORTED_SCRIPT_VERSIONS)incomingRules.push(compileRules(this.catalog,taboo,bundledTaboo(),script));}catch(e){throw new AppError((e as Error).message,422);}}
     const points = payload.checkpoints as Checkpoint[];
     if(points.some(p=>p?.state?.schemaVersion!==manifest.schemaVersion))throw new AppError('Save schema does not match its checkpoints.',422);
     if(!allowPilot&&points.some(p=>p?.state?.engine?.pilot))throw new AppError('Open developer pilot saves with npm run dev:pilot.',422);
