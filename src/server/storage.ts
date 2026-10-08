@@ -117,7 +117,7 @@ export class Storage {
   current(sessionId: string): Checkpoint { return this.checkpoint(this.sessionRow(sessionId).head_id); }
   resume(sessionId:string):Checkpoint {
     const cp=this.current(sessionId),s=cp.state;
-    if(s.schemaVersion===2&&(s.engine.pilot||s.rules.scriptVersion==='chapter2-1')&&s.phase==='playing'&&!s.pendingChoices.length&&s.resolutionStack.length){
+    if(s.schemaVersion===2&&(s.engine.pilot||s.rules.scriptVersion.startsWith('chapter2-'))&&s.phase==='playing'&&!s.pendingChoices.length&&s.resolutionStack.length){
       const rules=this.getRules(s.rules.id);
       return this.apply(sessionId,randomUUID(),s.revision,{type:'resume'},'Resumed resolution',(state,boundary)=>{advance(state,rules.catalog,boundary);return state;});
     }

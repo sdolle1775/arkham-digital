@@ -3,6 +3,8 @@ import { createGame } from '../setup.js';
 import { cardsIn, moveCard, zone } from '../zones.js';
 import { randomIndex, shuffle } from '../random.js';
 import { newProgress, setupScenario } from './scenarios.js';
+import { campaignRoute, logEntries, setLogEntries } from '../../shared/campaign-log.js';
+import { CHAOS_BAGS } from '../campaigns/brethren.js';
 import { next } from './context.js';
 
 const upgrades:Record<string,string>={'12027':'12016','12041':'12037','12054':'12048','12057':'12053','12071':'12059','12085':'12077'};
@@ -19,10 +21,13 @@ export function upgradeCost(old:DeckRevision,updated:DeckRevision,c:Catalog):num
  }return total;
 }
 export function continueCampaign(previous:GameState,decks:DeckRevision[],oldDecks:DeckRevision[],c:Catalog,rules:RulesIdentity):GameState {
- if(previous.phase!=='ended'||!previous.engine.chapter?.outcome||previous.campaign.scenarioNumber>=3)throw new Error('Complete this scenario before preparing the next one.');
- if(rules.scriptVersion!=='chapter2-1')throw new Error('Update required: Chapter Two scenario scripts are unavailable.');
+ if(!previous.engine.chapter)throw new Error('This campaign does not have Chapter Two scenario data.');
+ if(rules.scriptVersion!=='chapter2-2')throw new Error('Update required: current Chapter Two scenario scripts are unavailable.');
+ const route=campaignRoute(previous.campaign.log.entries);if(!route.scenario)throw new Error('All scenarios are complete in the campaign log.');
+ if(route.missing.length)throw new Error(route.missing.join(' '));const target=route.scenario;
  if(decks.length!==previous.investigators.length||new Set(decks.map(d=>d.investigatorCode)).size!==decks.length)throw new Error('Choose one distinct investigator deck for every seat.');
- const records=structuredClone(previous.campaign.log.records),story=structuredClone(previous.engine.chapter.story),deaths=previous.engine.chapter.killed;
+ const records=structuredClone(previous.campaign.log.records),story=structuredClone(previous.engine.chapter.story),deaths=target>previous.campaign.scenarioNumber?previous.engine.chapter.killed:[];
+ for(const actor of Object.keys(story))story[actor]=story[actor].filter(code=>target>1&&(code!=='12137'||target>2));
  const prepared=decks.map((deck,index)=>{
   const i=previous.investigators[index],record=records[i.id];if(deck.rules?.id!==rules.id||deck.sourceProblem||deck.unsupported.length)throw new Error('Refresh every selected deck with the latest verified ArkhamDB Taboo.');
   if(deck.investigatorCode!==i.investigatorCode){
@@ -40,8 +45,8 @@ export function continueCampaign(previous:GameState,decks:DeckRevision[],oldDeck
   return {...deck,slots,purchaseXp:0};
  });
  const rng=structuredClone(previous.rng),seed=randomIndex(rng,0xffffffff);
- const s=createGame({sessionId:previous.sessionId,name:previous.name,mode:previous.mode,difficulty:previous.difficulty,leadSeat:previous.investigators.find(i=>i.id===previous.leadInvestigatorId)!.seat,seats:prepared.map((d,n)=>({deckRevisionId:d.id,playerName:previous.investigators[n].name})),seed,createdAt:previous.createdAt,logEntries:previous.campaign.log.entries},c,prepared,rules);
- s.campaign.log.records=records;s.engine.chapter={...newProgress(),story};s.scenario.chaosBag=[...previous.scenario.chaosBag];s.engine.pilot=previous.engine.pilot;
+ const s=createGame({sessionId:previous.sessionId,name:previous.name,mode:previous.mode,difficulty:previous.difficulty,leadSeat:previous.investigators.find(i=>i.id===previous.leadInvestigatorId)!.seat,seats:prepared.map((d,n)=>({deckRevisionId:d.id,playerName:previous.investigators[n].name})),seed,createdAt:previous.createdAt,logEntries:previous.campaign.log.entries},c,prepared,rules,true);
+ s.campaign.log.records=records;setLogEntries(s.campaign.log,logEntries(previous.campaign.log));s.engine.chapter={...newProgress(),story};s.scenario.chaosBag=[...CHAOS_BAGS[s.difficulty],...(target===3?['cultist','cultist']:[])];s.engine.pilot=previous.engine.pilot;
  // Rebuild opening hands after story cards are incorporated. The original session
  // and every immutable imported revision remain in the checkpoint history.
  for(const i of s.investigators){
@@ -49,7 +54,7 @@ export function continueCampaign(previous:GameState,decks:DeckRevision[],oldDeck
   for(const code of story[i.id]??[]){const id=next({s,c},'card');s.cards[id]={id,code,face:'front',exhausted:false,tokens:{},owner:i.id,controller:i.id};zone(s,'deck',i.id).cards.push(id);}
   zone(s,'deck',i.id).cards=shuffle(cardsIn(s,'deck',i.id),s.rng);i.damage=records[i.id].physicalTrauma;i.horror=records[i.id].mentalTrauma;
  }
- setupScenario(s,c,(previous.campaign.scenarioNumber+1) as 2|3);
+ setupScenario(s,c,target);
  for(const i of s.investigators){const size=5+cardsIn(s,'assets',i.id).filter(id=>s.cards[id].code==='12042').length;for(let n=0;n<size;){const id=cardsIn(s,'deck',i.id)[0];if(!id)throw new Error('Too few cards for an opening hand.');const weak=['weakness','basicweakness'].includes(c.cards[s.cards[id].code].subtype??'');moveCard(s,id,weak?'openingSetAside':'hand',i.id,c);if(!weak)n++;}}
  return s;
 }

@@ -10,7 +10,7 @@ export const locationOf=(s:GameState,id:string):string|undefined=>{
   const c=s.cards[id];if(!c)return undefined;
   if(c.attachedTo)return locationOf(s,c.attachedTo);
   if(c.bearer)return locationOf(s,c.bearer);
-  if(s.rules.scriptVersion==='chapter2-1'&&Object.values(s.zones).some(z=>z.kind==='assets'&&z.cards.includes(id)))return s.investigators.find(i=>i.id===c.controller)?.locationId;
+  if(s.rules.scriptVersion.startsWith('chapter2-')&&Object.values(s.zones).some(z=>z.kind==='assets'&&z.cards.includes(id)))return s.investigators.find(i=>i.id===c.controller)?.locationId;
   return s.scenario.locations.some(l=>l.cardId===id)?id:c.tokens.locationIndex!==undefined?s.scenario.locations[c.tokens.locationIndex]?.cardId:undefined;
 };
 export function moveCard(s:GameState,id:string,kind:ZoneKind,owner='scenario',catalog?:Catalog):void {

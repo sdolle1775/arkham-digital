@@ -1,7 +1,7 @@
 import type { AllowedAction, Catalog, ChoiceOption, Effect, GameState, Skill, ZoneKind } from '../../shared/types.js';
 import { cardsIn, locationOf, zone } from '../zones.js';
 export type Ctx = { s: GameState; c: Catalog };
-export const chapterGame=(s:GameState)=>s.rules.scriptVersion==='chapter2-1';
+export const chapterGame=(s:GameState)=>s.rules.scriptVersion.startsWith('chapter2-');
 export const investigator=({s}:Ctx,id:string)=>{const i=s.investigators.find(i=>i.id===id);if(!i)throw new Error('Unknown investigator.');return i;};
 export const code=({s}:Ctx,id?:string)=>id?s.cards[id]?.code:undefined;
 export const definition=({s,c}:Ctx,id:string)=>c.cards[s.cards[id].code];

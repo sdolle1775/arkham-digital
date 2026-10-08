@@ -11,7 +11,7 @@ import { createPilot } from '../src/game/pilot.js';
 import { applyCommand, createGame, projectState, validateGameState } from '../src/game/setup.js';
 import { advance, pushEffects } from '../src/game/engine.js';
 import { cardsIn, moveCard, zone } from '../src/game/zones.js';
-import { displayCards, fitCamera, tableLayout, relevantCards } from '../src/client/table-model.js';
+import { cardActions, movementActions, cardsAtLocation, displayCards, fitCamera, tableLayout, relevantCards } from '../src/client/table-model.js';
 import type { GameState } from '../src/shared/types.js';
 
 const base=loadCatalog('content'),rules=compileRules(base,bundledTaboo()),catalog=rules.catalog;
@@ -101,4 +101,33 @@ test('one through four investigators fit the tabletop, preserve all hidden hand 
     const hand=v.investigators[0].hand;displayCards(hand,v,catalog,'name');displayCards(hand,v,catalog,'type');relevantCards(v);assert.equal(hashState(s),before);
     for(const i of v.investigators.slice(1)){assert.equal(i.hand.length,0);assert.equal(i.handCount,5);}
   }
+});
+
+test('idle tables have no action list; investigator selection separates movement from card actions',()=>{
+  const {state:s}=ready('chapter2-2');const actor=s.investigators[0];
+  const v=projectState(s,{role:'host'},'checkpoint',catalog),before=hashState(s);
+  assert.deepEqual(cardActions(v,actor.id,null),[]);
+  const personal=cardActions(v,actor.id,actor.cardId);assert.ok(personal.some(a=>a.id.startsWith('draw|')));
+  assert.ok(personal.every(a=>!a.id.startsWith('move|')&&!a.id.startsWith('play|')));
+  const card=v.investigators[0].hand.find(id=>v.allowedActions.some(a=>a.source===id))!;
+  assert.ok(cardActions(v,actor.id,card).every(a=>a.source===card||a.target===card));
+  assert.ok(movementActions(v,actor.id).every(a=>a.target&&v.scenario.locations.some(l=>l.cardId===a.target)));
+  assert.equal(hashState(s),before);
+});
+
+test('location clusters expand without overlapping and shrink after nearby cards leave',()=>{
+  const {state:s}=ready();const here=s.scenario.locations[0].cardId;
+  const v=projectState(s,{role:'host'},'checkpoint',catalog);v.scenario.locations.push({cardId:'neighbor',x:350,y:0,connections:[here]});
+  v.cards.neighbor={...v.cards[here],id:'neighbor'};
+  const empty=tableLayout(v);
+  const ids=Array.from({length:10},(_,n)=>'map-card-'+n);
+  for(const [n,id]of ids.entries())v.cards[id]={id,code:n===0?'12114':n===1?'12019':'12129',face:'front',exhausted:n===0,tokens:n===0?{locationIndex:0}:{},owner:'scenario',controller:'scenario',...(n?{attachedTo:here}:{})};
+  v.piles.push({id:'map-public',kind:'attachments',owner:'scenario',count:10,cards:[...ids],visibility:'visible'});
+  v.cards['engaged']={...v.cards[ids[0]],id:'engaged',bearer:s.investigators[0].id};v.piles.at(-1)!.cards.push('engaged');
+  assert.deepEqual(cardsAtLocation(v,here),ids);
+  const crowded=tableLayout(v),a=crowded.locationZones[here],b=crowded.locationZones.neighbor;
+  assert.ok(a.width>empty.locationZones[here].width);assert.ok(a.height>empty.locationZones[here].height);assert.ok(a.x+a.width<=b.x);
+  const rects=[{x:36,y:16},...a.cards];
+  for(const [n,r]of rects.entries()){assert.ok(r.x+150<=a.width&&r.y+270<=a.height);for(const other of rects.slice(n+1))assert.ok(r.x+175<=other.x||other.x+175<=r.x||r.y+280<=other.y||other.y+280<=r.y);}
+  v.piles=v.piles.filter(p=>p.id!=='map-public');assert.deepEqual(tableLayout(v).locationZones[here],empty.locationZones[here]);
 });

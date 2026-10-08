@@ -14,14 +14,14 @@ export const CardsContext=createContext<TableCardsContext>(null!);
 export function CardBack({kind='player'}:{kind?:'player'|'encounter'}) {
   return <div className={`table-card-back ${kind}`} aria-hidden="true"><div className="back-frame"><span>ARKHAM HORROR</span><Sigil/><small>{kind==='player'?'INVESTIGATOR':'ENCOUNTER'}</small></div></div>;
 }
-export function TableCard({id,hidden=false,back='player',style,children}:{id:string;hidden?:boolean;back?:'player'|'encounter';style?:CSSProperties;children?:ReactNode}) {
+export function TableCard({id,hidden=false,back='player',style,children,mapCard=false}:{mapCard?:boolean;id:string;hidden?:boolean;back?:'player'|'encounter';style?:CSSProperties;children?:ReactNode}) {
   const c=useContext(CardsContext),instance=hidden?undefined:c.session.cards[id],definition=instance?c.catalog.cards[instance.code]:undefined;
   const concealed=hidden||!instance;
   const legal=!concealed&&c.legal.has(id),selected=c.selected.has(id);
   const show=(element:HTMLElement,reverse=false)=>c.show({id,code:definition?.code,face:instance?.face??'back',reverse,back:concealed?back:definition?.encounterCode?'encounter':'player',x:element.getBoundingClientRect().left});
   const flip=(element:HTMLElement)=>show(element,c.preview?.id===id?!c.preview.reverse:true);
   const label=concealed?`${back==='player'?'Player':'Encounter'} card back`:definition?.faces.find(f=>f.id===instance?.face)?.name??definition?.name??'Card';
-  return <div className={`table-card-wrap ${instance?.exhausted?'is-exhausted':''} ${instance?.face==='front'&&['investigator','act','agenda'].includes(definition?.type??'')?'landscape':''}`} style={style}>
+  return <div className={`table-card-wrap ${mapCard?'map-card map-'+(definition?.type==='enemy'?'enemy':definition?.type==='treachery'?'treachery':'player'):''} ${instance?.exhausted?'is-exhausted':''} ${instance?.face==='front'&&['investigator','act','agenda'].includes(definition?.type??'')?'landscape':''}`} style={style}>
     <button type="button" className={`table-card ${legal?'legal-target':''} ${selected?'is-selected':''} ${!concealed&&c.activeCard===id?'action-card':''} ${c.selecting&&!legal&&!concealed?'not-target':''}`} aria-label={label} aria-pressed={legal?selected:!concealed?c.activeCard===id:undefined} data-card-id={concealed?undefined:id}
       onMouseEnter={e=>show(e.currentTarget)} onMouseLeave={()=>c.show(null)} onFocus={e=>show(e.currentTarget)} onBlur={()=>c.show(null)}
       onContextMenu={e=>{e.preventDefault();e.stopPropagation();flip(e.currentTarget);}}

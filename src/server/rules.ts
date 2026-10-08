@@ -56,9 +56,9 @@ export function compileRules(base:Catalog, taboo:Taboo, reviewed=bundledTaboo(),
     for(const key of ['deck_limit','exceptional','deck_options','deck_requirements'])if(patch[key]!==undefined)card.raw[key]=patch[key];
     if(patch.replacement_text)card.faces[0].text=patch.replacement_text;
   }
-  const contracts=JSON.parse(readFileSync(join(resolve(process.env.ARKHAM_APP_DIR??process.cwd()),'content',scriptVersion==='chapter2-1'?'script-contracts.json':'script-contracts-pilot.json'),'utf8')) as {scriptVersion:string;fields:string[];records:Record<string,string>};
-  if(contracts.scriptVersion!==(scriptVersion==='chapter2-1'?SCRIPT_VERSION:'pilot-3'))throw new Error('Card scripts and reviewed contracts have different versions.');
-  if(scriptVersion==='chapter2-1'&&Object.keys(catalog.cards).some(code=>!contracts.records[code]))throw new RulesUpdateRequired('Update required: a core card has no reviewed script contract.');
+  const contracts=JSON.parse(readFileSync(join(resolve(process.env.ARKHAM_APP_DIR??process.cwd()),'content',scriptVersion.startsWith('chapter2-')?'script-contracts.json':'script-contracts-pilot.json'),'utf8')) as {scriptVersion:string;fields:string[];records:Record<string,string>};
+  if(contracts.scriptVersion!==(scriptVersion.startsWith('chapter2-')?'chapter2-1':'pilot-3'))throw new Error('Card scripts and reviewed contracts have different versions.');
+  if(scriptVersion.startsWith('chapter2-')&&Object.keys(catalog.cards).some(code=>!contracts.records[code]))throw new RulesUpdateRequired('Update required: a core card has no reviewed script contract.');
   for(const [code,expected]of Object.entries(contracts.records)){
     const card=catalog.cards[code];if(!card)continue;
     const fingerprint=contentHash({faces:card.faces.map(f=>({id:f.id,text:f.text})),...Object.fromEntries(contracts.fields.filter(k=>card.raw[k]!==undefined).map(k=>[k,card.raw[k]]))});

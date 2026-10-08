@@ -1,0 +1,1 @@
+cd "C:\Users\Sam\Documents\Arkham Horror Digital"; npm.cmd run build; if ($LASTEXITCODE -eq 0) { npm.cmd run dev }

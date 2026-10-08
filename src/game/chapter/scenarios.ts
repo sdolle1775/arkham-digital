@@ -1,6 +1,7 @@
 import type { Catalog, ChapterProgress, Effect, GameState } from '../../shared/types.js';
 import { attachCard, cardsIn, discardCard, locationOf, moveCard, zone } from '../zones.js';
 import { randomIndex, shuffle } from '../random.js';
+import { appendLogEntry } from '../../shared/campaign-log.js';
 import { campaignLogFlags } from '../campaigns/brethren.js';
 import { cardEffect } from './actions.js';
 import { type Ctx, ask, assets, changeZoneOwner, choose, code, connections, damage, definition, discard, distance, draw, enemies, gain, has, heal, investigator, living, log, name, next, number, push, ready, select, test, token, trait } from './context.js';
@@ -9,7 +10,16 @@ export const SCENARIOS=[{id:'spreading_flames',name:'Spreading Flames',reference
 export function newProgress():ChapterProgress{return {turn:0,actionsTaken:0,pendingEndTurn:[],sealedTokens:{},beneath:{},underAct:[],resigned:[],killed:[],story:{},earned:[]};}
 const byCode=(x:Ctx,code:string)=>Object.values(x.s.cards).find(card=>card.code===code&&cardsIn(x.s,'setAside').includes(card.id))?.id;
 const activeByCode=(x:Ctx,cd:string)=>x.s.scenario.locations.find(l=>code(x,l.cardId)===cd)?.cardId;
-function record(x:Ctx,entry:string):void {const log=x.s.campaign.log;if(!log.entries.split(/\r?\n/).includes(entry))log.entries+=(log.entries?'\n':'')+entry;log.flags=campaignLogFlags(log.entries,true);}
+function record(x:Ctx,entry:string):void {
+ if(x.s.rules.scriptVersion==='chapter2-2'){const p=x.s.engine.chapter!;p.logReview??={entries:[],pending:true};if(!p.logReview.entries.includes(entry))p.logReview.entries.push(entry);return;}
+ const log=x.s.campaign.log;if(log.items){appendLogEntry(log,entry,x.s.campaign.scenarioNumber);return;}if(!log.entries.split(/\r?\n/).includes(entry))log.entries+=(log.entries?'\n':'')+entry;log.flags=campaignLogFlags(log.entries,true);}
+function completeScenario(x:Ctx):void {
+ x.s.phase='ended';
+ if(x.s.rules.scriptVersion==='chapter2-2'){
+  appendLogEntry(x.s.campaign.log,`Scenario ${x.s.campaign.scenarioNumber} Complete`,x.s.campaign.scenarioNumber);
+  x.s.engine.chapter!.logReview??={entries:[],pending:true};
+ }
+}
 function award(x:Ctx,bonus:number):void {
  const s=x.s;const victory=[...cardsIn(s,'victory'),...s.scenario.locations.filter(l=>s.cards[l.cardId].face==='front'&&!s.cards[l.cardId].tokens.clues).map(l=>l.cardId)].reduce((n,id)=>n+number(x,id,'victory'),0);
  for(const i of s.investigators)if(!s.engine.chapter!.killed.includes(i.id))s.campaign.log.records[i.id].experience+=Math.max(0,victory+bonus-(s.engine.experiencePenalty[i.id]??0));
@@ -47,7 +57,7 @@ export function setupScenario(s:GameState,c:Catalog,number:1|2|3):void {
  }
  let starting:string;
  if(number===2){
-  s.scenario.chaosBag.push('cultist','cultist');record(x,'Added 2 cultist tokens for Smoke and Mirrors.');
+  s.scenario.chaosBag.push('cultist','cultist');log(x,'Added 2 cultist tokens for Smoke and Mirrors.');
   const downtown=['12145','12146'][randomIndex(s.rng,2)],uptown=['12147','12148'][randomIndex(s.rng,2)];
   const flags=s.campaign.log.flags;if(!flags.includes('university-burned')&&!flags.includes('university-saved'))throw new Error('The campaign log must record whether Miskatonic University burned or was saved.');
   if(flags.includes('university-burned')&&flags.includes('university-saved'))throw new Error('Record only one university outcome in the campaign log.');
@@ -61,7 +71,7 @@ export function setupScenario(s:GameState,c:Catalog,number:1|2|3):void {
   for(const i of s.investigators){const armitage=Object.values(s.cards).find(card=>card.owner===i.id&&card.code==='12115');if(armitage)moveCard(s,armitage.id,'assets',i.id,c);}
  }else{
   const add=s.difficulty==='easy'?['elder-thing']:s.difficulty==='standard'?['elder-thing','tablet']:s.difficulty==='hard'?['elder-thing','tablet','skull']:['elder-thing','tablet','cultist','skull'];s.scenario.chaosBag.push(...add);
-  record(x,'Added Queen of Ash chaos tokens: '+add.join(', ')+'.');
+  log(x,'Added Queen of Ash chaos tokens: '+add.join(', ')+'.');
   putLocation(x,'12174',700,0);const tunnels=shuffle(['12183','12184','12185','12186','12187'],s.rng);tunnels.forEach((cd,n)=>putLocation(x,cd,n*350,330));starting=putLocation(x,'12182',700,660,true);
   const agenda=cardsIn(s,'agendas')[0];s.cards[agenda].tokens.doom=(s.investigators.length>=3?1:0)+(s.campaign.log.flags.includes('cult-found')?0:1);
   if(s.campaign.log.flags.includes('scoured-arkham'))s.investigators.forEach(i=>i.clues=1);
@@ -94,7 +104,7 @@ function finish(x:Ctx,resolution:number):void {
  }
  s.pendingChoices=[];s.resolutionStack=[];s.test=null;s.queuedTests=[];s.engine.activeInvestigatorId=null;
  if(s.campaign.scenarioNumber===1){
-  if(resolution===0){record(x,'Miskatonic University burned.');for(const r of Object.values(s.campaign.log.records))r.mentalTrauma++;award(x,2);p.outcome='Scenario 1 complete';s.phase='ended';}
+  if(resolution===0){record(x,'Miskatonic University burned.');for(const r of Object.values(s.campaign.log.records))r.mentalTrauma++;award(x,2);p.outcome='Scenario 1 complete';completeScenario(x);}
   else{
    record(x,'the investigators defeated their masked pursuer.');award(x,3);
    choose(x,s.leadInvestigatorId,'Choose the bearer of Dr. Henry Armitage',s.investigators.map(i=>({id:i.id,label:i.name,effects:[{type:'c-scenario',actor:i.id,data:{op:'armitage-bearer'}},{type:'c-scenario',data:{op:'university-outcome'}}]})));
@@ -107,12 +117,12 @@ function finish(x:Ctx,resolution:number):void {
   else{record(x,'the investigators discovered the cult’s whereabouts.');if(p.underAct.length===6)record(x,'the investigators scoured Arkham for answers.');if(cardsIn(s,'victory').filter(id=>trait(x,id,'Elite')).length===6)record(x,'the investigators stirred up trouble.');}
   if(cardsIn(s,'victory').some(id=>code(x,id)==='12138'))record(x,'the investigators killed the Servant of Flame.');
   const captured=p.underAct.some(id=>code(x,id)==='12138');if(captured)record(x,'the Servant of Flame escaped.');
-  award(x,p.underAct.length+(captured?1:0));p.outcome='Scenario 2 complete';s.phase='ended';return;
+  award(x,p.underAct.length+(captured?1:0));p.outcome='Scenario 2 complete';completeScenario(x);return;
  }
  if(resolution===0){record(x,'Elokoss was reborn.');p.killed=s.investigators.map(i=>i.id);p.outcome='Campaign lost';}
  if(resolution===1||resolution===2){record(x,resolution===1?'the investigators defeated Elokoss and her Brethren.':'the investigators stopped Elokoss’s glorious rebirth.');award(x,5);for(const r of Object.values(s.campaign.log.records)){r.physicalTrauma+=2;r.mentalTrauma+=2;}p.earned.push('12181');p.outcome='Campaign won';}
  if(resolution===3){record(x,'the investigators flooded the ritual site.');p.killed=s.investigators.filter(i=>!p.resigned.includes(i.id)).map(i=>i.id);for(const id of enemies(x))if(number(x,id,'victory'))moveCard(s,id,'victory','scenario',x.c);award(x,3);for(const id of p.resigned)s.campaign.log.records[id].mentalTrauma+=3;p.earned.push('12181');p.outcome='Campaign won';}
- s.phase='ended';log(x,p.outcome!);
+ completeScenario(x);log(x,p.outcome!);
 }
 export function resolveScenario(x:Ctx,e:Effect):void {
  const {s,c}=x,p=s.engine.chapter!,actor=e.actor??s.leadInvestigatorId,source=e.source,target=e.target,n=s.investigators.length;
@@ -181,7 +191,7 @@ export function resolveScenario(x:Ctx,e:Effect):void {
   case 'armitage-bearer':p.story[actor]=[...(p.story[actor]??[]),'12115'];break;
   case 'university-outcome':choose(x,s.leadInvestigatorId,'Choose the university outcome',[{id:'save',label:'Fight the fire (+1 XP, 1 physical trauma)',effects:[{type:'c-scenario',data:{op:'university-save'}}]},{id:'leave',label:'Leave (1 mental trauma)',effects:[{type:'c-scenario',data:{op:'university-burn'}}]}]);break;
   case 'university-save':case 'university-burn':{
-   const saved=e.data!.op==='university-save';record(x,saved?'the investigators saved Miskatonic University.':'Miskatonic University burned.');for(const r of Object.values(s.campaign.log.records)){if(saved){r.experience++;r.physicalTrauma++;}else r.mentalTrauma++;}p.outcome='Scenario 1 complete';s.phase='ended';break;
+   const saved=e.data!.op==='university-save';record(x,saved?'the investigators saved Miskatonic University.':'Miskatonic University burned.');for(const r of Object.values(s.campaign.log.records)){if(saved){r.experience++;r.physicalTrauma++;}else r.mentalTrauma++;}p.outcome='Scenario 1 complete';completeScenario(x);break;
   }
   case 'uncover':{const id=p.beneath[target!];if(!id)throw new Error('There is no card beneath this location.');delete p.beneath[target!];push(x,[{type:'c-encounter',actor,source:id}]);break;}
   case 'servant2':choose(x,s.leadInvestigatorId,'Defeated Servant of Flame: kill or capture?', [{id:'kill',label:'Victory display; each investigator draws 3',effects:[{type:'c-scenario',source,data:{op:'servant2-kill'}},...living(x).map(actor=>draw(actor,3))]},{id:'capture',label:'Under the act; each investigator gains 1 clue',effects:[{type:'c-scenario',source,data:{op:'capture'}},...living(x).map(actor=>({type:'c-scenario',actor,data:{op:'pool-clue'}}))]}]);break;

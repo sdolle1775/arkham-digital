@@ -1,3 +1,4 @@
+import { setLogEntries, logEntries } from '../src/shared/campaign-log.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID, createHash } from 'node:crypto';
@@ -278,15 +279,16 @@ test('abrupt process termination recovers committed WAL state, branches, and nam
       import { randomUUID } from 'node:crypto';
       import { Storage } from './src/server/storage.ts';
       import { loadCatalog } from './src/server/catalog.ts';
+      import { setLogEntries } from './src/shared/campaign-log.ts';
       const storage=new Storage(process.env.ARKHAM_TEST_DATA,loadCatalog('content'));
       const id=process.env.ARKHAM_TEST_SESSION;
       const initial=storage.current(id);
       storage.apply(id,randomUUID(),0,{type:'campaign-log'},'Original continuation',state=>{
-        state.campaign.log.entries='Original continuation before rollback';return state;
+        setLogEntries(state.campaign.log,[{id:'note',text:'Original continuation before rollback',scenario:null}]);return state;
       });
       storage.rollback(id,initial.id,1,randomUUID());
       storage.apply(id,randomUUID(),2,{type:'campaign-log'},'Branch continuation',state=>{
-        state.campaign.log.entries='Committed notes recovered after a crash';return state;
+        setLogEntries(state.campaign.log,[{id:'note',text:'Committed notes recovered after a crash',scenario:null}]);return state;
       });
       storage.save(id,'After interrupted session');
       process.send({current:storage.current(id),history:storage.history(id),saves:storage.listSaves()});
@@ -335,7 +337,7 @@ test('a late SQLite write failure rolls back the checkpoint, head, and command t
     // This fails after insertCheckpoint has inserted history and updated the head, but before commit.
     h.storage.db.exec("CREATE TRIGGER reject_test_command BEFORE INSERT ON commands BEGIN SELECT RAISE(ABORT,'injected command write failure'); END;");
     assert.throws(()=>h.storage.apply(sid,commandId,0,{type:'test'},'Must roll back',state=>{
-      state.campaign.log.entries='This transaction must never be visible';return state;
+      setLogEntries(state.campaign.log,[{id:'note',text:'This transaction must never be visible',scenario:null}]);return state;
     }),/injected command write failure/);
     assert.deepEqual(h.storage.current(sid),initial);
     assert.deepEqual(h.storage.history(sid),history);
@@ -351,14 +353,27 @@ test('a late SQLite write failure rolls back the checkpoint, head, and command t
 test('campaign continuation is host-only, pins latest revisions, preserves private seats and keeps scenario history restorable',async()=>{
  const h=await harness();try{
   const started=await h.start(2),sid=started.sessionId;
-  h.storage.apply(sid,randomUUID(),started.revision,{type:'fixture-resolution'},'Scenario completion fixture',s=>{s.phase='ended';s.pendingChoices=[];s.engine.chapter!.outcome='Scenario 1 complete';s.campaign.log.entries='Miskatonic University burned.';s.campaign.log.flags=['university-burned'];return s;});
+  h.storage.apply(sid,randomUUID(),started.revision,{type:'fixture-resolution'},'Scenario completion fixture',s=>{s.phase='ended';s.pendingChoices=[];s.engine.chapter!.outcome='Scenario 1 complete';setLogEntries(s.campaign.log,[{id:'burned',text:'Miskatonic University burned.',scenario:1},{id:'complete',text:'Scenario 1 Complete',scenario:1}]);return s;});
   const ended=h.storage.current(sid),invites=(await h.app.inject({method:'POST',url:`/api/sessions/${sid}/invites`,headers:h.host})).json();
   const payload={commandId:randomUUID(),expectedRevision:ended.state.revision,deckRevisionIds:h.decks.map(d=>d.id)};
   const denied=await h.app.inject({method:'POST',url:`/api/sessions/${sid}/continue`,headers:{authorization:`Bearer ${invites.seats[0].token}`},payload});assert.equal(denied.statusCode,403);assert.equal(h.storage.current(sid).id,ended.id);
   const continued=await h.app.inject({method:'POST',url:`/api/sessions/${sid}/continue`,headers:h.host,payload});assert.equal(continued.statusCode,200,continued.body);const view=continued.json<SessionView>();assert.equal(view.campaign.scenarioNumber,2);assert.equal(view.phase,'opening');assert.equal(view.investigators[0].hand.length,0);assert.equal(view.investigators[1].hand.length,5);
   const repeat=await h.app.inject({method:'POST',url:`/api/sessions/${sid}/continue`,headers:h.host,payload});assert.equal(repeat.statusCode,200);assert.equal(repeat.json().revision,view.revision);
   const stale=await h.app.inject({method:'POST',url:`/api/sessions/${sid}/continue`,headers:h.host,payload:{...payload,commandId:randomUUID()}});assert.equal(stale.statusCode,409);
-  const archive=h.storage.exportSession(sid),copy=h.storage.importSession(archive);assert.equal(copy.state.campaign.scenarioNumber,2);assert.equal(h.storage.getRules(copy.state.rules.id).identity.scriptVersion,'chapter2-1');
+  const archive=h.storage.exportSession(sid),copy=h.storage.importSession(archive);assert.equal(copy.state.campaign.scenarioNumber,2);assert.equal(h.storage.getRules(copy.state.rules.id).identity.scriptVersion,'chapter2-2');
   h.storage.rollback(sid,ended.id,view.revision,randomUUID());assert.equal(h.storage.current(sid).state.campaign.scenarioNumber,1);assert.ok(h.storage.history(sid).some(point=>point.id===view.checkpointId));
+ }finally{await h.cleanup();}
+});
+
+test('campaign entry rows round-trip through archives and incomplete progression rejects without replacing the table',async()=>{
+ const h=await harness();try{
+  const started=await h.start(),sid=started.sessionId,records=started.campaign.log.records;
+  const items=[{id:'complete',text:'Scenario 1 Complete',scenario:1 as const},{id:'custom',text:'Bring a notebook',scenario:1 as const}];
+  const response=await h.app.inject({method:'POST',url:`/api/sessions/${sid}/commands`,headers:h.host,payload:{commandId:randomUUID(),expectedRevision:started.revision,command:{type:'campaign-log',items,entries:items.map(i=>i.text).join('\n'),records}}});
+  assert.equal(response.statusCode,200,response.body);const edited=response.json<SessionView>();assert.deepEqual(edited.campaign.log.items,items);assert.equal(edited.campaignProgress!.canContinue,false);
+  const head=h.storage.current(sid),denied=await h.app.inject({method:'POST',url:`/api/sessions/${sid}/continue`,headers:h.host,payload:{commandId:randomUUID(),expectedRevision:edited.revision,deckRevisionIds:h.decks.map(d=>d.id)}});
+  assert.equal(denied.statusCode,422);assert.equal(h.storage.current(sid).id,head.id);
+  const copy=h.storage.importSession(h.storage.exportSession(sid));assert.deepEqual(copy.state.campaign.log.items,items);
+  const bad=await h.app.inject({method:'POST',url:`/api/sessions/${sid}/commands`,headers:h.host,payload:{commandId:randomUUID(),expectedRevision:edited.revision,command:{type:'campaign-log',items:[...items,{id:'bad',text:'two\nlines',scenario:1}],entries:'mismatch',records}}});assert.equal(bad.statusCode,400);assert.equal(h.storage.current(sid).id,head.id);
  }finally{await h.cleanup();}
 });

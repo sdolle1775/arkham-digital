@@ -7,19 +7,20 @@ import { campaignLogFlags } from './campaigns/brethren.js';
 import { allowedActions, applyEngineCommand, beginPilot, type Boundary } from './engine.js';
 import { paymentView } from './payments.js';
 import { chapterGame } from './chapter/context.js';
-import { newProgress } from './chapter/scenarios.js';
+import { appendLogEntry, campaignRoute, logEntries, logFlags, setLogEntries } from '../shared/campaign-log.js';
+import { setupScenario, newProgress } from './chapter/scenarios.js';
 export { validateGameState } from './validation.js';
 export const isWeakness=(card:Catalog['cards'][string])=>['weakness','basicweakness'].includes(card.subtype??'');
 function openingDraw(s:GameState,actor:string,count:number,catalog:Catalog):void {
   for(let n=0;n<count;){const id=cardsIn(s,'deck',actor)[0];if(!id)throw new Error('Too few non-weakness cards to complete the opening hand.');const weakness=isWeakness(catalog.cards[s.cards[id].code]);moveCard(s,id,weakness?'openingSetAside':'hand',actor);if(!weakness)n++;}
 }
-export function createGame(options:SetupOptions,catalog:Catalog,decks:DeckRevision[],rules?:RulesIdentity):GameState {
+export function createGame(options:SetupOptions,catalog:Catalog,decks:DeckRevision[],rules?:RulesIdentity,deferScenario=false):GameState {
   const selected=options.seats.map(seat=>decks.find(d=>d.id===seat.deckRevisionId)!);
   const required=rules??selected[0]?.rules;
   if(!required)throw new Error('Refresh this deck using the latest ArkhamDB Taboo before starting a campaign.');
   for(const d of selected){if(!d||d.rules?.id!==required.id)throw new Error('Every selected deck must use the latest verified Taboo. Refresh it on ArkhamDB.');if((d.purchaseXp??0)>0)throw new Error(d.name+' requires experience; a new campaign starts at 0 XP.');}
-  const {hostSeat:_hostSeat,...legacyOptions}=options;
-  const collector=required.scriptVersion==='chapter2-1';
+  const {hostSeat:_hostSeat,logItems:_logItems,...legacyOptions}=options;
+  const collector=required.scriptVersion.startsWith('chapter2-');
   const setupDecks=collector?decks.map(d=>({...d,slots:Object.fromEntries(Object.entries(d.slots).filter(([code])=>code!=='12181'))})):decks;
   const s=migrateState(createLegacy(legacyOptions,catalog,setupDecks),catalog,required);
   if(collector)for(const i of s.investigators){const deck=selected.find(d=>d.id===i.deckRevisionId)!;if(deck.slots['12181']){const id='collector-'+i.id;s.cards[id]={id,code:'12181',face:'front',exhausted:false,tokens:{},owner:i.id,controller:i.id};zone(s,'assets',i.id).cards.push(id);}}
@@ -33,13 +34,20 @@ export function createGame(options:SetupOptions,catalog:Catalog,decks:DeckRevisi
       openingDraw(s,i.id,permanents.filter(id=>s.cards[id].code==='12042').length,catalog);
     }
   }
+  if(required.scriptVersion==='chapter2-2'){
+    setLogEntries(s.campaign.log,options.logItems??logEntries(s.campaign.log));
+    if(options.logItems&&s.campaign.log.entries!==(options.logEntries??''))throw new Error('Initial campaign entry rows do not match their text.');
+    if(!deferScenario){const route=campaignRoute(s.campaign.log.entries);if(!route.scenario)throw new Error('All scenarios are complete in this campaign log.');if(route.missing.length)throw new Error(route.missing.join(' '));if(route.scenario===3)s.scenario.chaosBag.push('cultist','cultist');setupScenario(s,catalog,route.scenario);}
+  }
   return s;
 }
 export function applyCommand(previous:GameState,command:GameCommand,catalog:Catalog,boundary?:Boundary):GameState {
   const s=structuredClone(previous);
   if(command.type==='campaign-log'){
     const valid=s.investigators.map(i=>i.id);if(Object.keys(command.records).length!==valid.length||valid.some(id=>!Object.hasOwn(command.records,id)))throw new Error('Campaign records must match investigators.');
-    s.campaign.log={entries:command.entries,records:command.records,flags:campaignLogFlags(command.entries,chapterGame(s))};return s;
+    s.campaign.log={entries:command.entries,records:command.records,flags:campaignLogFlags(command.entries,chapterGame(s))};
+    if(chapterGame(s)){setLogEntries(s.campaign.log,command.items??logEntries(s.campaign.log));if(command.items&&s.campaign.log.entries!==command.entries)throw new Error('Campaign entry rows do not match the submitted text.');if(s.engine.chapter?.logReview)s.engine.chapter.logReview.pending=false;}
+    return s;
   }
   if(command.type!=='mulligan'){applyEngineCommand(s,command,catalog,boundary);return s;}
   const i=s.investigators.find(i=>i.id===command.investigatorId);
@@ -74,5 +82,6 @@ export function projectState(s:GameState,viewer:Viewer,checkpointId:string,catal
   const payment=catalog&&pendingChoices.some(ch=>ch.presentation==='payment')?paymentView(s,catalog):null;
   const piles:SessionView['piles']=Object.values(s.zones).map(z=>({id:z.id,kind:z.kind,owner:z.owner,count:z.cards.length,cards:z.cards.filter(id=>visible.has(id)),visibility:z.visibility==='hidden'||z.visibility==='owner'&&!controls(z.owner)?'concealed':'visible'}));
   const {rng:_,zones:_z,resolutionStack:_r,queuedTests:_q,test,engine,investigators:_i,cards:_c,scenario:_s,pendingChoices:_p,...common}=s;
-  return structuredClone({...common,checkpointId,investigators,...(engine.chapter?{campaignProgress:{outcome:engine.chapter.outcome,canContinue:s.phase==='ended'&&s.campaign.scenarioNumber<3,killed:engine.chapter.killed,earned:engine.chapter.earned}}:{}),cards:Object.fromEntries([...visible].map(id=>[id,s.cards[id]])),scenario:{...s.scenario,locations:s.scenario.locations.map(l=>({...l,...(engine.chapter?.beneath[l.cardId]?{facedownCount:1}:{})})),reference:cardsIn(s,'reference')[0],acts:acts.slice(0,1),agendas:agendas.slice(0,1),actCount:acts.length,agendaCount:agendas.length,encounterDeckCount:cardsIn(s,'encounterDeck').length,encounterDiscard:cardsIn(s,'encounterDiscard'),setAside:[],victory:cardsIn(s,'victory'),removed:cardsIn(s,'removed'),enemies:cardsIn(s,'enemies')},pendingChoices,piles,search,payment,allowedActions:catalog?s.investigators.filter(i=>controls(i.id)).flatMap(i=>allowedActions(s,catalog,i.id)):[],engine:{pilot:engine.pilot,round:engine.round,phase:engine.phase,activeInvestigatorId:engine.activeInvestigatorId,log:engine.log,blockedReason:engine.blockedReason},test:test?{actor:test.actor,skill:test.skill,difficulty:test.difficulty,tokens:test.tokens,stage:test.stage,success:test.success,margin:test.margin}:null});
+  const route=campaignRoute(s.campaign.log.entries);
+  return structuredClone({...common,checkpointId,investigators,...(engine.chapter?{campaignProgress:{outcome:engine.chapter.outcome,canContinue:!!route.scenario&&!route.missing.length&&(s.phase==='ended'||route.scenario!==s.campaign.scenarioNumber),nextScenario:route.scenario,missing:route.missing,...(s.phase==='ended'&&engine.chapter.logReview?{review:engine.chapter.logReview}:{}),killed:engine.chapter.killed,earned:engine.chapter.earned}}:{}),cards:Object.fromEntries([...visible].map(id=>[id,s.cards[id]])),scenario:{...s.scenario,locations:s.scenario.locations.map(l=>({...l,...(engine.chapter?.beneath[l.cardId]?{facedownCount:1}:{})})),reference:cardsIn(s,'reference')[0],acts:acts.slice(0,1),agendas:agendas.slice(0,1),actCount:acts.length,agendaCount:agendas.length,encounterDeckCount:cardsIn(s,'encounterDeck').length,encounterDiscard:cardsIn(s,'encounterDiscard'),setAside:[],victory:cardsIn(s,'victory'),removed:cardsIn(s,'removed'),enemies:cardsIn(s,'enemies')},pendingChoices,piles,search,payment,allowedActions:catalog?s.investigators.filter(i=>controls(i.id)).flatMap(i=>allowedActions(s,catalog,i.id)):[],engine:{pilot:engine.pilot,round:engine.round,phase:engine.phase,activeInvestigatorId:engine.activeInvestigatorId,log:engine.log,blockedReason:engine.blockedReason},test:test?{actor:test.actor,skill:test.skill,difficulty:test.difficulty,tokens:test.tokens,stage:test.stage,success:test.success,margin:test.margin}:null});
 }

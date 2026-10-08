@@ -40,7 +40,7 @@ export function defaultPayment(cost:number,sources:PaymentSource[]):PaymentContr
 
 export function paymentView(s:GameState,c:Catalog):PaymentView|null {
   const choice=s.pendingChoices[0];if(choice?.context?.kind!=='payment')return null;
-  const cardId=choice.context.actionId.split('|')[1],cost=s.rules.scriptVersion==='chapter2-1'?Number(choice.context.cost):cardNumber(c,s.cards[cardId].code,'cost');
+  const cardId=choice.context.actionId.split('|')[1],cost=s.rules.scriptVersion.startsWith('chapter2-')?Number(choice.context.cost):cardNumber(c,s.cards[cardId].code,'cost');
   const sources=paymentSources(s,c,choice.investigatorId,cardId);
   return {choiceId:choice.id,investigatorId:choice.investigatorId,cardId,cost,sources,defaults:defaultPayment(cost,sources)};
 }

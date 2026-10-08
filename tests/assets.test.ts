@@ -113,3 +113,42 @@ test('interrupted installation resumes cached faces and changed manifests fetch 
   second=new AssetManager(directory,changed);await second.install();assert.deepEqual(calls,['https://arkhamdb.com/bundles/cards/12001-updated.png']);assert.equal(second.status().installed,true);
  }finally{first?.close();second?.close();globalThis.fetch=previous;rmSync(directory,{recursive:true,force:true});}
 });
+
+test('a stalled primary is demoted for queued faces without changing cache fingerprints or four-worker limits',async()=>{
+ const directory=mkdtempSync(join(tmpdir(),'arkham-source-health-')),previous=globalThis.fetch;
+ const bytes=await sharp({create:{width:100,height:140,channels:3,background:'#678901'}}).png().toBuffer();
+ const many=structuredClone(catalog);many.cards={};
+ for(let n=1;n<=20;n++){const code=String(12000+n);many.cards[code]={...structuredClone(catalog.cards['12001']),code,faces:[{id:'front',name:code,text:'',imageUrl:`https://arkhamdb.com/bundles/cards/${code}.png`,fallbackImageUrls:[`https://assets.arkham.build/optimized/${code}.avif`]}]};}
+ const manager=new AssetManager(directory,many);let primary=0,mirror=0,active=0,peak=0;
+ try{
+  globalThis.fetch=async input=>{active++;peak=Math.max(peak,active);await new Promise(resolve=>setTimeout(resolve,5));active--;if(new URL(String(input)).hostname==='arkhamdb.com'){primary++;throw new DOMException('Timed out','TimeoutError');}mirror++;return new Response(bytes);};
+  await manager.install();assert.equal(manager.status().installed,true);assert.equal(primary,4);assert.equal(mirror,20);assert.equal(peak,4);manager.close();
+  const reopened=new AssetManager(directory,many);globalThis.fetch=async()=>{throw new Error('Offline cache must be reused');};
+  await reopened.install();assert.equal(reopened.status().ready,20);reopened.close();
+ }finally{manager.close();globalThis.fetch=previous;rmSync(directory,{recursive:true,force:true});}
+});
+
+test('source demotion keeps a primary available if its mirror fails and resets on a later installation',async()=>{
+ const directory=mkdtempSync(join(tmpdir(),'arkham-source-recovery-')),previous=globalThis.fetch;
+ const bytes=await sharp({create:{width:100,height:140,channels:3,background:'#345678'}}).png().toBuffer();
+ const c=structuredClone(catalog);c.cards['12001'].faces[0].fallbackImageUrls=['https://assets.arkham.build/optimized/12001.avif'];
+ const manager=new AssetManager(directory,c);manager.constructorRetryDelays=[0];const calls:string[]=[];
+ try{
+  globalThis.fetch=async input=>{const host=new URL(String(input)).hostname;calls.push(host);if(calls.length===1)return new Response('Busy',{status:503});if(host==='assets.arkham.build')return new Response('Missing',{status:404});return new Response(bytes);};
+  await manager.install();assert.equal(manager.status().installed,true);assert.deepEqual(calls,['arkhamdb.com','assets.arkham.build','assets.arkham.build','arkhamdb.com']);
+  writeFileSync(join(directory,'assets/12001-front.image'),'corrupt');calls.length=0;
+  globalThis.fetch=async input=>{calls.push(new URL(String(input)).hostname);return new Response(bytes);};
+  await manager.install();assert.deepEqual(calls,['arkhamdb.com']);assert.equal(manager.status().installed,true);
+ }finally{manager.close();globalThis.fetch=previous;rmSync(directory,{recursive:true,force:true});}
+});
+
+test('a face-specific 404 never demotes the host for other faces',async()=>{
+ const directory=mkdtempSync(join(tmpdir(),'arkham-source-404-')),previous=globalThis.fetch;
+ const bytes=await sharp({create:{width:100,height:140,channels:3,background:'#345678'}}).png().toBuffer();
+ const c=structuredClone(catalog);c.cards={};for(let n=1;n<=8;n++){const code=String(12000+n);c.cards[code]={...structuredClone(catalog.cards['12001']),code,faces:[{id:'front',name:code,text:'',imageUrl:`https://arkhamdb.com/bundles/cards/${code}.png`,fallbackImageUrls:[`https://assets.arkham.build/optimized/${code}.avif`]}]};}
+ const manager=new AssetManager(directory,c);let primary=0,mirror=0;
+ try{
+  globalThis.fetch=async input=>{if(new URL(String(input)).hostname==='arkhamdb.com'){primary++;return new Response('Missing',{status:404});}mirror++;return new Response(bytes);};
+  await manager.install();assert.equal(primary,8);assert.equal(mirror,8);assert.equal(manager.status().installed,true);
+ }finally{manager.close();globalThis.fetch=previous;rmSync(directory,{recursive:true,force:true});}
+});

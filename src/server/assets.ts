@@ -17,6 +17,7 @@ export class AssetManager {
   private readonly pending = new Map<string, Promise<AssetResult>>();
   private readonly queue: (() => void)[] = [];
   private readonly abort = new AbortController();
+  private readonly unavailableOrigins = new Set<string>();
   private active = 0;
   private closed = false;
   private phase: AssetStatus['phase'] = 'checking';
@@ -80,14 +81,23 @@ export class AssetManager {
     if (!face.urls.length) throw new Error('No reviewed image source is available for this face.');
     const approved = (url: URL) => url.protocol === 'https:' && ['arkhamdb.com', 'hallofarkham.com', 'assets.arkham.build'].includes(url.hostname);
     let lastError: unknown;
-    const urls = face.urls;
+    // Keep catalog preference while a host is healthy. Once it stalls, let the
+    // reviewed alternatives run first for subsequent faces in this installation.
+    // Do not change the catalog fingerprint or invalidate previously cached art.
+    const priority = (source:string) => {try{return Number(this.unavailableOrigins.has(new URL(source).origin));}catch{return 0;}};
+    const urls = [...face.urls].sort((a,b)=>priority(a)-priority(b));
     for (const source of urls) {
+      let origin: string | undefined;
       try {
         const url = new URL(source);
         if (!approved(url)) throw new Error('Image source is not approved by the catalog.');
+        origin = url.origin;
         const response = await fetch(url, { redirect: 'error', signal: AbortSignal.any([this.abort.signal,
           AbortSignal.timeout(url.hostname === 'arkhamdb.com' && face.urls.length > 1 ? 6_000 : 15_000)]) });
-        if (!response.ok) throw new Error(`Image source returned HTTP ${response.status}.`);
+        if (!response.ok) {
+          if(response.status===429||response.status>=500)this.unavailableOrigins.add(origin);
+          throw new Error(`Image source returned HTTP ${response.status}.`);
+        }
         if (!response.body) throw new Error('Image source returned an empty response.');
         const reader = response.body.getReader();
         const chunks: Uint8Array[] = [];
@@ -112,6 +122,7 @@ export class AssetManager {
       } catch (error) {
         lastError = error;
         if (this.closed) break;
+        if(origin&&error instanceof Error&&['TimeoutError','AbortError','TypeError'].includes(error.name))this.unavailableOrigins.add(origin);
       }
     }
     throw lastError;
@@ -164,7 +175,7 @@ export class AssetManager {
     if(this.closed)return;
     if(this.installation)return this.installation;
     this.installation=(async()=>{
-      this.phase='checking';this.checked=0;this.verified.clear();this.failures.clear();
+      this.phase='checking';this.checked=0;this.verified.clear();this.failures.clear();this.unavailableOrigins.clear();
       const faces=[...this.faces.values()];let index=0;
       await Promise.all(Array.from({length:4},async()=>{while(index<faces.length&&!this.closed){const face=faces[index++];if(await this.local(face))this.verified.add(face.key);this.checked++;}}));
       if(this.closed)return;

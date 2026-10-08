@@ -1,3 +1,4 @@
+import { logEntries, logFlags, setLogEntries, campaignRoute } from '../src/shared/campaign-log.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
@@ -46,7 +47,7 @@ test('paid weapon attacks preserve ammo costs, skill test outcomes and damage ac
 });
 test('all three scenarios initialize supported inventories and valid graphs for one to four investigators',()=>{
  for(let count=1;count<=4;count++)for(const scenario of [2,3] as const){
-  const s=fixture(count);s.campaign.log.entries='the investigators saved Miskatonic University.\nDavid Renfield is the harbinger of Elokoss.';s.campaign.log.flags=campaignLogFlags(s.campaign.log.entries,true);setupScenario(s,c,scenario);validateGameState(s,c);
+  const s=fixture(count);s.campaign.log.entries='the investigators saved Miskatonic University.\nDavid Renfield is the harbinger of Elokoss.';setLogEntries(s.campaign.log,logEntries({...s.campaign.log,items:undefined}));setupScenario(s,c,scenario);validateGameState(s,c);
   assert.equal(s.campaign.scenarioNumber,scenario);assert.ok(cardsIn(s,'encounterDeck').length>20);assert.equal(s.scenario.locations.length,scenario===2?9:7);
   assert.equal(s.engine.chapter!.underAct.length,0);if(scenario===2)assert.equal(Object.keys(s.engine.chapter!.beneath).length,6);
  }
@@ -57,7 +58,7 @@ test('Spreading Flames act transitions remain playable and preserve set-aside id
  s=run(s,[{type:'c-act'}]);assert.equal(s.cards[cardsIn(s,'acts')[0]].code,'12112');assert.equal(s.phase,'playing');
 });
 test('hidden people and search identities never enter another seat projection',()=>{
- const s=fixture(2);s.mode='separate';s.campaign.log.entries='Miskatonic University burned.';s.campaign.log.flags=campaignLogFlags(s.campaign.log.entries,true);setupScenario(s,c,2);
+ const s=fixture(2);s.mode='separate';s.campaign.log.entries='Miskatonic University burned.';setLogEntries(s.campaign.log,logEntries({...s.campaign.log,items:undefined}));setupScenario(s,c,2);
  const view=projectState(s,{role:'host',investigatorId:actor},'checkpoint',c),json=JSON.stringify(view);for(const id of [s.engine.chapter!.harbinger!,...Object.values(s.engine.chapter!.beneath)])assert.ok(!json.includes(id));
  assert.ok(!('chapter' in view.engine));
 });
@@ -80,14 +81,14 @@ test('normal round flow runs enemies, upkeep, mythos and resumes investigation w
  let s=fixture();const before=s.engine.round;s=act(s,'end-turn||');assert.equal(s.engine.round,before+1);assert.equal(s.engine.phase,'investigation');assert.equal(s.engine.activeInvestigatorId,actor);assert.equal(s.investigators[0].actions,3);
 });
 test('each scenario agenda can advance and complete its recorded resolution',()=>{
- for(const number of [1,2,3] as const){let s=fixture();s.campaign.log.entries='Miskatonic University burned.\nDavid Renfield is the harbinger of Elokoss.';s.campaign.log.flags=campaignLogFlags(s.campaign.log.entries,true);if(number>1)setupScenario(s,c,number);
+ for(const number of [1,2,3] as const){let s=fixture();s.campaign.log.entries='Miskatonic University burned.\nDavid Renfield is the harbinger of Elokoss.';setLogEntries(s.campaign.log,logEntries({...s.campaign.log,items:undefined}));if(number>1)setupScenario(s,c,number);
   const count=number===1?3:2;for(let n=0;n<count;n++)s=run(s,[{type:'c-agenda'}]);
   if(number<3)assert.equal(s.phase,'ended');else assert.equal(s.cards[cardsIn(s,'agendas')[0]].code,'12171');
  }
 });
 test('university resolution, XP, immutable deck changes and assigned weaknesses carry into scenario two',()=>{
  let s=fixture();const d:DeckRevision={id:s.investigators[0].deckRevisionId,libraryId:'test-library',revision:1,source:'published',sourceCode:'1',name:'Fixture',investigatorCode:'12001',slots:{'12019':2,'12023':2,'12025':2,'12032':2,'12089':2,'12093':2,'12094':2,'12101':1},sideSlots:{},unsupported:[],importedAt:s.createdAt,rules:rules.identity,purchaseXp:0};
- s=run(s,[{type:'c-finish',data:{resolution:1}}]);assert.equal(s.phase,'ended');assert.ok(s.campaign.log.flags.includes('university-saved'));const next=continueCampaign(s,[d],[d],c,rules.identity);validateGameState(next,c);
+ s=run(s,[{type:'c-finish',data:{resolution:1}}]);assert.equal(s.phase,'ended');assert.ok(s.campaign.log.entries.includes('Scenario 1 Complete'));assert.ok(!s.campaign.log.flags.includes('university-saved'));assert.ok(campaignRoute(s.campaign.log.entries).missing.length);s=applyCommand(s,{type:'campaign-log',entries:[s.campaign.log.entries,...s.engine.chapter!.logReview!.entries].join('\n'),records:s.campaign.log.records},c);assert.ok(s.campaign.log.flags.includes('university-saved'));assert.equal(s.engine.chapter!.logReview!.pending,false);const next=continueCampaign(s,[d],[d],c,rules.identity);validateGameState(next,c);
  assert.equal(next.campaign.scenarioNumber,2);assert.equal(next.phase,'opening');assert.equal(next.investigators[0].damage,1);assert.equal(next.investigators[0].weaknessCodes.filter(code=>code==='12101').length,1);assert.ok(cardsIn(next,'assets',actor).some(id=>next.cards[id].code==='12115'));assert.equal(s.campaign.scenarioNumber,1);
  const upgraded={...d,slots:{...d.slots,'12019':1,'12029':1}};assert.equal(upgradeCost(d,upgraded,c),5);assert.throws(()=>continueCampaign(s,[upgraded],[d],c,rules.identity),/XP/);
 });
@@ -125,7 +126,7 @@ test('two-action costs are paid before one opportunity attack and Armitage prote
  protectedState=act(protectedState,'resource||');assert.equal(protectedState.investigators[0].damage,0);protectedState=act(protectedState,'resource||');assert.equal(protectedState.investigators[0].damage,1);assert.ok(protectedState.cards[guard]);
 });
 test('additional clue costs are fully planned and paid before an uncover action provokes attacks',()=>{
- let s=fixture(2);s.campaign.log.entries='Miskatonic University burned.';s.campaign.log.flags=campaignLogFlags(s.campaign.log.entries,true);setupScenario(s,c,2);const loc=Object.keys(s.engine.chapter!.beneath)[0],actId=cardsIn(s,'acts')[0];s.investigators[0].locationId=loc;s.investigators[0].clues=2;s.investigators[1].clues=2;
+ let s=fixture(2);s.campaign.log.entries='Miskatonic University burned.';setLogEntries(s.campaign.log,logEntries({...s.campaign.log,items:undefined}));setupScenario(s,c,2);const loc=Object.keys(s.engine.chapter!.beneath)[0],actId=cardsIn(s,'acts')[0];s.investigators[0].locationId=loc;s.investigators[0].clues=2;s.investigators[1].clues=2;
  const enemy=add(s,'12121','threat');s.cards[enemy].bearer=actor;s.cards[enemy].tokens.locationIndex=s.scenario.locations.findIndex(l=>l.cardId===loc);
  s=applyCommand(s,{type:'action',investigatorId:actor,actionId:'uncover|'+actId+'|'+loc},c);assert.equal(s.investigators[0].actions,3);assert.equal(s.investigators[0].clues,2);
  const restored=JSON.parse(JSON.stringify(s));assert.deepEqual(settle(s),settle(restored));s=settle(s);assert.equal(s.investigators[0].clues+s.investigators[1].clues,0);assert.equal(s.investigators[0].actions,2);assert.equal(s.engine.chapter!.beneath[loc],undefined);
@@ -141,15 +142,15 @@ test('Necronomicon blocks asset triggers but permits the investigator ability an
  s=beginEffects(s,[{type:'c-damage',actor,amount:1}]);s=settle(s);assert.equal(s.cards[jim].exhausted,false);assert.equal(allowedActions(s,c,actor).some(a=>a.source===jim),false);assert.ok(allowedActions(s,c,actor).some(a=>a.source===book));
 });
 test('all scenario codex entries generate leads and preserve the captured card identity',()=>{
- for(let entry=1;entry<=6;entry++){let s=fixture();s.campaign.log.entries='Miskatonic University burned.';s.campaign.log.flags=campaignLogFlags(s.campaign.log.entries,true);setupScenario(s,c,2);const id=Object.values(s.cards).find(card=>card.code===String(12138+entry))!.id;
+ for(let entry=1;entry<=6;entry++){let s=fixture();s.campaign.log.entries='Miskatonic University burned.';setLogEntries(s.campaign.log,logEntries({...s.campaign.log,items:undefined}));setupScenario(s,c,2);const id=Object.values(s.cards).find(card=>card.code===String(12138+entry))!.id;
  if(s.engine.chapter!.harbinger===id)s.engine.chapter!.harbinger=Object.values(s.engine.chapter!.beneath).find(other=>other!==id);for(const [loc,card]of Object.entries(s.engine.chapter!.beneath))if(card===id||card===s.engine.chapter!.harbinger)delete s.engine.chapter!.beneath[loc];
  moveCard(s,id,'enemies','scenario',c);s.cards[id].tokens.locationIndex=s.scenario.locations.findIndex(l=>l.cardId===s.investigators[0].locationId);
  s=run(s,[{type:'c-scenario',actor,source:id,data:{op:'codex',entry}}]);assert.ok(cardsIn(s,'underAct').includes(id),'Codex '+entry);assert.ok(s.engine.chapter!.underAct.includes(id));
  }
 });
 test('Queen of Ash supports all four resolutions, doom replacement, and enemy fire immunity',()=>{
- for(const resolution of [0,1,2,3]){let s=fixture();s.campaign.log.entries='Miskatonic University burned.';s.campaign.log.flags=campaignLogFlags(s.campaign.log.entries,true);setupScenario(s,c,3);s=run(s,[{type:'c-finish',data:{resolution}}]);assert.equal(s.phase,'ended');assert.equal(s.engine.chapter!.outcome,resolution===0?'Campaign lost':'Campaign won');if(resolution===0||resolution===3)assert.deepEqual(s.engine.chapter!.killed,[actor]);}
- let s=fixture();s.campaign.log.entries='Miskatonic University burned.';s.campaign.log.flags=campaignLogFlags(s.campaign.log.entries,true);setupScenario(s,c,3);s=run(s,[{type:'c-agenda'},{type:'c-agenda'}]);s=run(s,[{type:'c-doom',amount:1}]);assert.equal(s.investigators[0].damage,1);assert.equal(s.cards[cardsIn(s,'agendas')[0]].tokens.doom??0,0);
+ for(const resolution of [0,1,2,3]){let s=fixture();s.campaign.log.entries='Miskatonic University burned.';setLogEntries(s.campaign.log,logEntries({...s.campaign.log,items:undefined}));setupScenario(s,c,3);s=run(s,[{type:'c-finish',data:{resolution}}]);assert.equal(s.phase,'ended');assert.equal(s.engine.chapter!.outcome,resolution===0?'Campaign lost':'Campaign won');if(resolution===0||resolution===3)assert.deepEqual(s.engine.chapter!.killed,[actor]);}
+ let s=fixture();s.campaign.log.entries='Miskatonic University burned.';setLogEntries(s.campaign.log,logEntries({...s.campaign.log,items:undefined}));setupScenario(s,c,3);s=run(s,[{type:'c-agenda'},{type:'c-agenda'}]);s=run(s,[{type:'c-doom',amount:1}]);assert.equal(s.investigators[0].damage,1);assert.equal(s.cards[cardsIn(s,'agendas')[0]].tokens.doom??0,0);
 });
 test('nested continuations, hidden-card assignments and payment payloads are rejected before malformed saves can load',()=>{
  const s=fixture(),bad=structuredClone(s);bad.engine.chapter!.pendingEndTurn=[{type:'unknown-op'}];assert.throws(()=>validateGameState(bad,c),/unknown serialized effect/);
@@ -172,8 +173,8 @@ test('searching encounter deck and discard exposes the permitted pool only to it
  assert.equal(owner.search?.cards.length,deckIds.length+1);deckIds.forEach(id=>assert.ok(!other.includes(id)));const restored=JSON.parse(JSON.stringify(s));assert.deepEqual(choose(s),choose(restored));s=choose(s);assert.ok(cardsIn(s,'encounterDiscard').includes(discard));assert.deepEqual(new Set(cardsIn(s,'encounterDeck')),new Set(deckIds));
 });
 test('Queen setup branches and difficulty packages work for one through four seats, then entering Cistern advances and spawns the boss',()=>{
- for(const count of [1,2,3,4])for(const difficulty of ['easy','standard','hard','expert'] as const){const s=fixture(count);s.difficulty=difficulty;s.campaign.log.entries='the investigators stirred up trouble.\nthe investigators scoured Arkham for answers.\nthe investigators killed the Servant of Flame.';s.campaign.log.flags=campaignLogFlags(s.campaign.log.entries,true);setupScenario(s,c,3);assert.equal(s.investigators[0].clues,1);assert.equal(s.cards[cardsIn(s,'agendas')[0]].tokens.doom,1+(count>=3?1:0));assert.ok(cardsIn(s,'removed').some(id=>s.cards[id].code==='12180'));validateGameState(s,c);}
- let s=fixture();s.campaign.log.entries='Miskatonic University burned.';s.campaign.log.flags=campaignLogFlags(s.campaign.log.entries,true);setupScenario(s,c,3);const tunnel=s.scenario.locations.find(l=>/^1218[3-7]$/.test(s.cards[l.cardId].code))!.cardId,cistern=s.scenario.locations.find(l=>s.cards[l.cardId].code==='12174')!.cardId;s.investigators[0].locationId=tunnel;s.investigators[0].clues=3;
+ for(const count of [1,2,3,4])for(const difficulty of ['easy','standard','hard','expert'] as const){const s=fixture(count);s.difficulty=difficulty;s.campaign.log.entries='the investigators stirred up trouble.\nthe investigators scoured Arkham for answers.\nthe investigators killed the Servant of Flame.';setLogEntries(s.campaign.log,logEntries({...s.campaign.log,items:undefined}));setupScenario(s,c,3);assert.equal(s.investigators[0].clues,1);assert.equal(s.cards[cardsIn(s,'agendas')[0]].tokens.doom,1+(count>=3?1:0));assert.ok(cardsIn(s,'removed').some(id=>s.cards[id].code==='12180'));validateGameState(s,c);}
+ let s=fixture();s.campaign.log.entries='Miskatonic University burned.';setLogEntries(s.campaign.log,logEntries({...s.campaign.log,items:undefined}));setupScenario(s,c,3);const tunnel=s.scenario.locations.find(l=>/^1218[3-7]$/.test(s.cards[l.cardId].code))!.cardId,cistern=s.scenario.locations.find(l=>s.cards[l.cardId].code==='12174')!.cardId;s.investigators[0].locationId=tunnel;s.investigators[0].clues=3;
  s=act(s,'move||'+cistern);assert.equal(s.cards[cardsIn(s,'acts')[0]].code,'12173');assert.equal(s.investigators[0].clues,0);assert.ok(s.scenario.locations.some(l=>s.cards[l.cardId].code==='12175'));
  const boss=Object.values(s.cards).find(card=>card.code==='12179')!.id;assert.ok(cardsIn(s,'enemies').includes(boss));assert.equal(s.cards[boss].face,'front');s=run(s,[{type:'c-enemy-damage',actor,target:boss,amount:2}]);assert.equal(s.cards[boss].tokens.damage??0,0,'Fire protects the boss under the first agenda');
  const fire=cardsIn(s,'attachments').find(id=>s.cards[id].code==='12129'&&s.cards[id].attachedTo===cistern)!;s.investigators[0].clues=1;s=act(s,'act-fire|'+cardsIn(s,'acts')[0]+'|'+fire);s=run(s,[{type:'c-enemy-damage',actor,target:boss,amount:2}]);assert.equal(s.cards[boss].tokens.damage,2);

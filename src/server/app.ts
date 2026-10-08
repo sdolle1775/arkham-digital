@@ -20,13 +20,14 @@ const idSchema = z.string().min(1).max(100);
 const revisionSchema = z.number().int().min(0).max(Number.MAX_SAFE_INTEGER);
 const actionSchema = z.object({ expectedRevision: revisionSchema, commandId: z.string().uuid() });
 const logRecordSchema = z.object({ experience:z.number().int().min(0).max(999), physicalTrauma:z.number().int().min(0).max(99), mentalTrauma:z.number().int().min(0).max(99), notes:z.string().max(10000) });
+const logItemsSchema=z.array(z.object({id:idSchema,text:z.string().max(2000).regex(/^[^\r\n]*$/),scenario:z.union([z.literal(1),z.literal(2),z.literal(3),z.null()])}).strict()).max(1000);
 const commandSchema = z.discriminatedUnion('type', [
   z.object({type:z.literal('mulligan'),investigatorId:idSchema,cardIds:z.array(idSchema).max(20)}),
   z.object({type:z.literal('action'),investigatorId:idSchema,actionId:z.string().max(500)}),
   z.object({type:z.literal('choose'),investigatorId:idSchema,choiceId:idSchema,optionIds:z.array(z.string().max(500)).max(100)}),
   z.object({type:z.literal('pass'),investigatorId:idSchema,choiceId:idSchema}),
   z.object({type:z.literal('pay'),investigatorId:idSchema,choiceId:idSchema,contributions:z.array(z.object({sourceId:z.string().min(1).max(300),amount:z.number().int().positive().max(1000000)}).strict()).max(100)}),
-  z.object({type:z.literal('campaign-log'),entries:z.string().max(100000),records:z.record(z.string().max(100),logRecordSchema)})
+  z.object({type:z.literal('campaign-log'),entries:z.string().max(100000),items:logItemsSchema.optional(),records:z.record(z.string().max(100),logRecordSchema)})
 ]);
 export interface AppOptions {
   appDir: string; dataDir: string; catalog: Catalog; port?: number; hostToken?: string; logger?: boolean;
@@ -143,7 +144,7 @@ export async function createApp(options: AppOptions) {
   app.post('/api/sessions', async req => {
     const viewer=viewerFor(req,true);
     if(storage.rulesProblem())throw new AppError(storage.rulesProblem()!,422);
-    const body=z.object({name:z.string().trim().min(1).max(100),mode:z.enum(['hotseat','separate']),difficulty:z.enum(['easy','standard','hard','expert']),leadSeat:z.number().int().min(1).max(4),hostSeat:z.number().int().min(1).max(4).optional(),seats:z.array(z.object({deckRevisionId:idSchema,playerName:z.string().trim().min(1).max(60)})).min(1).max(4),logEntries:z.string().max(100000).optional()}).parse(req.body);
+    const body=z.object({name:z.string().trim().min(1).max(100),mode:z.enum(['hotseat','separate']),difficulty:z.enum(['easy','standard','hard','expert']),leadSeat:z.number().int().min(1).max(4),hostSeat:z.number().int().min(1).max(4).optional(),seats:z.array(z.object({deckRevisionId:idSchema,playerName:z.string().trim().min(1).max(60)})).min(1).max(4),logEntries:z.string().max(100000).optional(),logItems:logItemsSchema.optional()}).parse(req.body);
     if((body.hostSeat??body.leadSeat)>body.seats.length)throw new AppError('Choose a valid host seat.');
     const decks=body.seats.map(s=>storage.getDeckRevision(s.deckRevisionId));
     const setup:SetupOptions={...body,sessionId:randomUUID(),createdAt:new Date().toISOString(),seed:randomBytes(4).readUInt32LE()};

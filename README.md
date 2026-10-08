@@ -1,12 +1,12 @@
-# Arkham Horror Digital 0.4.0
+# Arkham Horror Digital 0.4.1
 
-A local TypeScript application for the **2026 Chapter Two core box** and **Brethren of Ash**. New campaigns use the automated **chapter2-1** engine for all **195 core card definitions**, including **Spreading Flames**, **Smoke and Mirrors**, and **Queen of Ash**.
+A local TypeScript application for the **2026 Chapter Two core box** and **Brethren of Ash**. New campaigns use the automated **chapter2-2** engine for all **195 core card definitions**, including **Spreading Flames**, **Smoke and Mirrors**, and **Queen of Ash**.
 
 Standalone play, local deckbuilding, campaign-book narrative, and replay playback remain unavailable. Historical pilot and setup sessions retain their recorded engine; start a new campaign to use the full Chapter Two scripts.
 
 ## Windows application
 
-1. Extract `Arkham-Horror-Digital-0.4.0-windows-x64.zip` completely.
+1. Extract `Arkham-Horror-Digital-0.4.1-windows-x64.zip` completely.
 2. Run **Launch Arkham Horror Digital.cmd**. Node.js 24 and SQLite are bundled; no installation is required.
 3. The application verifies and installs **all 245 supported card faces** before displaying its menu. Internet is required for missing images. Complete caches work offline.
 4. In **Decks**, choose Published or Shared and enter an ArkhamDB code. Set the deck's Taboo selection to ArkhamDB's latest list before importing.
@@ -33,7 +33,7 @@ Imports reject unsupported investigators, main-deck cards, and sideboard cards, 
 
 Successful refreshes create immutable revisions. Failed refreshes leave existing deck revisions untouched. Stored incompatible decks remain inspectable/removable but cannot start new campaigns. Printed level and Taboo-adjusted purchase XP are distinct; new campaigns reject decks requiring XP. Missing required signatures are added during setup, and supported random basic weaknesses are assigned once and saved.
 
-Live verification failure blocks importing. Existing local sessions use their recorded rules offline. A newly discovered unsupported behavioral change requires an application update and blocks new campaigns, while historical sessions retain their package. After a resolution, **Next scenario** verifies the latest live rules and lets the host select stored ArkhamDB deck revisions. XP costs, trauma, assigned weaknesses, story cards, chaos-bag changes, and campaign records carry forward. Upgrade decks on ArkhamDB, then refresh their library entries; no local deck editing is provided. An unavailable latest rules package blocks advancement without changing the completed scenario.
+Live verification failure blocks importing. Existing local sessions use their recorded rules offline. A newly discovered unsupported behavioral change requires an application update and blocks new campaigns, while historical sessions retain their package. **Prepare Scenario** verifies the latest live rules and lets the host select stored ArkhamDB deck revisions. XP costs, trauma, assigned weaknesses, eligible story cards, and campaign records carry forward; the chaos bag is prepared for the scenario selected by the log. Upgrade decks on ArkhamDB, then refresh their library entries; no local deck editing is provided. An unavailable latest rules package blocks preparation without changing the active table.
 
 ## Rules and card engine
 
@@ -73,13 +73,17 @@ The pinned catalog has **195 physical definitions and 245 faces**. ArkhamDB is t
 
 On every startup, four workers decode and hash-check existing images. Only missing, corrupt, or changed-source assets download. Bytes and source/hash metadata commit atomically. Failed faces retry after 2 and 10 seconds, then show errors with Retry and Exit. There is no skip and no fetching during card inspection. The server independently blocks table access until installation completes. An interrupted install reuses valid completed faces. Credits can verify and repair the entire cache.
 
+During installation, a source that times out, fails at the network level, or returns a busy/server error moves behind its reviewed alternatives for subsequent images. This avoids waiting on the same unavailable host for every card. A missing individual image does not demote its host. The original source remains available if alternatives fail, and each new verification run resets source preference. This changes download order only; existing image fingerprints and caches stay valid.
+
 ## Unified tabletop
 
 The board is one continuous surface with visible card piles and unbordered investigator areas. Drag empty table space to pan, use Ctrl + wheel to zoom, or use Fit table, Map, and P1–P4 on the left edge. These buttons change your view, never your seat permissions. Arrow keys pan when the table has keyboard focus.
 
 Left-edge controls show all hands or one hand, cycle All / Relevant / Focused cards, pin the controls, and configure previews, effective text, and display-only sorting. Hover shows a large card image; right-click or F previews its reverse without changing the game. I opens effective rules in the detailed inspector. Visible scenario cards allow both faces; concealed cards always stay anonymous backs.
 
-Left-click a visible card to show its legal actions on the right edge; it does not open the inspector. Click All actions or empty table space to return to the investigator's action list. Card selection is local and creates no checkpoint. End turn remains visible and is enabled only when the server permits ending the active investigator's turn.
+Left-click a visible card to show its legal actions on the right edge; it does not open the inspector. Select an investigator card or map token for its abilities and basic actions. **Move** highlights legal destinations; clicking one submits the action. Clear selection or click empty table space to hide actions. Selecting cards and destinations before submission creates no checkpoint. End turn remains visible and is enabled only when the server permits ending the active investigator's turn.
+
+Unengaged enemies, treacheries, and attached player cards appear beside their location without overlapping. Their thin borders are red, orange, and blue respectively. Hovering a location highlights its full area in light gray. The layout expands and contracts as nearby cards arrive and leave.
 
 The right edge holds confirmations, legal actions, and Table menu (log, history, undo, saves, sharing, main menu). Trigger ordering and multiple-choice decisions open centered popups. Minimize keeps a decision pending; Open choices returns to it.
 
@@ -103,7 +107,11 @@ Save schema **v2** stores canonical zones, rules/catalog/script identities and h
 
 Existing schema-v1 sessions migrate into new sessions, copying their history and named saves while retaining original rows. Legacy setup rules stay explicitly marked. Unknown schema, catalog, or script versions fail rather than silently substituting current rules. Keep the original application package alongside historical saves if their script package becomes unavailable.
 
-The manual campaign log preserves original text; generated resolution records append functional outcomes. Registered conditions match case-insensitive, whitespace-normalized whole entries. Scenario 1 has no invented log-dependent effects.
+The campaign log contains addable and deletable single-line entries, grouped by scenario in thin red boxes. Registered strings appear green; custom notes appear orange. Matching preserves the original text and ignores capitalization and repeated whitespace, with explicit terminal-period and apostrophe variants. New `chapter2-2` sessions automatically add **Scenario N Complete** when a scenario ends and prompt the host to add the relevant resolution entries. These suggestions and pending review survive saves and reconnects.
+
+The first scenario without a completion marker is selected for setup. Later scenarios require their relevant university, harbinger, and search outcome strings; missing or contradictory required entries block preparation. Delete a completion marker or a whole scenario section, save the log, then select **Prepare Scenario** to play it again. This uses the current investigator records and chosen deck revisions; it does not undo earned XP or trauma automatically. Use **History** for an exact earlier snapshot. Initial campaign setup accepts the same grouped log. Scenario 1 has no invented log-dependent effects.
+
+Recorded `chapter2-1` scenarios retain their original automatic outcome entries. Add their completion markers manually to use log-directed preparation; the next prepared scenario uses the latest verified package. Historical snapshots and branches remain intact.
 
 For a backup, stop the server and copy the data folder (`arkham.sqlite` and `assets`). Launcher readiness files and logs are in the LocalAppData launcher subfolder. Readiness files contain host credentials and are not part of save exports.
 
