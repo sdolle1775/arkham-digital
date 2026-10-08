@@ -1,12 +1,15 @@
 import type { Catalog, DeckRevision, GameCommand, GameState, SessionView, SetupOptions, Viewer, RulesIdentity } from '../shared/types.js';
 import { createGame as createLegacy } from './legacy-setup.js';
 import { migrateState } from './migration.js';
-import { cardsIn, moveCard, zone } from './zones.js';
-import { shuffle } from './random.js';
+import { cardsIn, moveCard, zone, shuffleZone } from './zones.js';
 import { campaignLogFlags } from './campaigns/brethren.js';
 import { allowedActions, applyEngineCommand, beginPilot, type Boundary } from './engine.js';
 import { paymentView } from './payments.js';
-import { chapterGame, stat } from './chapter/context.js';
+import { agendaDoom } from './doom.js';
+import { chapterGame, stat as currentStat } from './chapter/context.js';
+import { stat as historicalStat } from './chapter-v2/context.js';
+import { setupScenario as historicalSetup } from './chapter-v2/scenarios.js';
+const stat=(x:Parameters<typeof currentStat>[0],actor:string,skill:Parameters<typeof currentStat>[2])=>(x.s.rules.scriptVersion==='chapter2-3'?currentStat:historicalStat)(x,actor,skill);
 import { appendLogEntry, campaignRoute, logEntries, logFlags, setLogEntries } from '../shared/campaign-log.js';
 import { setupScenario, newProgress } from './chapter/scenarios.js';
 export { validateGameState } from './validation.js';
@@ -34,10 +37,10 @@ export function createGame(options:SetupOptions,catalog:Catalog,decks:DeckRevisi
       openingDraw(s,i.id,permanents.filter(id=>s.cards[id].code==='12042').length,catalog);
     }
   }
-  if(required.scriptVersion==='chapter2-2'){
+  if(['chapter2-2','chapter2-3'].includes(required.scriptVersion)){
     setLogEntries(s.campaign.log,options.logItems??logEntries(s.campaign.log));
     if(options.logItems&&s.campaign.log.entries!==(options.logEntries??''))throw new Error('Initial campaign entry rows do not match their text.');
-    if(!deferScenario){const route=campaignRoute(s.campaign.log.entries);if(!route.scenario)throw new Error('All scenarios are complete in this campaign log.');if(route.missing.length)throw new Error(route.missing.join(' '));if(route.scenario===3)s.scenario.chaosBag.push('cultist','cultist');setupScenario(s,catalog,route.scenario);}
+    if(!deferScenario){const route=campaignRoute(s.campaign.log.entries);if(!route.scenario)throw new Error('All scenarios are complete in this campaign log.');if(route.missing.length)throw new Error(route.missing.join(' '));if(route.scenario===3)s.scenario.chaosBag.push('cultist','cultist');(required.scriptVersion==='chapter2-3'?setupScenario:historicalSetup)(s,catalog,route.scenario);}
   }
   return s;
 }
@@ -58,7 +61,7 @@ export function applyCommand(previous:GameState,command:GameCommand,catalog:Cata
   for(const id of command.cardIds)moveCard(s,id,'openingSetAside',i.id);
   openingDraw(s,i.id,command.cardIds.length,catalog);
   for(const id of [...cardsIn(s,'openingSetAside',i.id)])moveCard(s,id,'deck',i.id);
-  zone(s,'deck',i.id).cards=shuffle(cardsIn(s,'deck',i.id),s.rng);i.mulliganComplete=true;s.setup.completed.push(i.id);s.pendingChoices.shift();
+  shuffleZone(s,'deck',i.id);i.mulliganComplete=true;s.setup.completed.push(i.id);s.pendingChoices.shift();
   if(!s.pendingChoices.length){s.phase='ready';if(s.engine.pilot||chapterGame(s))beginPilot(s,catalog,boundary);}
   return s;
 }
@@ -75,7 +78,7 @@ export function projectState(s:GameState,viewer:Viewer,checkpointId:string,catal
   const acts=cardsIn(s,'acts'),agendas=cardsIn(s,'agendas');if(acts[0])visible.add(acts[0]);if(agendas[0])visible.add(agendas[0]);
   const investigators=s.investigators.map(i=>({...i,...(chapterGame(s)&&[...cardsIn(s,'assets',i.id),...cardsIn(s,'threat',i.id)].some(id=>s.cards[id].code==='12098')?{health:i.health-1,sanity:i.sanity-1}:{}),deckCount:cardsIn(s,'deck',i.id).length,handCount:cardsIn(s,'hand',i.id).length,hand:controls(i.id)?cardsIn(s,'hand',i.id):[],assets:cardsIn(s,'assets',i.id),threat:cardsIn(s,'threat',i.id),discard:cardsIn(s,'discard',i.id),canControl:controls(i.id),weaknessCodes:[],skills:Object.fromEntries((['willpower','intellect','combat','agility'] as const).map(skill=>{const base=Number(catalog?.cards[i.investigatorCode]?.raw['skill_'+skill]??0),value=catalog&&chapterGame(s)?stat({s,c:catalog},i.id,skill):base+s.engine.modifiers.filter(m=>m.target===i.id&&m.stat===skill).reduce((n,m)=>n+m.amount,0);return [skill,{base,value}];})) as SessionView['investigators'][number]['skills']}));
   const pendingChoices:SessionView['pendingChoices']=s.pendingChoices.slice(0,1).filter(ch=>controls(ch.investigatorId)).map(({context,...choice})=>({
-    ...choice,options:choice.options?.map(o=>({...o,...(!o.cardId&&visible.has(o.id)?{cardId:o.id}:{})})),presentation:choice.type==='mulligan'?'mulligan':context?.kind==='payment'?'payment':context?.kind==='search'?'search':['commit','discard-hand','attach','hunter'].includes(context?.kind??'')||context?.kind==='effects'&&!!choice.options?.length&&choice.options.every(o=>o.cardId)?'cards':'popup'
+    ...choice,options:choice.options?.map(o=>({...o,...(!o.cardId&&visible.has(o.id)?{cardId:o.id}:{})})),presentation:choice.type==='mulligan'?'mulligan':context?.kind==='test-result'?'test-result':context?.kind==='payment'?'payment':context?.kind==='search'?'search':['commit','discard-hand','attach','hunter'].includes(context?.kind??'')||context?.kind==='effects'&&!!choice.options?.length&&choice.options.every(o=>o.cardId)?'cards':'popup'
   }));
   const searchChoice=pendingChoices.find(ch=>ch.presentation==='search');
   const search=searchChoice?{choiceId:searchChoice.id,investigatorId:searchChoice.investigatorId,cards:cardsIn(s,'search',searchChoice.investigatorId),legalCardIds:(searchChoice.options??[]).flatMap(o=>o.cardId?[o.cardId]:[])}:null;
@@ -83,5 +86,5 @@ export function projectState(s:GameState,viewer:Viewer,checkpointId:string,catal
   const piles:SessionView['piles']=Object.values(s.zones).map(z=>({id:z.id,kind:z.kind,owner:z.owner,count:z.cards.length,cards:z.cards.filter(id=>visible.has(id)),visibility:z.visibility==='hidden'||z.visibility==='owner'&&!controls(z.owner)?'concealed':'visible'}));
   const {rng:_,zones:_z,resolutionStack:_r,queuedTests:_q,test,engine,investigators:_i,cards:_c,scenario:_s,pendingChoices:_p,...common}=s;
   const route=campaignRoute(s.campaign.log.entries);
-  return structuredClone({...common,checkpointId,waitingFor:s.pendingChoices[0]&&!controls(s.pendingChoices[0].investigatorId)?s.pendingChoices[0].investigatorId:null,investigators,...(engine.chapter?{campaignProgress:{outcome:engine.chapter.outcome,canContinue:!!route.scenario&&!route.missing.length&&(s.phase==='ended'||route.scenario!==s.campaign.scenarioNumber),nextScenario:route.scenario,missing:route.missing,...(s.phase==='ended'&&engine.chapter.logReview?{review:engine.chapter.logReview}:{}),killed:engine.chapter.killed,earned:engine.chapter.earned}}:{}),cards:Object.fromEntries([...visible].map(id=>[id,s.cards[id]])),scenario:{...s.scenario,locations:s.scenario.locations.map(l=>({...l,...(engine.chapter?.beneath[l.cardId]?{facedownCount:1}:{})})),reference:cardsIn(s,'reference')[0],acts:acts.slice(0,1),agendas:agendas.slice(0,1),actCount:acts.length,agendaCount:agendas.length,encounterDeckCount:cardsIn(s,'encounterDeck').length,encounterDiscard:cardsIn(s,'encounterDiscard'),setAside:[],victory:cardsIn(s,'victory'),removed:cardsIn(s,'removed'),enemies:cardsIn(s,'enemies')},pendingChoices,piles,search,payment,allowedActions:catalog?s.investigators.filter(i=>controls(i.id)).flatMap(i=>allowedActions(s,catalog,i.id)):[],engine:{pilot:engine.pilot,round:engine.round,phase:engine.phase,activeInvestigatorId:engine.activeInvestigatorId,log:engine.log,testResults:engine.testResults,blockedReason:engine.blockedReason},test:test?{id:test.id,actor:test.actor,skill:test.skill,difficulty:test.difficulty,tokens:test.tokens,tokenModifier:test.tokenModifier,result:test.result,stage:test.stage,success:test.success,margin:test.margin}:null});
+  return structuredClone({...common,checkpointId,waitingFor:s.pendingChoices[0]&&!controls(s.pendingChoices[0].investigatorId)?s.pendingChoices[0].investigatorId:null,investigators,...(engine.chapter?{campaignProgress:{outcome:engine.chapter.outcome,canContinue:!!route.scenario&&!route.missing.length&&(s.phase==='ended'||route.scenario!==s.campaign.scenarioNumber),nextScenario:route.scenario,missing:route.missing,...(s.phase==='ended'&&engine.chapter.logReview?{review:engine.chapter.logReview}:{}),killed:engine.chapter.killed,earned:engine.chapter.earned}}:{}),cards:Object.fromEntries([...visible].map(id=>[id,s.cards[id]])),scenario:{...s.scenario,doom:agendaDoom(s,catalog),locations:s.scenario.locations.map(l=>({...l,...(engine.chapter?.beneath[l.cardId]?{facedownCount:1}:{})})),reference:cardsIn(s,'reference')[0],acts:acts.slice(0,1),agendas:agendas.slice(0,1),actCount:acts.length,agendaCount:agendas.length,encounterDeckCount:cardsIn(s,'encounterDeck').length,encounterDiscard:cardsIn(s,'encounterDiscard'),setAside:[],victory:cardsIn(s,'victory'),removed:cardsIn(s,'removed'),enemies:cardsIn(s,'enemies')},pendingChoices,piles,search,payment,allowedActions:catalog?s.investigators.filter(i=>controls(i.id)).flatMap(i=>allowedActions(s,catalog,i.id)):[],engine:{pilot:engine.pilot,round:engine.round,phase:engine.phase,activeInvestigatorId:engine.activeInvestigatorId,log:engine.log,testResults:engine.testResults,blockedReason:engine.blockedReason},test:test?{id:test.id,actor:test.actor,skill:test.skill,difficulty:test.difficulty,tokens:test.tokens,tokenModifier:test.tokenModifier,result:test.result,awaitingResult:s.pendingChoices.some(p=>p.context?.kind==='test-result'&&p.context.testId===test.id),stage:test.stage,success:test.success,margin:test.margin}:null});
 }

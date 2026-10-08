@@ -1,0 +1,6 @@
+# Audit pins hash exact source bytes; preserve them across Git checkouts.
+/content/upstream/core_2026.json -text
+/content/upstream/core_2026_encounter.json -text
+/content/upstream/core_2026-api.json -text
+/content/script-contracts.json -text
+/src/game/chapter-v2/*.ts -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

@@ -1,0 +1,10 @@
+[
+  {
+    "id": "source/aloof-automatic-evasion",
+    "status": "resolved",
+    "sources": ["Bretheren of Ash Rulebook.pdf: Aloof (p.7)", "The Arkham Grimoire.pdf: Aloof (p.4); Evade (p.11)"],
+    "issue": "The campaign guide prohibits attacking or evading an unengaged Aloof enemy. The supplied Grimoire's Aloof entry prohibits attacks, and its evade rules distinguish automatic evasion from an evade action. Establish the applicable precedence or an explicit clarification for automatic evasion before declaring this interaction verified.",
+    "affected": ["12050 Breaking and Entering automatic evasion", "Aloof enemies"],
+    "resolution": "Use the supplied Grimoire v1.1 Aloof and Evade entries for the general keyword rule. The official design-team announcement identifies the Grimoire as the definitive current rules/keyword reference (https://www.arkhamhorror.com/news/announcing-the-release-of-the-arkham-grimoire/, verified 2026-10-08). It restricts attacks against unengaged Aloof enemies, while automatic evasion follows the card's target instruction. This applies a general rules clarification, not Grimoire card errata. ArkhamDB's 12050 text remains unchanged. Regression: aloof-automatic-evasion."
+  }
+]

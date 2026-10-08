@@ -1,0 +1,277 @@
+[
+  {
+    "id": "choice/mandatory-cardinality",
+    "source": "Grimoire: Choices, May, Must; confirmed application prompt policy",
+    "expected": "Zero mandatory targets continue without a choice; exactly one mandatory outcome resolves automatically; multiple distinct outcomes remain selectable. An optional eligible effect retains use/pass.",
+    "cases": [
+      "choice-cardinality",
+      "mandatory-discard"
+    ]
+  },
+  {
+    "id": "choice/cancel-copies",
+    "source": "12026, 12065 effective ArkhamDB text; Grimoire: Initiation Sequence",
+    "expected": "Every eligible physical Ward or Counterattack copy is offered to its owner. Declining and canceling payment preserve the original pending effect and spend nothing.",
+    "cases": [
+      "ward-copies",
+      "counterattack-copies"
+    ]
+  },
+  {
+    "id": "keyword/aloof-targeting",
+    "source": "Grimoire: Aloof; Brethren of Ash p.7",
+    "expected": "An unengaged Aloof enemy does not auto-engage and cannot be attacked. An enemy engaged with any investigator can be attacked by another investigator at its location.",
+    "cases": [
+      "aloof-targeting",
+      "aloof-spawn"
+    ]
+  },
+  {
+    "id": "keyword/prey-only-starvation",
+    "source": "12009; Grimoire: Prey, Enemy Engagement",
+    "expected": "A prey-only enemy without its named investigator remains unengaged without preventing ordinary enemies from engaging.",
+    "cases": [
+      "auto-engage-prey-only"
+    ]
+  },
+  {
+    "id": "keyword/hunter-ties",
+    "source": "Grimoire: Hunter, Prey",
+    "expected": "Ready hunters move toward nearest eligible investigators. Modified prey values break equidistant ties; the lead chooses between equally valid shortest destinations. Exhausted hunters do not move.",
+    "cases": [
+      "hunter-route-ties",
+      "hunter-prey-nearest"
+    ]
+  },
+  {
+    "id": "keyword/massive-attacks",
+    "source": "12179; Grimoire: Massive",
+    "expected": "A ready Massive enemy attacks each investigator at its location once per enemy phase and cannot be manually engaged.",
+    "cases": [
+      "massive-engagement"
+    ]
+  },
+  {
+    "id": "keyword/elusive-after-attack",
+    "source": "Grimoire: Elusive",
+    "expected": "Resolve the attack first. A surviving ready Elusive enemy disengages, moves to an unoccupied connecting location if able, and exhausts. Defeated enemies do not move.",
+    "cases": [
+      "elusive-destinations",
+      "attack-before-elusive"
+    ]
+  },
+  {
+    "id": "keyword/retaliate-alert",
+    "source": "Brethren of Ash pp.3,7; Grimoire: Retaliate, Alert, ST.7",
+    "expected": "Only a ready enemy retaliates or alerts after the appropriate failed test. All test results resolve before the keyword attack; the result acknowledgement precedes those consequences.",
+    "cases": [
+      "retaliate-alert",
+      "retaliate-after-results"
+    ]
+  },
+  {
+    "id": "keyword/peril-scope",
+    "source": "Grimoire: Peril, Elimination",
+    "expected": "Other investigators cannot trigger abilities during the entire Peril encounter resolution. Cleanup releases the restriction, including when the drawing investigator is defeated.",
+    "cases": [
+      "peril-resolution-scope",
+      "peril-defeat-cleans-scope"
+    ]
+  },
+  {
+    "id": "keyword/conditional-surge",
+    "source": "12100, 12124, 12126, 12160, 12163 effective ArkhamDB text",
+    "expected": "A textual instruction to gain Surge does not count as a printed unconditional keyword. Cosmic Evils' doom option does not draw another encounter.",
+    "cases": [
+      "printed-keywords"
+    ]
+  },
+  {
+    "id": "keyword/doomed",
+    "source": "12123; Grimoire: Doomed",
+    "expected": "Defeating Bystander places exactly one doom on the active agenda and may advance it; discarding without defeat does not.",
+    "cases": [
+      "doomed-defeat-not-discard"
+    ]
+  },
+  {
+    "id": "keyword/permanent",
+    "source": "12042, 12056, 12095, 12096, 12181; Grimoire: Permanent",
+    "expected": "Permanents begin in play, do not enter opening hands, cannot leave play, and obey their printed deckbuilding and slot changes.",
+    "cases": []
+  },
+  {
+    "id": "keyword/victory",
+    "source": "Grimoire: Victory Display, Campaign Play",
+    "expected": "Defeated Victory enemies enter the victory display. Cleared eligible locations contribute XP at resolution, and unresolved locations do not.",
+    "cases": []
+  },
+  {
+    "id": "timing/forced-priority",
+    "source": "Grimoire: Priority of Simultaneous Resolution",
+    "expected": "Scenario forced abilities precede player forced abilities. The lead orders abilities of equal priority, and the costs and effects of one ability remain indivisible.",
+    "cases": [
+      "forced-priority",
+      "forced-lead-order"
+    ]
+  },
+  {
+    "id": "timing/reaction-revalidation",
+    "source": "Grimoire: Triggered Abilities, Ability Costs; 12001, 12022, 12060, 12122",
+    "expected": "Resolve forced effects first, then rebuild reactions from the resulting state. A discarded weapon, committed event or exhausted asset cannot retain a stale trigger or cost.",
+    "cases": [
+      "forced-discard-rebuilds-reaction",
+      "reaction-card-departure",
+      "reaction-revalidation"
+    ]
+  },
+  {
+    "id": "timing/upkeep",
+    "source": "Grimoire p.29: 4.4–4.5",
+    "expected": "All living investigators draw in player order before any resource gain or hand-limit discard.",
+    "cases": [
+      "upkeep-draw-before-resources"
+    ]
+  },
+  {
+    "id": "timing/doom-in-play",
+    "source": "Grimoire: Doom, Act Deck and Agenda Deck",
+    "expected": "Only active in-play cards contribute doom; remove doom only from those cards when an agenda advances.",
+    "cases": [
+      "doom-active-cards-only"
+    ]
+  },
+  {
+    "id": "lifecycle/play-not-put",
+    "source": "12032; Grimoire: Put into Play",
+    "expected": "Laboratory Assistant's draw reaction requires playing the card. Putting it into play does not trigger it; playing retains the optional Pass.",
+    "cases": [
+      "laboratory-put-into-play",
+      "asset-entry-12032"
+    ]
+  },
+  {
+    "id": "lifecycle/dash-cost",
+    "source": "12012; Grimoire: Costs",
+    "expected": "A dash-cost asset cannot be played by paying zero resources.",
+    "cases": [
+      "null-cost-not-playable"
+    ]
+  },
+  {
+    "id": "lifecycle/control-return",
+    "source": "12010, 12052; Grimoire: Ownership and Control, Different",
+    "expected": "Returns can select controlled assets owned by another player and physically return them to the owner. Dexter's different asset compares titles, including across levels.",
+    "cases": [
+      "dexter-control-and-different-title",
+      "prestidigitation-controlled-return"
+    ]
+  },
+  {
+    "id": "lifecycle/lasting-effect",
+    "source": "12017; Grimoire: Lasting Effects",
+    "expected": "A paid test boost survives its source leaving play and expires exactly at the test end.",
+    "cases": [
+      "lasting-modifier-survives-source"
+    ]
+  },
+  {
+    "id": "lifecycle/when-horror",
+    "source": "12058; Grimoire: When, Dealing Damage/Horror, Defeat",
+    "expected": "Cloak's When reaction is available before lethal horror discards it; it can only damage an enemy at the investigator's location. Zero, one and multiple targets follow the prompt policy.",
+    "cases": [
+      "cloak-when-and-local-targets"
+    ]
+  },
+  {
+    "id": "interaction/daniela-wrench",
+    "source": "12001, 12002; Grimoire: Attacks, Reaction Abilities",
+    "expected": "All combinations of Wrench provoking, attack cancellation, prevention, retaliation, enemy defeat and Daniela's once-per-round restriction produce the exact legal reactions and damage.",
+    "cases": []
+  },
+  {
+    "id": "interaction/ward-surge",
+    "source": "12065; Grimoire: Cancel, Surge, Revelation",
+    "expected": "Cancel only Revelation, preserve any independent Surge, correctly discard the encounter, and never pay the Ward cost twice after restore.",
+    "cases": []
+  },
+  {
+    "id": "interaction/result-overrides",
+    "source": "12036, 12082, 12014; Grimoire: Skill Test Timing",
+    "expected": "Timely Intervention, Scrape By, token effects, successful-test abilities and queued Twin .45s tests retain their proper timing and complete choices.",
+    "cases": []
+  },
+  {
+    "id": "interaction/search-weaknesses",
+    "source": "12006, 12023, 12040, 12043; Grimoire: Search, Weakness",
+    "expected": "Partial and full searches show exactly the permitted pool; Dead Ends interrupts at the correct time; no-match acknowledgement, ordered returns and shuffling restore identically.",
+    "cases": []
+  },
+  {
+    "id": "interaction/slots-control-attachments",
+    "source": "Grimoire: Slots, Attachments, Ownership and Control, Defeat",
+    "expected": "Every eligible slot replacement is selectable, attachments clean up exactly once, and control transfer preserves ownership and legal capacities.",
+    "cases": []
+  },
+  {
+    "id": "interaction/doom-pending-tests",
+    "source": "12106–12108, 12134–12135, 12169–12171; Grimoire: Agenda Deck",
+    "expected": "Doom on several cards, advancement during a test, queued tests and scenario transitions preserve timing, targets and continuations.",
+    "cases": []
+  },
+  {
+    "id": "restore/effect-boundaries",
+    "source": "Save schema v2 contract; 12014, 12001, 12122",
+    "expected": "Restoring each captured payment, test, forced-discard and reaction boundary yields the identical final serialized state without repeated costs or randomness.",
+    "cases": [
+      "restore-payment-test-reaction",
+      "restore-forced-before-reaction"
+    ]
+  },
+  {
+    "id": "restore/historical-rules",
+    "source": "Recorded rules compatibility contract",
+    "expected": "chapter2-1 and chapter2-2 retain their recorded behavior rather than being silently interpreted as chapter2-3.",
+    "cases": [
+      "historical-interpreter"
+    ]
+  },
+  {
+    "id": "restore/peril-archive",
+    "source": "Save/export/restart contract; Grimoire: Peril",
+    "expected": "SQLite restart and portable archive import retain the pending Peril decision, exact rules package, RNG and card zones.",
+    "cases": [
+      "archive-peril-boundary"
+    ]
+  },
+  {
+    "id": "scenario/1-all-resolutions",
+    "source": "Brethren of Ash pp.2–5; 12105–12132",
+    "expected": "Command-driven journeys exercise every Spreading Flames resolution, agenda branch, XP/trauma/reward outcome and subsequent campaign-log route.",
+    "cases": []
+  },
+  {
+    "id": "scenario/2-all-resolutions",
+    "source": "Brethren of Ash pp.6–10; 12133–12167",
+    "expected": "Command-driven journeys exercise every Smoke and Mirrors resolution, Codex branch, harbinger, XP/trauma/reward outcome and subsequent campaign-log route.",
+    "cases": []
+  },
+  {
+    "id": "scenario/3-all-resolutions",
+    "source": "Brethren of Ash pp.11–14; 12168–12195",
+    "expected": "Command-driven journeys exercise every Queen of Ash resolution, agenda branch, Elokoss face and functional campaign outcome.",
+    "cases": []
+  },
+  {
+    "id": "ui/all-prompt-families",
+    "source": "Approved tabletop interaction contract",
+    "expected": "Browser checks cover targeting, movement, search, commitments, payments, assignments, reactions, ordering and multiple-choice prompts, including keyboard access and minimize/reopen.",
+    "cases": []
+  },
+  {
+    "id": "privacy/all-boundaries",
+    "source": "Approved HTTP/WebSocket session projection contract",
+    "expected": "One-, two- and four-player views, including a separate host, disclose no hidden hands, deck order, searches, weaknesses or private choices; reconnect and stale/fabricated submissions preserve authority.",
+    "cases": []
+  }
+]

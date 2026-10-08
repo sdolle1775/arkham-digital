@@ -3,7 +3,7 @@ import { attachCard, cardsIn, discardCard, locationOf, moveCard, zone } from '..
 import { randomIndex, shuffle } from '../random.js';
 import { cardEffect, canPay, fightActions, playable, playUses } from './actions.js';
 import { commitEligible } from './tests.js';
-import { type Ctx, type Option, ask, assets, changeZoneOwner, choose, clue, code, canMove, connections, currentZone, damage, definition, discard, distance, draw, engaged, enemies, enemyDamage, exhaust, gain, has, heal, health, hook, inPlay, investigator, keyword, living, log, mark, mod, name, number, push, ready, select, shroud, stat, test, token, trait, used, weakness } from './context.js';
+import { type Ctx, type Option, ask, attackable, assets, changeZoneOwner, choose, clue, code, canMove, connections, currentZone, damage, definition, discard, distance, draw, engaged, enemies, enemyDamage, exhaust, gain, has, heal, health, hook, inPlay, investigator, keyword, living, mayTrigger, log, mark, mod, name, number, push, ready, select, shroud, stat, test, token, trait, used, weakness } from './context.js';
 
 const lose=(actor:string,amount?:number):Effect=>({type:'c-spend',actor,amount,data:{loss:true}});
 const threat=(x:Ctx,actor:string,id:string)=>moveCard(x.s,id,'threat',actor,x.c);
@@ -17,7 +17,7 @@ function healChoice(x:Ctx,actor:string,amount=1,includeAllies=false,kind?:'damag
  }choose(x,actor,'Choose what to heal',options);
 }
 function discardHand(x:Ctx,actor:string,count:number,prompt='Choose cards to discard',filter=(id:string)=>!weakness(x,id)):void {
- const ids=cardsIn(x.s,'hand',actor).filter(filter),n=Math.min(ids.length,count);if(n)ask(x,actor,prompt,ids.map(id=>({id,label:name(x,id),cardId:id})),{kind:'discard-hand'},n,n,true);
+ const ids=cardsIn(x.s,'hand',actor).filter(filter),n=Math.min(ids.length,count);if(n&&n===ids.length){push(x,ids.map(discard));return;}if(n)ask(x,actor,prompt,ids.map(id=>({id,label:name(x,id),cardId:id})),{kind:'discard-hand'},n,n,true);
 }
 function testChoice(x:Ctx,actor:string,source:string,skills:Skill[],difficulty:number,action='revelation'):void {choose(x,actor,'Choose a skill',skills.map(skill=>({id:skill,label:skill,effects:[test(actor,skill,difficulty,action,source)]})));}
 function moveChoice(x:Ctx,actor:string,source:string,maxDistance=1,revealed=true,disengage=false):void {
@@ -62,7 +62,7 @@ export function resolveCard(x:Ctx,e:Effect):void {
    case '12050':push(x,[test(actor,'intellect',shroud(x,i!.locationId),'investigate',source,i!.locationId,{bonus:stat(x,actor,'agility')})]);return;
    case '12051':push(x,[search(actor,source!,'enemy',9,{encounter:true,resources:true})]);return;
    case '12052':p.pendingEndTurn.push(cardEffect(actor,source!,'return-item'));playFrom(x,actor,source!,cardsIn(s,'hand',actor).filter(id=>definition(x,id).type==='asset'&&trait(x,id,'Item')),2);return;
-   case '12055':select(x,actor,'Choose an enemy to fight',(target?[target]:enemies(x,i!.locationId)).filter(id=>!keyword(x,id,'Aloof')||engaged(x,actor).includes(id)),target=>[test(actor,'combat',number(x,target,'enemy_fight'),'fight',source,target,{bonus:2,damage:2})]);return;
+   case '12055':select(x,actor,'Choose an enemy to fight',(target?[target]:enemies(x,i!.locationId)).filter(id=>attackable(x,id)),target=>[test(actor,'combat',number(x,target,'enemy_fight'),'fight',source,target,{bonus:2,damage:2})]);return;
    case '12064':{
     const bag=[...s.scenario.chaosBag];for(const value of [...Object.values(p.sealedTokens),...(s.test?.tokens??[])]){const at=bag.indexOf(value);if(at>=0)bag.splice(at,1);}if(!bag.length)throw new Error('No chaos tokens remain to seal.');
     const revealed=bag[randomIndex(s.rng,bag.length)];p.sealedTokens[source!]=revealed;s.engine.outcomes.push({kind:'sealed-chaos',value:revealed});moveCard(s,source!,'assets',actor,c);log(x,'Premonition sealed '+revealed+'.');return;
@@ -204,7 +204,8 @@ export function resolveCard(x:Ctx,e:Effect):void {
   case 'monroe':push(x,[test(actor,'combat',Math.max(0,4-(s.cards[source!].tokens.damage??0)),'codex4',source)]);break;
   case 'abigail':push(x,[test(actor,'intellect',s.cards[i!.locationId].tokens.clues??0,'codex5',source)]);break;
   case 'sluice':testChoice(x,actor,source!,['agility','combat'],5,'sluice');break;
-  case 'return-item':select(x,actor,'Return an Item to your hand',assets(x,actor).filter(id=>trait(x,id,'Item')&&s.cards[id].owner===actor&&!weakness(x,id)&&!definition(x,id).raw.permanent),id=>[{type:'c-return',source:id}]);break;
+  case 'return-item':select(x,actor,'Return an Item to your hand',assets(x,actor).filter(id=>trait(x,id,'Item')&&!weakness(x,id)&&!definition(x,id).raw.permanent),id=>[{type:'c-return',source:id}]);break;
+  case 'local-enemy-damage':select(x,actor,(e.amount===undefined?'Deal 1 damage':'Deal damage')+' to an enemy at your location',enemies(x,i!.locationId),target=>[enemyDamage(target,e.amount??1,actor)]);break;
   case 'cosmos-other':select(x,actor,'Discover a clue at another revealed location',s.scenario.locations.filter(l=>l.cardId!==i!.locationId&&s.cards[l.cardId].face==='front'&&s.cards[l.cardId].tokens.clues>0).map(l=>l.cardId),target=>[clue(actor,target)]);break;
   case 'secrets-failure':choose(x,actor,'Drop a clue or take 1 horror',[...(i!.clues?[{id:'clue',label:'Drop 1 clue',effects:[{type:'c-drop-clue',actor,amount:1}]}]:[]),{id:'horror',label:'Take 1 horror',effects:[damage(actor,0,1)]}]);break;
   case 'compulsion-failure':choose(x,actor,'Discard a random card or lose 1 resource',[...(cardsIn(s,'hand',actor).length?[{id:'card',label:'Discard a random card',effects:[{type:'c-random-discard',actor}]}]:[]),...(i!.resources?[{id:'resource',label:'Lose 1 resource',effects:[lose(actor,1)]}]:[])]);break;
@@ -231,8 +232,8 @@ export function resolveCard(x:Ctx,e:Effect):void {
   case 'intuition':log(x,i!.name+' revealed Detective’s Intuition.');push(x,[draw(actor,2)]);break;
   case 'harm':s.cards[source!].tokens.damage=(s.cards[source!].tokens.damage??0)+1;push(x,[damage(actor,1),...(s.cards[source!].tokens.damage>=3?[discard(source!)]:[])]);break;
   case 'dexter':{
-   const returned=assets(x,actor).filter(id=>id!==target&&s.cards[id].owner===actor&&!definition(x,id).encounterCode&&!weakness(x,id)&&!definition(x,id).raw.permanent);
-   choose(x,actor,'Dexter Drake: return an asset or play a different asset',[...returned.map(id=>({id:'return-'+id,label:'Return '+name(x,id),cardId:id,effects:[mark('dexter:'+actor),{type:'c-return',source:id}]})),...cardsIn(s,'hand',actor).filter(id=>definition(x,id).type==='asset'&&code(x,id)!==code(x,target)&&playable(x,actor,id)&&canPay(x,actor,id)).map(id=>({id:'play-'+id,label:'Play '+name(x,id),cardId:id,effects:[mark('dexter:'+actor),{type:'c-play-offer',actor,source:id}]}))],true,true);break;
+   const returned=assets(x,actor).filter(id=>id!==target&&!definition(x,id).encounterCode&&!weakness(x,id)&&!definition(x,id).raw.permanent);
+   choose(x,actor,'Dexter Drake: return an asset or play a different asset',[...returned.map(id=>({id:'return-'+id,label:'Return '+name(x,id),cardId:id,effects:[mark('dexter:'+actor),{type:'c-return',source:id}]})),...cardsIn(s,'hand',actor).filter(id=>definition(x,id).type==='asset'&&definition(x,id).name!==definition(x,target!).name&&playable(x,actor,id)&&canPay(x,actor,id)).map(id=>({id:'play-'+id,label:'Play '+name(x,id),cardId:id,effects:[mark('dexter:'+actor),{type:'c-play-offer',actor,source:id}]}))],true,true);break;
   }
   case 'covert':choose(x,actor,'Covert Operations',[{id:'draw',label:'Draw 1 card',effects:[exhaust(source!),draw(actor)]},...connections(x,i!.locationId).filter(target=>canMove(x,actor,target)).map(target=>({id:target,label:'Move to '+name(x,target),cardId:target,effects:[exhaust(source!),{type:'c-move',actor,target}]}))],true);break;
   case 'black-chamber':if(i!.clues)push(x,[{type:'c-drop-clue',actor,amount:1}]);else {s.cards[source!].exhausted=false;push(x,[{type:'c-engage',actor,target:source},{type:'c-attack',actor,source}]);}break;
@@ -252,83 +253,84 @@ export function resolveCard(x:Ctx,e:Effect):void {
   }
   case 'nearest-enemy-damage':select(x,actor,'Deal damage to an enemy',enemies(x,e.data?.anywhere?undefined:i!.locationId),target=>[enemyDamage(target,e.amount??1,actor)],!!e.data?.optional);break;
   case 'elite-ready':s.cards[source!].exhausted=false;push(x,[mark('cannot-attack:'+source+':'+actor)]);break;
-  case 'twin-followup':select(x,actor,'Twin .45s: attack again using agility',enemies(x,i!.locationId).filter(id=>!keyword(x,id,'Aloof')||engaged(x,actor).includes(id)),target=>[exhaust(source!),token(source!,'ammo',-1),test(actor,'agility',number(x,target,'enemy_fight'),'fight',source,target,{bonus:1,damage:2,followup:true})],true);break;
+  case 'twin-followup':select(x,actor,'Twin .45s: attack again using agility',enemies(x,i!.locationId).filter(id=>attackable(x,id)),target=>[exhaust(source!),token(source!,'ammo',-1),test(actor,'agility',number(x,target,'enemy_fight'),'fight',source,target,{bonus:1,damage:2,followup:true})],true);break;
   default:throw new Error('Unsupported '+cd+' operation: '+op);
  }
 }
 
 /** Forced abilities resolve before optional reactions. Every offered reaction has a
  * serialized continuation, so reconnecting never replays a cost or random draw. */
-export function resolveHook(x:Ctx,e:Effect):void {
+function hookAbilities(x:Ctx,e:Effect):{forced:Effect[];reactions:Effect[]} {
  const {s}=x,event=e.data!.event,actor=e.actor,source=e.source,target=e.target,i=actor?investigator(x,actor):undefined,forced:Effect[]=[],reactions:Effect[]=[];
+ const force=(card:string|undefined,...effects:Effect[])=>forced.push({type:'c-choice',actor:s.leadInvestigatorId,source:card,data:{prompt:card?name(x,card)+' — forced ability':'Scenario forced ability',options:[{id:'resolve',label:card?name(x,card):'Scenario forced ability',effects}]}});
  const react=(who:string,card:string,label:string,effects:Effect[])=>{if(definition(x,card).type==='asset'&&has(x,who,'12012'))return;reactions.push({type:'c-choice',actor:who,source:card,data:{prompt:label,optional:true,options:[{id:'use',label,cardId:card,effects}]}});};
  const allAssets=living(x).filter(id=>!has(x,id,'12012')).flatMap(id=>assets(x,id)),here=i?.locationId;
- if(event==='spend'&&actor)for(const id of cardsIn(s,'threat',actor).filter(id=>code(x,id)==='12103'))forced.push(damage(actor,1));
+ if(event==='spend'&&actor)for(const id of cardsIn(s,'threat',actor).filter(id=>code(x,id)==='12103'))force(id,damage(actor,1));
  if(event==='draw'&&code(x,source)==='12005'&&s.engine.activeInvestigatorId===actor)react(actor!,source!,'Reveal Detective’s Intuition to draw 2', [cardEffect(actor!,source!,'intuition')]);
  if(event==='asset-played'&&i?.investigatorCode==='12010'&&!used(x,'dexter:'+actor))reactions.push(cardEffect(actor!,i.cardId,'dexter',source));
- if(event==='asset-entered'&&code(x,source)==='12032')react(actor!,source!,'Laboratory Assistant: draw 2', [draw(actor!,2)]);
- if(event==='asset-defeated'&&['12016','12027'].includes(code(x,source)!))react(actor!,source!,'Bodyguard: deal damage to an enemy',[{...cardEffect(actor!,source!,'nearest-enemy-damage'),amount:code(x,source)==='12027'?2:1}]);
+ if(event==='asset-played'&&code(x,source)==='12032')react(actor!,source!,'Laboratory Assistant: draw 2', [draw(actor!,2)]);
+ if(event==='asset-defeated'&&['12016','12027'].includes(code(x,source)!)&&enemies(x,here).length)react(actor!,source!,'Bodyguard: deal damage to an enemy',[{...cardEffect(actor!,source!,'local-enemy-damage'),amount:code(x,source)==='12027'?2:1}]);
  if(event==='enemy-damaged'){
-  if(actor)for(const id of cardsIn(s,'threat',actor).filter(id=>code(x,id)==='12003'))forced.push(cardEffect(actor,id,'harm'));
-  if(code(x,source)==='12177'){const elokoss=enemies(x).find(id=>code(x,id)==='12179');if(elokoss)forced.push(enemyDamage(elokoss,1,actor));}
+  if(actor)for(const id of cardsIn(s,'threat',actor).filter(id=>code(x,id)==='12003'))force(id,cardEffect(actor,id,'harm'));
+  if(code(x,source)==='12177'){const elokoss=enemies(x).find(id=>code(x,id)==='12179');if(elokoss)force(source,enemyDamage(elokoss,1,actor));}
  }
  if(event==='enemy-defeated'){
-  if(code(x,source)==='12123')forced.push({type:'c-doom',amount:1,data:{check:true}});
-  if(code(x,source)==='12132')forced.push(...living(x).filter(id=>investigator(x,id).locationId===target).map(id=>damage(id,0,1)));
+  if(code(x,source)==='12123')force(source,{type:'c-doom',amount:1,data:{check:true}});
+  if(code(x,source)==='12132')force(source,...living(x).filter(id=>investigator(x,id).locationId===target).map(id=>damage(id,0,1)));
   if(actor)for(const id of (has(x,actor,'12012')?[]:assets(x,actor))){
    if(code(x,id)==='12018'&&ready(x,id))react(actor,id,'Logan: gain 1 resource',[exhaust(id),gain(actor)]);
    if(['12077','12085'].includes(code(x,s.test?.source)!)&&i!.horror&&id===s.test?.source)react(actor,id,'Meat Cleaver: heal 1 horror',[heal(actor,0,1)]);
   }
-  if(actor&&code(x,s.test?.source)==='12055')forced.push(gain(actor,5));
+  if(actor&&code(x,s.test?.source)==='12055')force(s.test?.source,gain(actor,5));
  }
  if(event==='engage'&&actor){
-  if(code(x,source)==='12164')forced.push(cardEffect(actor,source!,'gangster'));
+  if(code(x,source)==='12164')force(source,cardEffect(actor,source!,'gangster'));
   for(const id of (has(x,actor,'12012')?[]:assets(x,actor)).filter(id=>code(x,id)==='12074'&&ready(x,id)&&s.cards[id].tokens.supplies>0))reactions.push(cardEffect(actor,id,'hunter-instinct'));
  }
  if(event==='enemy-entered'&&actor){
-  for(const id of cardsIn(s,'threat',actor).filter(id=>code(x,id)==='12102'))forced.push(damage(actor,0,1));
+  for(const id of cardsIn(s,'threat',actor).filter(id=>code(x,id)==='12102'))force(id,damage(actor,0,1));
   for(const id of cardsIn(s,'hand',actor).filter(id=>code(x,id)==='12036'&&canPay(x,actor,id)))react(actor,id,'Gather Intel (1 resource): draw 2',[{type:'c-pay-event',actor,source:id,data:{effects:[draw(actor,2)]}}]);
  }
- if(event==='enemy-spawned'&&code(x,source)==='12188')forced.push({type:'c-doom',source,amount:1,data:{check:false}});
+ if(event==='enemy-spawned'&&code(x,source)==='12188')force(source,{type:'c-doom',source,amount:1,data:{check:false}});
  if(event==='evaded'&&actor){
-  if(code(x,source)==='12009')forced.push(cardEffect(actor,source!,'black-chamber'));
-  if(code(x,source)==='12179'&&s.cards[source!].face==='back')forced.push(cardEffect(actor,source!,'elite-ready'));
+  if(code(x,source)==='12009')force(source,cardEffect(actor,source!,'black-chamber'));
+  if(code(x,source)==='12179'&&s.cards[source!].face==='back')force(source,cardEffect(actor,source!,'elite-ready'));
   if(code(x,source)==='12140')react(actor,source!,'Ready Cornelia and resolve Codex 2',[{type:'c-scenario',actor,source,data:{op:'codex',entry:2}}]);
   for(const id of (has(x,actor,'12012')?[]:assets(x,actor))){
    if(code(x,id)==='12008'&&ready(x,id))reactions.push(cardEffect(actor,id,'covert'));
-   if(['12048','12054'].includes(code(x,id)!)&&ready(x,id))react(actor,id,'Sticky Fingers: gain 1 resource',[exhaust(id),gain(actor)]);
+   if(['12048','12054'].includes(code(x,id)!)&&ready(x,id)&&e.data!.successful)react(actor,id,'Sticky Fingers: gain 1 resource',[exhaust(id),gain(actor)]);
   }
  }
  if(event==='attacked'&&actor){
-  if(keyword(x,source!,'Elusive'))forced.push(cardEffect(actor,source!,'elusive'));
-  if(code(x,source)==='12122'&&s.engine.phase==='enemy')forced.push(cardEffect(actor,source!,'discard-asset'));
-  if(code(x,source)==='12178')for(const enemy of enemies(x,here))if(s.cards[enemy].tokens.damage)forced.push(token(enemy,'damage',-1));
+  if(keyword(x,source!,'Elusive'))force(source,cardEffect(actor,source!,'elusive'));
+  if(code(x,source)==='12122'&&s.engine.phase==='enemy')force(source,cardEffect(actor,source!,'discard-asset'));
+  if(code(x,source)==='12178')force(source,...enemies(x,here).filter(enemy=>s.cards[enemy].tokens.damage>0).map(enemy=>token(enemy,'damage',-1)));
   const daniela=living(x).find(id=>investigator(x,id).investigatorCode==='12001'&&investigator(x,id).locationId===here);
   if(daniela&&!used(x,'daniela:'+daniela)&&inPlay(x,source!)){
    const choices=fightActions(x,daniela,source!,true).filter(a=>(a.actions===1||s.engine.activeInvestigatorId===daniela&&investigator(x,daniela).actions>=a.actions-1));
-   if(choices.length)reactions.push({type:'c-choice',actor:daniela,data:{prompt:'Daniela: fight the attacking enemy',optional:true,options:choices.map(a=>({id:a.id,label:a.label,effects:[mark('daniela:'+daniela),{type:'c-invoke',actor:daniela,target:source,data:{actionId:a.id,reaction:true}}]}))}});
+   if(choices.length)reactions.push({type:'c-choice',actor:daniela,source:investigator(x,daniela).cardId,data:{prompt:'Daniela: fight the attacking enemy',optional:true,options:choices.map(a=>({id:a.id,label:a.label,effects:[mark('daniela:'+daniela),{type:'c-invoke',actor:daniela,target:source,data:{actionId:a.id,reaction:true}}]}))}});
   }
   for(const id of cardsIn(s,'hand',actor).filter(id=>code(x,id)==='12022'&&canPay(x,actor,id)))react(actor,id,'Lesson Learned (1 resource): discover 1 clue',[{type:'c-pay-event',actor,source:id,data:{effects:[clue(actor,here!)]}}]);
  }
+ if(event==='when-damage-placed'&&code(x,source)==='12058'&&e.data!.kind==='horror'&&inPlay(x,source!)&&ready(x,source!)&&enemies(x,here).length)react(actor!,source!,'Cloak of Resonance: deal 1 damage',[exhaust(source!),cardEffect(actor!,source!,'local-enemy-damage')]);
  if(event==='damage-placed'){
   const owner=s.investigators.find(i=>i.cardId===source);
   if(owner)for(const id of assets(x,owner.id).filter(id=>code(x,id)==='12060'&&ready(x,id)))react(owner.id,id,'Jim Culver: draw 1',[exhaust(id),draw(owner.id)]);
-  if(code(x,source)==='12058'&&e.data!.kind==='horror'&&!e.data!.wasExhausted)react(actor!,source!,'Cloak of Resonance: deal 1 damage',[exhaust(source!),cardEffect(actor!,source!,'nearest-enemy-damage')]);
   if(e.data!.kind==='damage'&&(owner||trait(x,source!,'Ally'))&&inPlay(x,source!))for(const id of allAssets.filter(id=>code(x,id)==='12073'&&s.cards[id].tokens.supplies>0&&locationOf(s,id)===locationOf(s,source!)))react(s.cards[id].controller,id,'Bandages: heal 1 damage',[cardEffect(s.cards[id].controller,id,'bandages',source,{controller:owner?.id??s.cards[source!].controller})]);
  }
  if(event==='clues-discovered'&&actor){
-  for(const id of cardsIn(s,'threat',actor).filter(id=>code(x,id)==='12125'))forced.push(damage(actor,0,1));
-  if(code(x,source)==='12118')forced.push(cardEffect(actor,source!,'discard-hand'));
+  for(const id of cardsIn(s,'threat',actor).filter(id=>code(x,id)==='12125'))force(id,damage(actor,0,1));
+  if(code(x,source)==='12118')force(source,cardEffect(actor,source!,'discard-hand'));
   if(code(x,source)==='12119'&&!used(x,'observatory:'+actor))react(actor,source!,'Observatory: draw 1',[mark('observatory:'+actor),draw(actor)]);
   if(code(x,source)==='12145')react(actor,source!,'Downtown: gain 1 resource',[gain(actor)]);
   if(code(x,source)==='12146')react(actor,source!,'Downtown: heal 1 horror',[cardEffect(actor,source!,'heal-choice',undefined,{allies:true,kind:'horror'})]);
   if(code(x,source)==='12150'&&!s.cards[source!].tokens.clues&&!used(x,'easttown:'+actor,'game'))react(actor,source!,'Easttown: search for and play an Ally',[mark('easttown:'+actor,'game'),search(actor,source!,'ally',undefined,{play:true})]);
-  if(code(x,source)==='12174'&&!s.cards[source!].tokens.clues)forced.push(token(source!,'clues',2*s.investigators.length));
+  if(code(x,source)==='12174'&&!s.cards[source!].tokens.clues)force(source,token(source!,'clues',2*s.investigators.length));
  }
  if(event==='enter-location'&&actor){
-  for(const id of cardsIn(s,'threat',actor).filter(id=>code(x,id)==='12104'))if(!used(x,'wounded:'+id,'turn'))forced.push(mark('wounded:'+id,'turn'),damage(actor,1));
-  if(code(x,source)==='12183')forced.push({type:'c-scenario',actor,source,data:{op:'infested-pipes'}});
-  if(code(x,source)==='12184')forced.push(cardEffect(actor,source!,'lose-action'));
+  for(const id of cardsIn(s,'threat',actor).filter(id=>code(x,id)==='12104'))if(!used(x,'wounded:'+id,'turn'))force(id,mark('wounded:'+id,'turn'),damage(actor,1));
+  if(code(x,source)==='12183')force(source,{type:'c-scenario',actor,source,data:{op:'infested-pipes'}});
+  if(code(x,source)==='12184')force(source,cardEffect(actor,source!,'lose-action'));
  }
  if(event==='turn-begin'&&actor){
   for(const id of (has(x,actor,'12012')?[]:assets(x,actor)).filter(id=>code(x,id)==='12072'&&(s.cards[id].tokens.damage||s.cards[id].tokens.horror))){
@@ -337,23 +339,37 @@ export function resolveHook(x:Ctx,e:Effect):void {
    if(s.cards[id].tokens.horror)options.push({id:'horror',label:'Heal 1 horror',effects:[heal(actor,0,1,id)]});
    reactions.push({type:'c-choice',actor,source:id,data:{prompt:'Aleksey: heal 1 damage or horror from Aleksey',optional:true,options}});
   }
-  for(const id of cardsIn(s,'threat',actor).filter(id=>code(x,id)==='12193'))forced.push(cardEffect(actor,id,'langour'));
+  for(const id of cardsIn(s,'threat',actor).filter(id=>code(x,id)==='12193'))force(id,cardEffect(actor,id,'langour'));
  }
  if(event==='turn-end'&&actor){
-  for(const id of cardsIn(s,'threat',actor).filter(id=>code(x,id)==='12137'))forced.push({type:'c-damage',actor,amount:1,data:{assetFirst:true}});
-  if(code(x,here)==='12185')forced.push(damage(actor,0,1));
+  for(const id of cardsIn(s,'threat',actor).filter(id=>code(x,id)==='12137'))force(id,{type:'c-damage',actor,amount:1,data:{assetFirst:true}});
+  if(code(x,here)==='12185')force(here,damage(actor,0,1));
   if(code(x,here)==='12186')react(actor,here!,'Gain 1 resource',[gain(actor)]);
-  if(code(x,here)==='12187')forced.push(cardEffect(actor,here!,'discard-hand'));
+  if(code(x,here)==='12187')force(here,cardEffect(actor,here!,'discard-hand'));
  }
  if(event==='investigation-end'){
-  for(const id of cardsIn(s,'attachments').filter(id=>code(x,id)==='12129'))forced.push(cardEffect(s.leadInvestigatorId,id,'fire-damage'));
-  for(const l of s.scenario.locations.filter(l=>code(x,l.cardId)==='12155'))forced.push(cardEffect(s.leadInvestigatorId,l.cardId,'fire-damage',l.cardId));
-  for(const id of enemies(x).filter(id=>code(x,id)==='12099'&&ready(x,id)&&!s.cards[id].tokens.doom))forced.push({type:'c-doom',source:id,amount:1,data:{check:false}});
-  forced.push({type:'c-scenario',data:{op:'investigation-end'}});
+  for(const id of cardsIn(s,'attachments').filter(id=>code(x,id)==='12129'))force(id,cardEffect(s.leadInvestigatorId,id,'fire-damage'));
+  for(const l of s.scenario.locations.filter(l=>code(x,l.cardId)==='12155'))force(l.cardId,cardEffect(s.leadInvestigatorId,l.cardId,'fire-damage',l.cardId));
+  for(const id of enemies(x).filter(id=>code(x,id)==='12099'&&ready(x,id)&&!s.cards[id].tokens.doom))force(id,{type:'c-doom',source:id,amount:1,data:{check:false}});
+  force(undefined,{type:'c-scenario',data:{op:'investigation-end'}});
  }
  if(event==='round-end'){
-  for(const id of cardsIn(s,'attachments').filter(id=>code(x,id)==='12159'))forced.push(discard(id));
-  for(const id of enemies(x).filter(id=>code(x,id)==='12189'))forced.push(cardEffect(s.leadInvestigatorId,id,'nearest-doom'));
+  for(const id of cardsIn(s,'attachments').filter(id=>code(x,id)==='12159'))force(id,discard(id));
+  for(const id of enemies(x).filter(id=>code(x,id)==='12189'))force(id,cardEffect(s.leadInvestigatorId,id,'nearest-doom'));
  }
- push(x,[...(forced.length?[{type:'c-order',actor:actor??s.leadInvestigatorId,data:{prompt:'Order simultaneous forced abilities',effects:forced}}]:[]),...(reactions.length?[{type:'c-order',actor:actor??s.leadInvestigatorId,data:{prompt:'Order available reactions',effects:reactions}}]:[])]);
+ return {forced,reactions:reactions.filter(effect=>!effect.actor||mayTrigger(x,effect.actor))};
+}
+
+export function resolveHook(x:Ctx,e:Effect):void {
+ const {forced,reactions}=hookAbilities(x,e),lead=x.s.leadInvestigatorId;
+ if(!e.data?.reactionWindow){
+  const scenario=forced.filter(effect=>!effect.source||!!definition(x,effect.source).encounterCode),player=forced.filter(effect=>effect.source&&!definition(x,effect.source).encounterCode);
+  push(x,[...[scenario,player].filter(effects=>effects.length).map(effects=>({type:'c-order',actor:lead,data:{prompt:'Order simultaneous forced abilities',effects}})),{...e,data:{...e.data,reactionWindow:true,resolved:[]}}]);return;
+ }
+ // Re-query after every resolved reaction and after all forced effects. A serialized
+ // window records only used opportunities, never a stale list of targets or costs.
+ const key=(effect:Effect)=>[effect.actor,effect.source,effect.type,effect.data?.op??effect.data?.prompt].join('|');
+ const available=reactions.filter(effect=>!(e.data!.resolved??[]).includes(key(effect)));
+ const options=available.map((effect,n)=>({id:String(n),label:effect.data?.prompt??name(x,effect.source!),cardId:effect.source,effects:[effect,{...e,data:{...e.data,resolved:[...(e.data!.resolved??[]),key(effect)]}}]}));
+ choose(x,e.actor??lead,'Order available reactions',options);
 }

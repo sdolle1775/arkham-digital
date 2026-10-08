@@ -1,4 +1,5 @@
 import Fastify, { type FastifyRequest } from 'fastify';
+import { projectTableEvents } from '../game/table-events.js';
 import fastifyStatic from '@fastify/static';
 import websocket from '@fastify/websocket';
 import { randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
@@ -70,7 +71,12 @@ export async function createApp(options: AppOptions) {
     if (viewer.role === 'player' && viewer.sessionId !== id) throw new AppError('This invitation is for a different campaign.',403);
     return {viewer,id};
   };
-  const present = (cp:Checkpoint, viewer:Viewer) => projectState(cp.state, storage.sessionViewer(cp.state,viewer), cp.id,cp.state.rules.id==='legacy-setup-v1'?options.catalog:storage.getRules(cp.state.rules.id).catalog);
+  const present = (cp:Checkpoint, viewer:Viewer) => {
+    const view=projectState(cp.state, storage.sessionViewer(cp.state,viewer), cp.id,cp.state.rules.id==='legacy-setup-v1'?options.catalog:storage.getRules(cp.state.rules.id).catalog);
+    const animation=storage.tableEvents.get(cp.id);
+    if(animation)view.tableAnimation=projectTableEvents(animation.events,view,animation.fromCheckpointId);
+    return view;
+  };
   const broadcast = (sessionId:string) => {
     const cp = storage.current(sessionId);
     for (const [socket, client] of clients) {

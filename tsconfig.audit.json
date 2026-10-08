@@ -1,0 +1,5 @@
+{
+  "extends": "./tsconfig.server.json",
+  "compilerOptions": {"noEmit": true, "rootDir": "."},
+  "include": ["tests/audit", "scripts/pin-rules-audit.ts", "scripts/test-audit.ts", "scripts/test-soak.ts", "scripts/audit-browser-fixtures.ts"]
+}

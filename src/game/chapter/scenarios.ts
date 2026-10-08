@@ -1,6 +1,7 @@
 import type { Catalog, ChapterProgress, Effect, GameState } from '../../shared/types.js';
-import { attachCard, cardsIn, discardCard, locationOf, moveCard, zone } from '../zones.js';
+import { attachCard, cardsIn, discardCard, locationOf, moveCard, zone, shuffleZone } from '../zones.js';
 import { randomIndex, shuffle } from '../random.js';
+import { doomInPlay, doomCardsInPlay } from '../doom.js';
 import { appendLogEntry } from '../../shared/campaign-log.js';
 import { campaignLogFlags } from '../campaigns/brethren.js';
 import { cardEffect } from './actions.js';
@@ -11,11 +12,11 @@ export function newProgress():ChapterProgress{return {turn:0,actionsTaken:0,pend
 const byCode=(x:Ctx,code:string)=>Object.values(x.s.cards).find(card=>card.code===code&&cardsIn(x.s,'setAside').includes(card.id))?.id;
 const activeByCode=(x:Ctx,cd:string)=>x.s.scenario.locations.find(l=>code(x,l.cardId)===cd)?.cardId;
 function record(x:Ctx,entry:string):void {
- if(x.s.rules.scriptVersion==='chapter2-2'){const p=x.s.engine.chapter!;p.logReview??={entries:[],pending:true};if(!p.logReview.entries.includes(entry))p.logReview.entries.push(entry);return;}
+ if(['chapter2-2','chapter2-3'].includes(x.s.rules.scriptVersion)){const p=x.s.engine.chapter!;p.logReview??={entries:[],pending:true};if(!p.logReview.entries.includes(entry))p.logReview.entries.push(entry);return;}
  const log=x.s.campaign.log;if(log.items){appendLogEntry(log,entry,x.s.campaign.scenarioNumber);return;}if(!log.entries.split(/\r?\n/).includes(entry))log.entries+=(log.entries?'\n':'')+entry;log.flags=campaignLogFlags(log.entries,true);}
 function completeScenario(x:Ctx):void {
  x.s.phase='ended';
- if(x.s.rules.scriptVersion==='chapter2-2'){
+ if(['chapter2-2','chapter2-3'].includes(x.s.rules.scriptVersion)){
   appendLogEntry(x.s.campaign.log,`Scenario ${x.s.campaign.scenarioNumber} Complete`,x.s.campaign.scenarioNumber);
   x.s.engine.chapter!.logReview??={entries:[],pending:true};
  }
@@ -87,7 +88,7 @@ export function setupScenario(s:GameState,c:Catalog,number:1|2|3):void {
   const d=definition(x,id),aside=number===2?d.code==='12137'||held.has(id):['12129','12175','12177','12178','12179','12180','12181','12171'].includes(d.code)||s.resolutionStack.some(e=>e.source===id);
   if(!aside&&!['location','asset','act','agenda','scenario'].includes(d.type))moveCard(s,id,'encounterDeck');
  }
- zone(s,'encounterDeck').cards=shuffle(cardsIn(s,'encounterDeck'),s.rng);s.investigators.forEach(i=>i.locationId=starting);connectLocations(x);
+ shuffleZone(s,'encounterDeck');s.investigators.forEach(i=>i.locationId=starting);connectLocations(x);
 }
 export function scenarioCheck(x:Ctx):void {
  const {s}=x,act=cardsIn(s,'acts')[0];
@@ -135,9 +136,9 @@ export function resolveScenario(x:Ctx,e:Effect):void {
  }
  if(e.type==='c-agenda'){
   const agenda=source??cardsIn(s,'agendas')[0],cd=code(x,agenda);
-  const doom=Object.values(s.zones).filter(z=>['assets','threat','identity','locations','enemies','attachments','agendas','acts'].includes(z.kind)).flatMap(z=>z.cards).reduce((n,id)=>n+(s.cards[id].tokens.doom??0),0);
+  const doom=doomInPlay(s);
   if(e.data?.check&&doom<number(x,agenda,'doom',999))return;
-  for(const card of Object.values(s.cards))delete card.tokens.doom;s.cards[agenda].face='back';
+  for(const id of doomCardsInPlay(s))delete s.cards[id].tokens.doom;s.cards[agenda].face='back';
   const effects:Effect[]=[];
   if(cd==='12106')effects.push(...living(x).map(actor=>test(actor,'willpower',3,'agenda-horror',agenda)));
   if(cd==='12107'){for(const id of [...cardsIn(s,'setAside')].filter(id=>code(x,id)==='12129').slice(0,4))discardCard(s,id,c);effects.push(...living(x).map(actor=>test(actor,'agility',3,'agenda-damage',agenda)));}
@@ -187,7 +188,7 @@ export function resolveScenario(x:Ctx,e:Effect):void {
   case 'draw-fires':{
    if(e.data!.remaining)push(x,[{type:'c-search',actor,data:{encounter:true,includeDiscard:true,filter:'fire',required:true,count:e.data!.remaining}}]);break;
   }
-  case 'queen-encounter':for(const id of [...cardsIn(s,'setAside')].filter(id=>['12129','12177','12178'].includes(code(x,id)!)))moveCard(s,id,'encounterDeck');zone(s,'encounterDeck').cards=shuffle(cardsIn(s,'encounterDeck'),s.rng);break;
+  case 'queen-encounter':for(const id of [...cardsIn(s,'setAside')].filter(id=>['12129','12177','12178'].includes(code(x,id)!)))moveCard(s,id,'encounterDeck');shuffleZone(s,'encounterDeck');break;
   case 'armitage-bearer':p.story[actor]=[...(p.story[actor]??[]),'12115'];break;
   case 'university-outcome':choose(x,s.leadInvestigatorId,'Choose the university outcome',[{id:'save',label:'Fight the fire (+1 XP, 1 physical trauma)',effects:[{type:'c-scenario',data:{op:'university-save'}}]},{id:'leave',label:'Leave (1 mental trauma)',effects:[{type:'c-scenario',data:{op:'university-burn'}}]}]);break;
   case 'university-save':case 'university-burn':{

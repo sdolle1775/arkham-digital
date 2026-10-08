@@ -2,12 +2,13 @@ import type { Catalog, SessionView } from '../shared/types';
 
 export type ViewFilter = 'all'|'relevant'|'focused';
 export type CardSort = 'table'|'name'|'type';
-export interface ViewPreferences { allHands:boolean; filter:ViewFilter; pinned:boolean; previews:boolean; text:boolean; sort:CardSort; }
-export const defaultPreferences:ViewPreferences={allHands:true,filter:'all',pinned:true,previews:true,text:false,sort:'table'};
+export interface ViewPreferences { allHands:boolean; filter:ViewFilter; pinned:boolean; previews:boolean; text:boolean; sort:CardSort; animationSpeed:number; hoverSize:number; sound:boolean; }
+export const defaultPreferences:ViewPreferences={allHands:true,filter:'all',pinned:true,previews:true,text:false,sort:'table',animationSpeed:1,hoverSize:2,sound:true};
 export interface Camera { x:number; y:number; zoom:number; }
 export const clampZoom=(zoom:number)=>Math.max(.2,Math.min(1.8,zoom));
-export function handFanLayout(width:number,count:number) {
-  const stride=count>1?Math.max(22,Math.min(118,(width-110)/(count-1))):0;
+export function handFanLayout(width:number,count:number,visibleHands=1) {
+  const maximum=86-12*(Math.max(1,Math.min(4,visibleHands))-1);
+  const stride=count>1?Math.max(22,Math.min(maximum,(width-110)/(count-1))):0;
   return {stride,width:Math.max(width,110+Math.max(0,count-1)*stride)};
 }
 export function movementActions(session:SessionView,investigatorId:string) {

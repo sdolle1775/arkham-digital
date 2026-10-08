@@ -1,0 +1,756 @@
+{
+  "checkedAt": "2026-10-08T03:29:44.977Z",
+  "endpoint": "https://arkhamdb.com/api/public/taboos/",
+  "rules": {
+    "id": "rules-6ae3f0fb7bed5136b12fad3b",
+    "tabooId": 10,
+    "tabooDate": "2026-02-19",
+    "tabooUpdated": "2026-03-07",
+    "tabooHash": "83f7fce33e540af21fbabb4abeb5029cca0149725d708301093bfb0390a134ef",
+    "catalogVersion": "core_2026-4d33848bd5bc7f44",
+    "scriptVersion": "chapter2-3"
+  },
+  "sourceRevision": "4ac7e1640dd75862b5e29bb6f9b604dc2e555355",
+  "sources": [
+    {
+      "name": "Chapter 2 Rulebook.pdf",
+      "sha256": "df3d6915fc28c26c5a4fceadf70d4335ebf736325c2991dcb06ccda6809a4d07"
+    },
+    {
+      "name": "Bretheren of Ash Rulebook.pdf",
+      "sha256": "d523777a189f3a276c2a745f5b51ac75942539df73bfe24bd33204e5a4e26f41"
+    },
+    {
+      "name": "The Arkham Grimoire.pdf",
+      "sha256": "a0ae9ebd0fc6f1455aedf95dacfd0f19a80ccb832c559e4aafbcfb437d0e9a44"
+    }
+  ],
+  "taboo": {
+    "id": 10,
+    "active": 1,
+    "date_start": "2026-02-19",
+    "date_update": "2026-03-07",
+    "cards": [
+      {
+        "code": "01073",
+        "xp": 2
+      },
+      {
+        "code": "01573",
+        "xp": 2
+      },
+      {
+        "code": "06332",
+        "xp": 2
+      },
+      {
+        "code": "02108",
+        "xp": 1
+      },
+      {
+        "code": "02300",
+        "xp": -2
+      },
+      {
+        "code": "04305",
+        "xp": 1
+      },
+      {
+        "code": "05159",
+        "xp": 3
+      },
+      {
+        "code": "05231",
+        "xp": 2
+      },
+      {
+        "code": "07197",
+        "xp": -2
+      },
+      {
+        "code": "07308",
+        "xp": -2
+      },
+      {
+        "code": "60327",
+        "xp": -1
+      },
+      {
+        "code": "08099",
+        "xp": 2
+      },
+      {
+        "code": "09077",
+        "xp": 2
+      },
+      {
+        "code": "09108",
+        "xp": 2
+      },
+      {
+        "code": "09117",
+        "xp": 1
+      },
+      {
+        "code": "10031",
+        "xp": 1
+      },
+      {
+        "code": "10037",
+        "xp": -2
+      },
+      {
+        "code": "10060",
+        "xp": 1
+      },
+      {
+        "code": "10085",
+        "xp": 2
+      },
+      {
+        "code": "10098",
+        "xp": 2
+      },
+      {
+        "code": "11031",
+        "xp": -2
+      },
+      {
+        "code": "11055",
+        "xp": 1
+      },
+      {
+        "code": "11117",
+        "xp": -2
+      },
+      {
+        "code": "01033",
+        "text": "This card's [reaction] ability now reads: \"After you successfully investigate, exhaust Dr. Milan Christopher...\""
+      },
+      {
+        "code": "01050",
+        "text": "This card now reads: \"Disengage from each enemy engaged with you and move to a connecting location with no enemies.\""
+      },
+      {
+        "code": "02002",
+        "text": "This card's [reaction] ability gains: \"(Limit once per round.)\""
+      },
+      {
+        "code": "02029",
+        "text": "This card now reads \"a symbol\" instead of the list of indicated symbols."
+      },
+      {
+        "code": "60405",
+        "text": "This card now reads \"a symbol\" instead of the list of indicated symbols."
+      },
+      {
+        "code": "02153",
+        "text": "This card now reads \"a symbol\" instead of the list of indicated symbols."
+      },
+      {
+        "code": "60414",
+        "text": "This card now reads \"a symbol\" instead of the list of indicated symbols."
+      },
+      {
+        "code": "60423",
+        "text": "This card now reads \"a symbol\" instead of the list of indicated symbols."
+      },
+      {
+        "code": "02269",
+        "text": "This card now reads \"a symbol\" instead of the list of indicated symbols."
+      },
+      {
+        "code": "60416",
+        "text": "This card now reads \"a symbol\" instead of the list of indicated symbols."
+      },
+      {
+        "code": "05113",
+        "text": "This card now reads \"a symbol\" instead of the list of indicated symbols."
+      },
+      {
+        "code": "02111",
+        "text": "This card gains: \"Group limit 2 copies of Delve Too Deep in the victory display.\""
+      },
+      {
+        "code": "02226",
+        "text": "This card's [action] ability gains: \"This attack may target a non-[[Elite]] enemy up to one location away from its standard range, ignoring the aloof and retaliate keywords.\""
+      },
+      {
+        "code": "02229",
+        "text": "At the end of its ability, this card gains: \"(max once per round).\""
+      },
+      {
+        "code": "02263",
+        "text": "This card's fight ability now reads \"+1 damage\" instead of \"+2 damage.\""
+      },
+      {
+        "code": "02266",
+        "text": "This card gains: \"Max once per round.\""
+      },
+      {
+        "code": "03006",
+        "text": "This card's forced ability is moved to its reverse side, and it should now read: \"<b>Additional Setup</b>: After you draw your opening hand, choose a role ([survivor], [guardian], [seeker], [rogue], [mystic], or Neutral).\"\nThis card's front side additionally gains: \"[action]: Switch roles. Does not provoke attacks of opportunity.\""
+      },
+      {
+        "code": "03019",
+        "text": "This card's revelation ability now reads: \"Discard 1 card in your hand or play area of your current role. Then...\""
+      },
+      {
+        "code": "03029",
+        "text": "This card's ability now reads: \"Put a level 0-3 [[Item]] asset into play from your hand.\""
+      },
+      {
+        "code": "03112",
+        "text": "This card's [fast] ability now reads: \"...Gain 1 resource for each doom on David Renfield (to a maximum of 3 resources).\""
+      },
+      {
+        "code": "03315",
+        "exceptional": true,
+        "text": "This card gains the Exceptional keyword."
+      },
+      {
+        "code": "04032",
+        "text": "This card now reads \"a non-[elder_sign] symbol\" instead of \"a [skull], [cultist], [tablet], [elder_thing], or [auto_fail] symbol.\""
+      },
+      {
+        "code": "04105",
+        "text": "This card's ability now reads \"<b>Parley.</b> Choose a non-weakness enemy at your location…\""
+      },
+      {
+        "code": "04110",
+        "text": "This card now reads \"a non-[auto_fail] symbol\" instead of \"a [skull], [cultist], [tablet], or [elder_thing] chaos token.\""
+      },
+      {
+        "code": "60417",
+        "text": "This card now reads \"a non-[auto_fail] symbol\" instead of \"a [skull], [cultist], [tablet], or [elder_thing] chaos token.\""
+      },
+      {
+        "code": "04233",
+        "text": "This card’s ability now reads: “Gain 1 resource for each action you spent this turn…”"
+      },
+      {
+        "code": "04309",
+        "text": "At the end of its ability, this card gains: \"Remove All In from the game.\""
+      },
+      {
+        "code": "05020",
+        "text": "This card's ability now reads \"<b>Parley.</b> Choose a non-[[Elite]] enemy at your location…\""
+      },
+      {
+        "code": "05116",
+        "text": "This card's [action] ability is now a [fast] ability."
+      },
+      {
+        "code": "05188",
+        "text": "This card's [action] ability is now a [fast] ability."
+      },
+      {
+        "code": "05189",
+        "text": "This card's [action] ability is now a [fast] ability."
+      },
+      {
+        "code": "05153",
+        "text": "This card's [fast] ability is now a [action] ability.",
+        "replacement_text": "Mutated. Uses (3 secrets).\n[action] Exhaust Mr. \"Rook\" and spend 1 secret: Search the top 3, 6, or 9 cards of your deck for any card and draw it. If at least 1 weakness is among the searched cards, draw 1 of them, as well. Shuffle your deck."
+      },
+      {
+        "code": "05156",
+        "text": "This card gains \"(Limit twice per round.)\""
+      },
+      {
+        "code": "05157",
+        "text": "This card now reads \"a symbol token\" instead of the list of indicated symbols."
+      },
+      {
+        "code": "05230",
+        "text": "This card loses the text: \"Attached asset cannot be used to attack enemies engaged with you.\""
+      },
+      {
+        "code": "05321",
+        "text": "This card's [action] ability now reads \"...If a symbol token is revealed during this attack, the attacked enemy gets -1 fight, -1 health, and -1 evade until the end of the phase (to a minimum of 1).",
+        "replacement_text": "Mutated. [action]: <b>Fight.</b> This attack uses [willpower] instead of [combat]. You get +2 [willpower] for this attack. If a symbol token is revealed during this attack, the attacked enemy gets -1 fight, -1 health, and -1 evade for the remainder of the turn (to a minimum of 1)."
+      },
+      {
+        "code": "05324",
+        "text": "This card's ability gains: \"Remove Eucatastrophe from the game.\""
+      },
+      {
+        "code": "06002",
+        "text": "This investigator now reads: \"Deck Size: 50\" and \"Deckbuilding Requirements (do not count towards deck size): 3 copies of Occult Evidence...\"",
+        "deck_options": [
+          {
+            "faction": [
+              "seeker",
+              "neutral"
+            ],
+            "level": {
+              "min": 0,
+              "max": 5
+            }
+          },
+          {
+            "name": "Secondary Class",
+            "faction_select": [
+              "mystic",
+              "rogue",
+              "survivor"
+            ],
+            "level": {
+              "min": 0,
+              "max": 1
+            },
+            "type": [
+              "event",
+              "skill"
+            ],
+            "limit": 10
+          }
+        ],
+        "deck_requirements": {
+          "size": 50,
+          "card": {
+            "06008": {
+              "06008": "06008"
+            },
+            "06009": {
+              "06009": "06009"
+            }
+          },
+          "random": [
+            {
+              "target": "subtype",
+              "value": "basicweakness"
+            }
+          ]
+        }
+      },
+      {
+        "code": "06022",
+        "text": "This card's constant ability now reads: \"If this card has no charges, remove it from the game.\""
+      },
+      {
+        "code": "06195",
+        "text": "This card's [action] ability now reads: \"[action] Spend 1 ammo: <b>Fight.</b> You get +2 [combat] for this attack. If a chaos token with a non-negative modifier is revealed during this attack, this attack deals +2 damage.\""
+      },
+      {
+        "code": "06199",
+        "text": "This card's ability gains: \"Remove each committed copy of Three Aces from the game.\""
+      },
+      {
+        "code": "60318",
+        "text": "Instead of \"Shuffle each weakness that was discarded…\", this card's ability now reads: \"After this skill test resolves, draw each weakness discarded by this effect.\""
+      },
+      {
+        "code": "60332",
+        "text": "This card's first bullet point now reads: \"That event gains: \"Fast. Play only during your turn.\"\""
+      },
+      {
+        "code": "09072",
+        "text": "This card's first bullet point now reads: \"That event gains: \"Fast. Play only during your turn.\"\""
+      },
+      {
+        "code": "07003",
+        "text": "This card's [reaction] ability now reads: \"After you discover 1 or more clues at a location with an enemy: Either discover 1 additional clue at that location, or automatically evade that enemy if it is non-[[Elite]]. (Limit once per round.)\""
+      },
+      {
+        "code": "07122",
+        "text": "This card's [reaction] ability now reads: \"When you resolve a [bless] token during a skill test...\""
+      },
+      {
+        "code": "07268",
+        "exceptional": false,
+        "deck_limit": 1,
+        "text": "This card loses the exceptional keyword and gains \"Limit 1 per deck.\""
+      },
+      {
+        "code": "07269",
+        "text": "This card's ability gains: \"Remove A Watchful Peace from the game.\""
+      },
+      {
+        "code": "07301",
+        "text": "This card's ability gains: \"Remove Hallow from the game.\""
+      },
+      {
+        "code": "08019",
+        "text": "This card's <b>Forced</b> effect now reads: \"<b>Forced</b> – When your first turn of the game begins: One at a time, play up to 5 [[Item]] assets...\""
+      },
+      {
+        "code": "08032",
+        "text": "This card's ability gains: \"(Max twice per game.)\""
+      },
+      {
+        "code": "08045",
+        "text": "This card's constant ability now reads: \"...you get +1 [intellect], +1 [agility], and ignore the first attack of opportunity you take each turn.\""
+      },
+      {
+        "code": "08055",
+        "text": "This card gains: \"Max once per round.\""
+      },
+      {
+        "code": "08098",
+        "text": "This card should read \"basic actions\" instead of \"actions.\""
+      },
+      {
+        "code": "08100",
+        "text": "This card should read \"basic actions\" instead of \"actions.\""
+      },
+      {
+        "code": "08113",
+        "text": "The first line of this card gains: \"Campaign Mode only.\""
+      },
+      {
+        "code": "08093",
+        "text": "This card's parenthetical now reads: \"...(If you succeed by 3 or more, you may exhaust Cyclopean Hammer to instead deal +2 damage and move the enemy up to two locations away from you.)\""
+      },
+      {
+        "code": "09041",
+        "text": "This card's [fast] ability gains \"(Limit twice per round.)\""
+      },
+      {
+        "code": "09045",
+        "text": "This card's second ability gains: \"(max 3 evidence spent per round).\""
+      },
+      {
+        "code": "09081",
+        "text": "This card’s text box now reads: \"[action] If attached enemy is at your location: <b>Parley.</b> Test [willpower](2). If you succeed, give it a command (limit once per round per command) – \"Go.\" This enemy moves once in a direction of your choice.\"\nThis card’s customizable sheet loses the \"Mercy\" ability and gains\"☐Cower. Add the command: \"- ‘Cower.’ This enemy exhausts.\"",
+        "customization_options": [
+          {
+            "xp": 1,
+            "text_change": "append"
+          },
+          {
+            "xp": 1,
+            "real_text": "- <i>'Cower.'</i> This enemy exhausts.",
+            "text_change": "append"
+          },
+          {
+            "xp": 1,
+            "text_change": "append"
+          },
+          {
+            "xp": 1,
+            "text_change": "append"
+          },
+          {
+            "xp": 2,
+            "text_change": "insert",
+            "position": 1
+          },
+          {
+            "xp": 3,
+            "text_change": "insert",
+            "position": 1
+          },
+          {
+            "xp": 3,
+            "text_change": "replace",
+            "position": 2
+          },
+          {
+            "xp": 3,
+            "deck_limit": 3,
+            "text_change": "insert",
+            "position": 1
+          }
+        ],
+        "customization_change": "- <i>\"Betray.\"</i> Deal 1 damage to any enemy at this enemy's location with an equal or lower fight value than this enemy.\n- <i>\"Cower.\"</i> This enemy exhausts.\n- <i>\"Confess.\"</i> Discover 1 clue at this enemy's location if its health is equal to or higher than its location's shroud.\n- <i>\"Distract.\"</i> Automatically evade any enemy at this enemy's location with an equal or lower evade value than this enemy.\n[fast]: Return Power Word to your hand.\nYou may activate the parley ability on Power Word from up to one location away from the attached enemy.\n[action] If attached enemy is at your location: <b>Parley.</b> Give it up to two different commands (limit once per round per command) -\nYou may include three copies of Power Word in your deck. When you give a command using one copy, also give that command to each other enemy with one of your copies of Power Word attached.",
+        "customization_text": "□ <b>Betray.</b> Add the command: \"- <i>'Betray.'</i> Deal 1 damage to any enemy at this enemy's location with an equal or lower fight value than this enemy.\"\n□ <b>Cower.</b> Add the command: \"- <i>'Cower.'</i> This enemy exhausts.\"\n□ <b>Confess.</b> Add the command: \"- <i>'Confess.'</i> Discover 1 clue at this enemy's location if its health is equal to or higher than its location's shroud.\"\n□ <b>Distract.</b> Add the command: \"- <i>'Distract.'</i> Automatically evade any enemy at this enemy's location with an equal or lower evade value than this enemy.\"\n□□ <b>Greater Control.</b> Power Word gains \"[fast]: Return Power Word to your hand.\"\n□□□ <b>Bonded.</b> You may activate the parley ability on Power Word from up to one location away from the attached enemy.\n□□□ <b>Tonguetwister.</b> When you parley with Power Word, you may give up to two different commands.\n□□□ <b>Thrice Spoken.</b> You may include three copies of Power Word in your deck. When you give a command using one copy, also give that command to each other enemy with one of your copies of Power Word attached."
+      },
+      {
+        "code": "10026",
+        "text": "This card’s ability reads: \"...If you succeed, play the chosen asset, reducing its cost by the amount you succeeded by.\""
+      },
+      {
+        "code": "10030",
+        "text": "This card’s ability reads: \"Resolve an [action] ability on a level 0–3 [[Tool]] or [[Weapon]] asset you control, ignoring all costs.\""
+      },
+      {
+        "code": "10059",
+        "text": "This card’s [reaction] ability reads: \"[reaction] When an investigator draws a non-weakness treachery card, if their location's shroud is less than Ravenous Myconid's growth...\""
+      },
+      {
+        "code": "11065",
+        "text": "This card’s [reaction] ability reads \"[reaction] When doom is placed on a card you control: Place 1 resource (from the token pool) on Blood of Thoth, as an offering.\"\nThis card’s [fast] ability reads \"[fast] During the investigation phase, except during an action, spend 2 offerings and exhaust Blood of Thoth: Choose an investigator at your location to immediately take an action as if it were their turn.\""
+      },
+      {
+        "code": "11071",
+        "text": "This card's <b>Forced</b> effect now reads \"The first time attached card takes 1 or more damage/horror each round...\""
+      },
+      {
+        "code": "11075",
+        "text": "This card gains \"Fast. Play only during your turn.\"\nThis card's [reaction] ability now reads \"...Return Spiritual Echo to your hand at the end of your turn.\" and gains \"(Limit once per round.)\""
+      },
+      {
+        "code": "11118",
+        "text": "This card’s <b>Forced</b> effect now reads \"When your turn endsL Place attaced asset on the bottom of your deck unless you spend 1 resource.\""
+      },
+      {
+        "code": "11120",
+        "text": "The first line of this card gains: \"If On Their Heels has no leads, discard it.\""
+      },
+      {
+        "code": "02026",
+        "deck_limit": 0,
+        "text": "Forbidden."
+      },
+      {
+        "code": "60233",
+        "deck_limit": 0,
+        "text": "Forbidden."
+      },
+      {
+        "code": "08076",
+        "deck_limit": 0,
+        "text": "Forbidden."
+      }
+    ]
+  },
+  "aliases": {
+    "12001": "12001",
+    "12002": "12002",
+    "12003": "12003",
+    "12004": "12004",
+    "12005": "12005",
+    "12006": "12006",
+    "12007": "12007",
+    "12008": "12008",
+    "12009": "12009",
+    "12010": "12010",
+    "12011": "12011",
+    "12012": "12012",
+    "12013": "12013",
+    "12014": "12014",
+    "12015": "12015",
+    "12016": "12016",
+    "12017": "12017",
+    "12018": "12018",
+    "12019": "12019",
+    "12020": "12020",
+    "12021": "12021",
+    "12022": "12022",
+    "12023": "12023",
+    "12024": "12024",
+    "12025": "12025",
+    "12026": "12026",
+    "12027": "12027",
+    "12028": "12028",
+    "12029": "12029",
+    "12030": "12030",
+    "12031": "12031",
+    "12032": "12032",
+    "12033": "12033",
+    "12034": "12034",
+    "12035": "12035",
+    "12036": "12036",
+    "12037": "12037",
+    "12038": "12038",
+    "12039": "12039",
+    "12040": "12040",
+    "12041": "12041",
+    "12042": "12042",
+    "12043": "12043",
+    "12044": "12044",
+    "12045": "12045",
+    "12046": "12046",
+    "12047": "12047",
+    "12048": "12048",
+    "12049": "12049",
+    "12050": "12050",
+    "12051": "12051",
+    "12052": "12052",
+    "12053": "12053",
+    "12054": "12054",
+    "12055": "12055",
+    "12056": "12056",
+    "12057": "12057",
+    "12058": "12058",
+    "12059": "12059",
+    "12060": "12060",
+    "12061": "12061",
+    "12062": "12062",
+    "12063": "12063",
+    "12064": "12064",
+    "12065": "12065",
+    "12066": "12066",
+    "12067": "12067",
+    "12068": "12068",
+    "12069": "12069",
+    "12070": "12070",
+    "12071": "12071",
+    "12072": "12072",
+    "12073": "12073",
+    "12074": "12074",
+    "12075": "12075",
+    "12076": "12076",
+    "12077": "12077",
+    "12078": "12078",
+    "12079": "12079",
+    "12080": "12080",
+    "12081": "12081",
+    "12082": "12082",
+    "12083": "12083",
+    "12084": "12084",
+    "12085": "12085",
+    "12086": "12086",
+    "12087": "12087",
+    "12088": "12088",
+    "12089": "12089",
+    "12090": "12090",
+    "12091": "12091",
+    "12092": "12092",
+    "12093": "12093",
+    "12094": "12094",
+    "12095": "12095",
+    "12096": "12096",
+    "12097": "12097",
+    "12098": "12098",
+    "12099": "12099",
+    "12100": "12100",
+    "12101": "12101",
+    "12102": "12102",
+    "12103": "12103",
+    "12104": "12104",
+    "12105": "12105",
+    "12106": "12106",
+    "12107": "12107",
+    "12108": "12108",
+    "12109": "12109",
+    "12110": "12110",
+    "12111": "12111",
+    "12112": "12112",
+    "12113": "12113",
+    "12114": "12114",
+    "12115": "12115",
+    "12116": "12116",
+    "12117": "12117",
+    "12118": "12118",
+    "12119": "12119",
+    "12120": "12120",
+    "12121": "12121",
+    "12122": "12122",
+    "12123": "12123",
+    "12124": "12124",
+    "12125": "12125",
+    "12126": "12126",
+    "12127": "12127",
+    "12128": "12128",
+    "12129": "12129",
+    "12130": "12130",
+    "12131": "12131",
+    "12132": "12132",
+    "12133": "12133",
+    "12134": "12134",
+    "12135": "12135",
+    "12136": "12136",
+    "12137": "12137",
+    "12138": "12138",
+    "12139": "12139",
+    "12140": "12140",
+    "12141": "12141",
+    "12142": "12142",
+    "12143": "12143",
+    "12144": "12144",
+    "12145": "12145",
+    "12146": "12146",
+    "12147": "12147",
+    "12148": "12148",
+    "12149": "12149",
+    "12150": "12150",
+    "12151": "12151",
+    "12152": "12152",
+    "12153": "12153",
+    "12154": "12154",
+    "12155": "12155",
+    "12156": "12156",
+    "12157": "12157",
+    "12158": "12158",
+    "12159": "12159",
+    "12160": "12160",
+    "12161": "12161",
+    "12162": "12162",
+    "12163": "12163",
+    "12164": "12164",
+    "12165": "12165",
+    "12166": "12166",
+    "12167": "12167",
+    "12168": "12168",
+    "12169": "12169",
+    "12170": "12170",
+    "12171": "12171",
+    "12172": "12172",
+    "12173": "12173",
+    "12174": "12174",
+    "12175": "12175",
+    "12176": "12176",
+    "12177": "12177",
+    "12178": "12178",
+    "12179": "12179",
+    "12180": "12180",
+    "12181": "12181",
+    "12182": "12182",
+    "12183": "12183",
+    "12184": "12184",
+    "12185": "12185",
+    "12186": "12186",
+    "12187": "12187",
+    "12188": "12188",
+    "12189": "12189",
+    "12190": "12190",
+    "12191": "12191",
+    "12192": "12192",
+    "12193": "12193",
+    "12194": "12194",
+    "12195": "12195",
+    "60155": "12019",
+    "60169": "12025",
+    "60459": "12059",
+    "60460": "12062",
+    "01020": "12020",
+    "04103": "12024",
+    "01025": "12025",
+    "05024": "12031",
+    "02020": "12032",
+    "01030": "12034",
+    "01037": "12038",
+    "01039": "12039",
+    "05276": "12042",
+    "04107": "12044",
+    "09064": "12049",
+    "07114": "12050",
+    "05278": "12056",
+    "04199": "12064",
+    "01065": "12065",
+    "02268": "12069",
+    "08073": "12073",
+    "05114": "12077",
+    "01079": "12078",
+    "01088": "12089",
+    "01089": "12090",
+    "01092": "12091",
+    "01091": "12092",
+    "01090": "12093",
+    "01093": "12094",
+    "02158": "12095",
+    "02157": "12096",
+    "01096": "12097",
+    "03040": "12100",
+    "01097": "12101"
+  },
+  "files": {
+    "content/upstream/core_2026.json": "9fea63553cfa7d39d0063ea0e2c5cfeac70037b2c0958e412350af9b417bf299",
+    "content/upstream/core_2026_encounter.json": "2d73c0f741713143d140f77b98f580d719fd236b6753ba9cd07d17ea0529c19b",
+    "content/upstream/core_2026-api.json": "ce95646fca81a2e02a12afa3cc586ba3aec44a0a4439d1df2c74af8c83db3915",
+    "content/script-contracts.json": "bf8c95cf1eed48b98bb738a4001564b74da8080c5a7ef9997f9610cae6078065"
+  },
+  "priorInterpreter": {
+    "src/game/chapter-v2/actions.ts": "989a520c508477da27fe3f43bf3eaefc2ba46b8b3f9034c81f662f6d8a711563",
+    "src/game/chapter-v2/campaign.ts": "6edecab48a4e40f9b27da0aa3cb0b87dd895155cbd24b2f6aa700e6a21086137",
+    "src/game/chapter-v2/context.ts": "bd662366abaf9f376ac9707d840f13bc63ba52b15a2929f1808f9ccb421892e5",
+    "src/game/chapter-v2/engine.ts": "6e5e0a34e5bdaf823d801afd5475ce6081fef8cacb427e04041744bb5ef27a74",
+    "src/game/chapter-v2/reporting.ts": "4da67e221b7d7f96901d35d8f967d4f919318289ac3189a6975bb8d6794c2092",
+    "src/game/chapter-v2/scenarios.ts": "af1e080552453c7048f70bcfdd24827dc7dc0d70ae75b3868b7e85078ae2193a",
+    "src/game/chapter-v2/scripts.ts": "d0a30f2ef6543fb34fc80889de36125e70151f4de3b7ae871e4bd8030dc25786",
+    "src/game/chapter-v2/tests.ts": "aa5db0fa0a87ff185a09736ac9a927ef26fe5bdbe339425f3f3ac1376274cab7"
+  },
+  "effectiveCatalogHash": "271024a56cc3344f94c284771b45d1ad6b72a82a4d5e8323f62ca2563ec32aed"
+}

@@ -9,6 +9,7 @@ import { validateGameState as validateLegacy } from '../game/legacy-validation.j
 import { advance } from '../game/engine.js';
 import { migrateState } from '../game/migration.js';
 import { compileRules, bundledTaboo, type RulesPackage } from './rules.js';
+import { captureTableEvents, type TableEvent } from '../game/table-events.js';
 
 export class AppError extends Error {
   constructor(message: string, public statusCode = 400) { super(message); }
@@ -33,6 +34,7 @@ function shortString(value: unknown, max = 1000): value is string { return typeo
 
 export class Storage {
   readonly db: Database.Database;
+  readonly tableEvents=new Map<string,{fromCheckpointId:string;events:TableEvent[]}>();
   constructor(dataDir: string, readonly catalog: Catalog) {
     mkdirSync(dataDir, { recursive: true });
     this.db = new Database(join(dataDir, 'arkham.sqlite'));
@@ -156,15 +158,18 @@ export class Storage {
       if (current.state.revision !== expectedRevision) throw new AppError('The campaign changed in another tab. The latest state has been restored; please try again.', 409);
       if(current.state.schemaVersion!==2)throw new AppError('Load the migrated copy of this campaign.');
       let parent=current;
-      const state = mutate(structuredClone(current.state),(value,stepLabel)=>{
+      const captured = captureTableEvents(()=>mutate(structuredClone(current.state),(value,stepLabel)=>{
         const snapshot=structuredClone(value);snapshot.revision=parent.state.revision+1;
         validateGameState(snapshot,this.catalog);
         parent=this.insertCheckpoint(snapshot,parent.id,current.branchId,stepLabel,{type:'effect-boundary',commandId});
-      });
+      }));
+      const state=captured.value;
       state.revision = parent.state.revision + 1;
       validateGameState(state, this.catalog);
       const cp = this.insertCheckpoint(state, parent.id, current.branchId, label, command);
       this.db.prepare('INSERT INTO commands VALUES(?,?,?)').run(sessionId, commandId, cp.id);
+      this.tableEvents.set(cp.id,{fromCheckpointId:current.id,events:captured.events});
+      if(this.tableEvents.size>128)this.tableEvents.delete(this.tableEvents.keys().next().value!);
       return cp;
     })();
   }

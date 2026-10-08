@@ -1,8 +1,44 @@
-# Version 0.4.2 verification
+# Version 0.4.5-audit.1 candidate
+
+This candidate does **not** satisfy the comprehensive audit acceptance gate. The register includes all 195 definitions and 245 faces, but passing focused tests and seeded exploration do not verify every card-text clause or interaction. `npm.cmd run test:audit` reports incomplete requirements and deliberately exits nonzero. Its JSON and Markdown reports in `test-results/audit` are the current evidence; they are not bundled user data.
+
+The candidate pins the latest effective ArkhamDB package verified at audit start (Taboo 10, effective February 19 and updated March 7, 2026), source document hashes and explicit reprint links. Corrections use chapter2-3. The original chapter interpreter is frozen in `chapter-v2`; compatibility regressions preserve chapter2-1/2 behavior.
+
+Focused checks cover all 48 scenario setup configurations, printed investigator/enemy/location numbers, playable asset costs and uses, weapons and commitments, forced/reaction ordering, optional versus mandatory choices, Peril cleanup, Aloof/Prey/Hunter/Massive/Elusive/Retaliate/Alert/Doomed, control and return rules, lasting modifiers, lethal-horror reactions, and captured effect-boundary restoration. The baseline server suite checks HTTP/WebSocket authority, hidden hands/searches, duplicate/stale commands, archives, restart and rollback.
+
+Browser checks on October 8, 2026 used isolated fixtures at 1366×768 and 1920×1080. Required choice minimize/reopen, keyboard selection, nine-card search display and selection, no-match acknowledgement, default payment/cancellation, damage assignment, optional reactions, simultaneous-order labels, four-player opening hands, separate-host hand/search privacy, commitments and result dismissal were checked. No browser console warnings or errors were observed. This is targeted coverage, not every prompt/seat/viewport combination.
+
+The Windows smoke command starts the staged application using its bundled node.exe with system Node absent from the child PATH, verifies SQLite startup, 195 definitions, 245 faces, cached artwork and interface delivery, shuts down and restarts. A separate clean Windows VM and a fresh live Cloudflare session remain untested in this audit.
+
+## Previous version 0.4.4 verification
 
 Verified on Windows x64 on October 7, 2026:
 
-- The new bottom hand dock stays at the same screen coordinates during investigator focus and table zoom. Browser checks cover two and four hands at 1280�720, separate-player anonymous backs, mulligan replacement from the dock, and next-player opening progress.
+- TypeScript, the production build, and all 133 tests pass. New regression cases cover result acknowledgement before successful-test abilities and failure effects, preceding elder-sign and Scrape By effects, queued tests, legacy snapshots without result reports, invalid review continuations, and authoritative agenda doom.
+- At 1280 x 720, one- and four-investigator browser checks show the expanded result before Continue, a subsequent Machete ability prompt and damage, and automatic-failure horror only after Continue. The result panel disappears immediately and stays absent after reload. No browser errors were observed.
+- The purple agenda counter remains readable at 26%-33% table zoom, includes zero values, shows total doom against the threshold, and distinguishes agenda tokens from doom elsewhere. Regression tests exclude discarded/set-aside/removed cards and verify the reset and new threshold after advancement.
+- HTTP and live WebSocket checks verify public result visibility with seat-specific Continue permissions, persisted checkpoints before broadcast, duplicate/stale command handling, portable archive restoration, and retained rollback branches.
+- The bundled 0.4.4 Windows launcher starts with Node absent from PATH and verifies all 245 cached image faces. Its packaged server restores a pending review by rollback, then applies failure horror exactly once after Continue. User data remains external to the application package.
+
+## Previous version 0.4.3 verification
+
+
+Verified on Windows x64 on October 7, 2026:
+
+- TypeScript, the production build, and all 127 tests pass. New coverage checks ordered mulligan/draw/shuffle events, exact state and RNG preservation, atomic rejection, duplicate updates, reconnect gaps, rollback/restart, private animation projection, and adaptive hand spacing.
+- At 1280 x 720, browser checks cover progressive opening setup, replacement draws and shuffling, paid M1911 travel, and a normal draw flipping from the player back to the permitted face. The 0.25x-3x slider remains separate from action controls at the lower-right edge. Animation ghosts disappear after completion; card selection remains functional afterward.
+- Two- and four-hand layouts overlap without changing preview/selection handlers. Four large hands (21-22 cards each) retain 22-pixel exposed edges and horizontal scrolling.
+- The hover-size slider sits directly below animation speed and supports Off, 0.5x, 1x, 1.5x, and 2x. Browser measurements verify portrait preview widths of 97.5, 195, 292.5, and the original 390 pixels; Off produces no preview, including keyboard face inspection. The existing View settings checkbox stays synchronized.
+- HTTP and live local WebSocket tests verify identical seat filtering, including anonymous other-player draw animations. Cosmetic events never enter saved state, archives, or RNG, and old saves retain their rules identities.
+- Draw, shuffle, and card-drop WAV assets are bundled with Vite and attributed to the existing Marvel Champions Digital installation. Browser audio waits for a click/key gesture, respects the sound toggle, avoids overlapping copies of the same sample, and stops in background tabs.
+- The 0.4.3 Windows launcher starts with Node removed from PATH, verifies all 245 cached faces, and serves all three sound files with hashes matching the sources. A packaged draw sends its face to the controlling host and only an anonymous back to the invited seat over WebSocket. The ZIP includes both sliders and excludes test data.
+
+## Previous version 0.4.2 verification
+
+
+Verified on Windows x64 on October 7, 2026:
+
+- The new bottom hand dock stays at the same screen coordinates during investigator focus and table zoom. Browser checks cover two and four hands at 1280×720, separate-player anonymous backs, mulligan replacement from the dock, and next-player opening progress.
 - Investigator dashboards and compact hand headers show derived skills, including permanent asset bonuses and temporary penalties. Projection tests cover all seats without revealing private hands.
 - Completed tests retain tokens and exact base/modifier/ability/commit/chaos arithmetic, difficulty, margin, automatic failure, and Scrape By overrides. Interrupted-boundary tests compare the entire final state after restoration, including costs, RNG, and deduplicated results.
 - Ask Player browser checks cover the compact 360px chooser, a legal out-of-turn Premonition option, Pass, and the original player's resumed turn. Engine tests cover cancel, no eligible abilities, turn-only exclusions, fast play, eliminated investigators, and historical pilot behavior. HTTP tests reject the host answering another seat's choice and round-trip the pending window through a portable archive.

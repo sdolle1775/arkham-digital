@@ -1,12 +1,12 @@
-# Arkham Horror Digital 0.4.2
+# Arkham Horror Digital 0.4.5-audit.1
 
-A local TypeScript application for the **2026 Chapter Two core box** and **Brethren of Ash**. New campaigns use the automated **chapter2-2** engine for all **195 core card definitions**, including **Spreading Flames**, **Smoke and Mirrors**, and **Queen of Ash**.
+A local TypeScript application for the **2026 Chapter Two core box** and **Brethren of Ash**. New campaigns use **chapter2-3** for the **195 core card definitions**, including **Spreading Flames**, **Smoke and Mirrors**, and **Queen of Ash**. This is an audit candidate: exhaustive card-clause and interaction verification is still incomplete. Passing smoke tests do not establish complete rules correctness.
 
 Standalone play, local deckbuilding, campaign-book narrative, and replay playback remain unavailable. Historical pilot and setup sessions retain their recorded engine; start a new campaign to use the full Chapter Two scripts.
 
 ## Windows application
 
-1. Extract `Arkham-Horror-Digital-0.4.2-windows-x64.zip` completely.
+1. Extract `Arkham-Horror-Digital-0.4.5-audit.1-windows-x64.zip` completely.
 2. Run **Launch Arkham Horror Digital.cmd**. Node.js 24 and SQLite are bundled; no installation is required.
 3. The application verifies and installs **all 245 supported card faces** before displaying its menu. Internet is required for missing images. Complete caches work offline.
 4. In **Decks**, choose Published or Shared and enter an ArkhamDB code. Set the deck's Taboo selection to ArkhamDB's latest list before importing.
@@ -41,7 +41,7 @@ Live verification failure blocks importing. Existing local sessions use their re
 
 The game separates catalog definitions, effective versioned rules, physical card instances, abilities, and deck revisions. `src/game/zones.ts` owns ordered zones and card movement. Ownership, control, bearer, attachments, face, counters, and exhaustion persist independently. Scenario set-aside, temporary opening/search zones, and removed cards are distinct.
 
-`src/game/engine.ts` dispatches to the saved script version. The full interpreter and pure card handlers live in `src/game/chapter/`; the frozen `pilot-engine.ts` preserves historical behavior. Both use serializable LIFO effects and FIFO queued tests. Scripts have no networking or database access.
+`src/game/engine.ts` dispatches to the saved script version. The current interpreter and pure card handlers live in `src/game/chapter/`; `src/game/chapter-v2/` preserves recorded chapter2-1/2 sessions and `pilot-engine.ts` preserves pilots. They use serializable LIFO effects and FIFO queued tests. Scripts have no networking or database access. Between-scenario preparation verifies the latest package; old snapshots are not reinterpreted.
 
 The engine handles costs and split-source payments, opportunity attacks, commits and chaos tokens, forced/reaction ordering, searches, enemy engagement and movement, damage/horror assignment, slots and uses, clues/doom, phase progression, acts/agendas, and scenario resolutions. Chapter state also records sealed tokens, hidden suspects, under-act cards, delayed effects, rewards, and campaign outcomes. All 195 card contracts are pinned separately from the historical pilot contracts.
 
@@ -87,17 +87,21 @@ Unengaged enemies, treacheries, and attached player cards appear beside their lo
 
 Hands stay docked to the bottom of the viewport while the table pans and zooms. All/One hand and display-only sorting still apply, and separate-player hands remain anonymous card backs. Investigator dashboards and compact hand headers show current willpower, intellect, combat, and agility, with green increases, orange reductions, and printed values in their tooltips.
 
-The latest skill test stays visible above the hands after resolution. It shows the revealed tokens, cumulative chaos modifier, base skill, active modifiers, ability bonus, committed icons, total, difficulty, and success/failure margin. Click its heading to minimize or expand it; previous/next buttons inspect the last 20 tests. The game log records the same calculation plus exact resource, action, damage/horror, clue, doom, use, experience, and trauma changes. Automatic failure and card effects that override a result are explicit.
+A temporary chaos-result panel appears above the hands once pre-result effects and result-changing decisions have finished. It shows the revealed tokens, cumulative chaos modifier, base skill, active modifiers, ability bonus, committed icons, total, difficulty, and success/failure margin. The test investigator selects **Continue** on the right to dismiss the panel and resolve success/failure abilities and effects. Other players see the result while waiting; it does not remain on the table afterward. Pending result reviews resume after reconnecting or loading a save. The agenda displays total doom against its threshold, with a separate breakdown when doom is on other cards. The game log records the same calculation plus exact resource, action, damage/horror, clue, doom, use, experience, and trauma changes. Automatic failure and card effects that override a result are explicit.
 
 Select the active investigator and choose **Ask Player** to give another living investigator a legal out-of-turn player window. They may use available fast abilities or pass back to the original turn. Turn-only actions remain unavailable; reactions still require their actual trigger. Asking and passing spend no resources or actions. The prompt persists through saves and reconnects; only that investigator's controller sees and answers it.
 
-The right edge holds confirmations, legal actions, and Table menu (log, history, undo, saves, sharing, main menu). Trigger ordering and multiple-choice decisions open centered popups; optional windows use compact popups. Minimize keeps a decision pending; Open choices returns to it.
+The right edge holds contextual actions and confirmations. **Table menu** floats separately at the lower-right edge, above the hand dock, with logs, history, undo, saves, sharing, and the main menu. **Animation speed** runs from 0.25× to 3×. Directly beneath it, **Card hover size** has Off, 0.5×, 1×, 1.5×, and 2× steps; 2× preserves the previous full preview size and Off disables previews. **Card sounds** toggles the bundled draw, shuffle, and card-drop sounds. These preferences stay local to this browser. Trigger ordering and multiple-choice decisions open centered popups; optional windows use compact popups. Minimize keeps a decision pending; Open choices returns to it.
 
 In new Chapter Two sessions and recorded pilot-3 sessions, playing a card with a resource cost opens payment controls on the right. Resources are selected first; eligible card-script sources can cover any shortfall or be combined manually. Pay confirms the exact total, then spends resources/counters and the action together. Cancel spends nothing. The pending payment survives saves and reconnects. Zero-cost plays proceed immediately. No additional cards (including Schoffner's Catalogue) are enabled by this payment infrastructure. Recorded pilot-1/pilot-2 sessions retain immediate resource-pool payment under their saved rules.
 
 Click a public discard to spread it on the table. Searches automatically display every inspected card, with legal targets highlighted. Top-nine searches show nine cards, not the rest of the deck. Minimize/Open search and reloading preserve a pending search. Games using `pilot-2` or later also wait for Done when a search finds no matching cards. Historical `pilot-1` saves retain their original automatic continuation and rules identity.
 
-Pan, zoom, filters, and sorting stay local to the browser; they create no game checkpoints. Save schema stays v2; database schema v3 adds separate host-seat access metadata without rewriting historical snapshots.
+New opening tables progressively place the scenario, locations, investigators, and counters, shuffle piles, and deal each hand. Subsequent draws, plays, returns, and shuffles animate in command order. Sounds unlock on the first click or keypress; hidden/background tabs stay silent. Accepted state is saved before animation begins; reconnects, duplicate updates, rollback, and returning to a table do not replay old effects. Other players’ private cards animate using generic backs.
+
+Hands overlap slightly, then tighten as more hands or cards are displayed. Each card retains at least a 22-pixel exposed edge; very large hands scroll horizontally. Hovering or keyboard focus raises the card above its neighbors without changing selection or preview behavior.
+
+Pan, zoom, filters, sorting, animation speed, and sounds stay local to the browser; they create no game checkpoints. Save schema stays v2; database schema v3 adds separate host-seat access metadata without rewriting historical snapshots.
 
 ## Multiplayer
 
@@ -122,6 +126,23 @@ Recorded `chapter2-1` scenarios retain their original automatic outcome entries.
 For a backup, stop the server and copy the data folder (`arkham.sqlite` and `assets`). Launcher readiness files and logs are in the LocalAppData launcher subfolder. Readiness files contain host credentials and are not part of save exports.
 
 ## Development and release checks
+
+The deterministic audit is pinned in `content/audit/pin.json`: ArkhamDB Taboo 10, catalog/reprint data, source PDF hashes and historical interpreter hashes. `requirements.json` registers every face's rules-text lines and numeric fields. `behaviors.json` supplies independently written expected outcomes for mechanics and interactions. Text-line evidence remains **untested** until all its clauses, costs, conditions, timing, choices and boundaries are verified; fingerprints do not mark behavior passing. `blockers.json` keeps unresolved source conflicts visible.
+
+```powershell
+npm.cmd run test:audit
+npm.cmd run test:audit -- --case cloak-when-and-local-targets
+npm.cmd run test:soak
+npm.cmd run test:soak -- --seed 2026100753
+```
+
+`test:audit` runs the existing baseline plus focused deterministic cases, writing `test-results/audit/coverage.md` and `coverage.json`. It deliberately exits nonzero while any requirement is untested, failing, or blocked. A selected case can be reproduced independently. `test:soak` runs 100 fixed seeds across all 48 scenario/player-count/difficulty combinations, capped at 200 accepted commands per session. It checks state invariants, serialized command restoration, and private-hand projections after each command. Capped runs are reported separately and are not completion evidence. Failure folders contain the seed, source/requirement references, expected/actual values, command or effect boundary, and a portable save when the state is valid.
+
+Run `audit:pin` explicitly to verify and pin a new live rules package; ordinary regression runs never depend on a live API. `audit:pin -- --offline` only regenerates the register from the already pinned package. Do not use it to claim a new live verification.
+
+`npm.cmd run dev:audit` creates disposable browser fixtures in a new `.local/rules-browser-*` folder and writes local host links to `.local/audit-browser-ready.json`. It requires the complete `.local/asset-audit/assets` cache and a production build. Fixtures cover one, two and four players, pending prompts, and separate hosts bound to P2. The normal application data folder is not used. `npm.cmd run test:package` smoke-tests the staged Windows package with the installed Node runtime removed from its child process's PATH.
+
+Remaining acceptance work is recorded in the report: full per-clause card review, several interaction chains, command-driven journeys through every resolution and campaign branch, and exhaustive browser/privacy/restoration boundaries. Resolved source questions remain in `blockers.json` with the supporting source and regression case. This candidate is not the completed comprehensive audit.
 
 ```powershell
 npm run typecheck

@@ -1,11 +1,13 @@
 import type { Catalog, GameCommand, GameState } from '../shared/types.js';
 import * as pilot from './pilot-engine.js';
 import * as chapter from './chapter/engine.js';
+import * as historicalChapter from './chapter-v2/engine.js';
+const interpreter=(s:GameState)=>s.rules.scriptVersion==='chapter2-3'?chapter:chapterGame(s)?historicalChapter:pilot;
 import { chapterGame } from './chapter/context.js';
 export type Boundary=pilot.Boundary;
 export const EFFECT_TYPES=[...pilot.EFFECT_TYPES,...chapter.EFFECT_TYPES] as const;
 export const {playerOrder,log,pushEffects}=pilot;
-export const allowedActions=(s:GameState,c:Catalog,actor:string,window=false)=>(chapterGame(s)?chapter:pilot).allowedActions(s,c,actor,window);
-export const advance=(s:GameState,c:Catalog,boundary?:Boundary)=>(chapterGame(s)?chapter:pilot).advance(s,c,boundary);
-export const beginPilot=(s:GameState,c:Catalog,boundary?:Boundary)=>chapterGame(s)?chapter.begin(s,c,boundary):pilot.beginPilot(s,c,boundary);
-export const applyEngineCommand=(s:GameState,command:GameCommand,c:Catalog,boundary?:Boundary)=>(chapterGame(s)?chapter:pilot).applyEngineCommand(s,command,c,boundary);
+export const allowedActions=(s:GameState,c:Catalog,actor:string,window=false)=>interpreter(s).allowedActions(s,c,actor,window);
+export const advance=(s:GameState,c:Catalog,boundary?:Boundary)=>interpreter(s).advance(s,c,boundary);
+export const beginPilot=(s:GameState,c:Catalog,boundary?:Boundary)=>chapterGame(s)?(s.rules.scriptVersion==='chapter2-3'?chapter:historicalChapter).begin(s,c,boundary):pilot.beginPilot(s,c,boundary);
+export const applyEngineCommand=(s:GameState,command:GameCommand,c:Catalog,boundary?:Boundary)=>interpreter(s).applyEngineCommand(s,command,c,boundary);

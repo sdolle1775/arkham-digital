@@ -36,14 +36,14 @@ export function TableCard({id,hidden=false,back='player',style,children,mapCard=
     {children}
   </div>;
 }
-export function HoverPreview({preview,catalog,text}:{preview:Preview|null;catalog:Catalog;text:boolean}) {
-  if(!preview)return null;
+export function HoverPreview({preview,catalog,text,size=2}:{preview:Preview|null;catalog:Catalog;text:boolean;size?:number}) {
+  if(!preview||size===0)return null;
   const card=preview.code?catalog.cards[preview.code]:undefined;
   const flipped=preview.face==='front'?'back':'front';
   const face=preview.reverse?flipped:preview.face;
   const generic=!card||(preview.reverse&&!card.faces.some(f=>f.id===face));
   const definition=card?.faces.find(f=>f.id===face);
-  return <div className={`table-preview ${preview.x<window.innerWidth/2?'on-right':'on-left'} ${!generic&&face==='front'&&['investigator','act','agenda'].includes(card?.type??'')?'landscape':''}`} aria-hidden="true">
+  return <div className={`table-preview ${preview.x<window.innerWidth/2?'on-right':'on-left'} ${!generic&&face==='front'&&['investigator','act','agenda'].includes(card?.type??'')?'landscape':''}`} style={{transform:`translateY(-50%) scale(${size/2})`,transformOrigin:preview.x<window.innerWidth/2?'right center':'left center'}} aria-hidden="true">
     {generic?<CardBack kind={preview.back}/>:<CardArt card={card} face={face}/>}
     {text&&!generic&&<div className="preview-rules"><strong>{definition?.name??card?.name}</strong><p>{cardText(definition?.text??'')}</p>{card?.raw.taboo_text?<p>Taboo: {String(card.raw.taboo_text)}</p>:null}<small>Effective rules · Taboo {catalog.rules?.tabooDate}</small></div>}
     <span className="preview-hint">Right-click / F: reverse · I: inspect</span>

@@ -1,0 +1,16 @@
+.table-motion-card{position:fixed;z-index:32;pointer-events:none;transform-origin:top left;perspective:900px;border-radius:6px;filter:drop-shadow(0 9px 10px #0009)}
+.table-motion-turn{position:relative;width:100%;height:100%;transform-style:preserve-3d}
+.table-motion-turn img{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;border-radius:6px;backface-visibility:hidden}
+.table-motion-turn .motion-finish{transform:rotateY(180deg)}
+.table-menu-anchor{position:absolute;z-index:25;right:14px;bottom:calc(var(--hand-dock-height) + 14px);width:172px}
+.table-menu-anchor .table-tools-toggle{margin:0;width:100%}
+.table-menu-anchor .edge-tools{position:absolute;bottom:calc(100% + 8px);right:0;width:220px;max-height:calc(100dvh - var(--hand-dock-height) - 115px);overflow:auto;background:#12241ff5;border:1px solid #89917160;border-radius:6px;padding:12px;box-shadow:0 8px 28px #0008;scrollbar-width:thin}
+.animation-setting{display:block;font-size:12px;color:#ded8bd;padding:3px 2px 7px}.animation-setting output{float:right;color:#e9cd83;font-variant-numeric:tabular-nums}.animation-setting input{display:block;width:100%;margin:12px 0 6px;accent-color:#ccb277;cursor:pointer}.animation-setting>span{display:block;font-size:10px;color:#a1b1a1}.animation-setting>span>span{float:right}
+.animation-setting>.hover-size-ticks{display:flex;justify-content:space-between;gap:3px}.animation-setting>.hover-size-ticks>span{float:none}.hover-size-setting{margin-top:5px}
+.edge-tools .sound-setting{display:flex;flex-direction:row;align-items:center;gap:9px;font-size:12px;padding:8px 2px 12px;border-bottom:1px solid #89917140;margin-bottom:4px}.sound-setting input{accent-color:#ccb277;width:auto;margin:0}
+.hand-dock .table-card-wrap:has(>.table-card:hover),.hand-dock .table-card-wrap:has(>.table-card:focus-visible){z-index:1000!important}
+.tabletop .right-edge{max-height:calc(100dvh - var(--hand-dock-height) - 150px)}
+.is-animating .tabletop-viewport{cursor:wait}
+@media(max-height:740px){.tabletop .right-edge{max-height:calc(100dvh - var(--hand-dock-height) - 120px)}}
+@media(max-width:900px){.table-menu-anchor{right:7px;width:143px}}
+@media(max-width:600px){.table-menu-anchor{width:120px}}

@@ -1,9 +1,11 @@
+import {effectLabel} from './labels.js';
 import type { Catalog, Effect, GameCommand, GameState, PaymentContribution } from '../../shared/types.js';
-import { attachCard, cardsIn, discardCard, locationOf, moveCard, zone } from '../zones.js';
-import { shuffle, randomIndex } from '../random.js';
+import { acknowledgeTestResult } from '../test-result-review.js';
+import { attachCard, cardsIn, discardCard, locationOf, moveCard, zone, shuffleZone } from '../zones.js';
+import { randomIndex } from '../random.js';
 import { spendPayment, RESOURCE_POOL } from '../payments.js';
 import { actions, cardEffect, fightActions, playUses, playable, canPay } from './actions.js';
-import { type Ctx, type Action, ask, assets, choose, clue, code, connections, currentZone, damage, definition, discard, distance, draw, engaged, enemies, enemyDamage, gain, has, health, hook, inPlay, investigator, keyword, living, log, mark, name, next, number, push, ready, select, stat, text, trait, used, weakness } from './context.js';
+import { type Ctx, type Action, ask, assets, choose, clue, code, connections, currentZone, damage, definition, discard, distance, draw, engaged, enemies, enemyDamage, gain, has, health, hook, inPlay, investigator, keyword, living, mayTrigger, log, mark, name, next, number, push, ready, select, stat, text, trait, used, weakness } from './context.js';
 import { resolveCard, resolveHook } from './scripts.js';
 import { resolveTest } from './tests.js';
 import { resolveScenario, scenarioCheck } from './scenarios.js';
@@ -39,7 +41,7 @@ function requestPlay(x:Ctx,actor:string,source:string,discount=0,free=false,from
 }
 function drawCard(x:Ctx,actor:string):void {
  const {s,c}=x;
- if(!cardsIn(s,'deck',actor).length){for(const id of [...cardsIn(s,'discard',actor)])moveCard(s,id,'deck',actor,c);zone(s,'deck',actor).cards=shuffle(cardsIn(s,'deck',actor),s.rng);push(x,[damage(actor,0,1)]);}
+ if(!cardsIn(s,'deck',actor).length){for(const id of [...cardsIn(s,'discard',actor)])moveCard(s,id,'deck',actor,c);shuffleZone(s,'deck',actor);push(x,[damage(actor,0,1)]);}
  const source=cardsIn(s,'deck',actor)[0];if(!source)return;
  moveCard(s,source,'hand',actor,c);push(x,[{type:'c-drawn',actor,source}]);log(x,investigator(x,actor).name+' drew a card.');
 }
@@ -61,11 +63,17 @@ function assign(x:Ctx,e:Effect):void {
 }
 function applyAssignment(x:Ctx,e:Effect):void {
  const {s,c}=x,actor=e.actor!,i=investigator(x,actor),effects:Effect[]=[];
- for(const [key,amount]of Object.entries(e.data!.allocations as Record<string,number>)){
-  if(!amount)continue;const [id,kind]=key.split(':');if(id===i.cardId){if(kind==='damage')i.damage+=amount;else i.horror+=amount;}
-  else s.cards[id].tokens[kind]=(s.cards[id].tokens[kind]??0)+amount;
-  effects.push(hook('damage-placed',actor,id,undefined,{kind,amount,wasExhausted:s.cards[id].exhausted}));
+ if(!e.data?.afterPlacement){
+  const when:Effect[]=[];
+  for(const [key,amount]of Object.entries(e.data!.allocations as Record<string,number>)){
+   if(!amount)continue;const suffix=key.lastIndexOf(':'),id=key.slice(0,suffix),kind=key.slice(suffix+1);if(id===i.cardId){if(kind==='damage')i.damage+=amount;else i.horror+=amount;}
+   else s.cards[id].tokens[kind]=(s.cards[id].tokens[kind]??0)+amount;
+   when.push(hook('when-damage-placed',actor,id,undefined,{kind,amount}));
+   effects.push(hook('damage-placed',actor,id,undefined,{kind,amount}));
+  }
+  push(x,[...when,{...e,data:{...e.data,afterPlacement:true,afterEffects:effects}}]);return;
  }
+ effects.push(...e.data.afterEffects);
  for(const id of Object.values(s.cards).filter(card=>inPlay(x,card.id)&&definition(x,card.id).type==='asset').map(card=>card.id)){
   const d=definition(x,id),t=s.cards[id].tokens;
   if(d.health&&t.damage>=d.health||d.sanity&&t.horror>=d.sanity){const owner=s.cards[id].controller;effects.unshift(hook('asset-defeated',owner,id));discardCard(s,id,c);}
@@ -109,7 +117,7 @@ function search(x:Ctx,e:Effect):void {
 }
 function resolve(x:Ctx,e:Effect):void {
  const {s,c}=x,actor=e.actor,i=actor?investigator(x,actor):undefined,source=e.source,target=e.target,p=s.engine.chapter!;
- if(i?.eliminated&&!['c-hook','c-discard','c-test-end','c-attack-after','c-action-end','c-eliminate','c-finish','c-scenario'].includes(e.type))return;
+ if(i?.eliminated&&!['c-hook','c-discard','c-test-end','c-attack-after','c-action-end','c-eliminate','c-finish','c-scenario','c-encounter-cleanup'].includes(e.type))return;
  switch(e.type){
   case 'c-action-costs':{
    const a=actions({s:{...s,pendingChoices:[],resolutionStack:[]},c},actor!).find(a=>a.id===e.data!.actionId);if(!a)throw new Error('This action is no longer legal.');
@@ -154,7 +162,8 @@ function resolve(x:Ctx,e:Effect):void {
    const from=locationOf(s,target!),enemy=s.cards[target!];enemy.tokens.locationIndex=s.scenario.locations.findIndex(l=>l.cardId===i!.locationId);moveCard(s,target!,'threat',actor!,c);enemy.bearer=actor;push(x,[hook('engage',actor,target),...(from!==i!.locationId?living(x).filter(id=>investigator(x,id).locationId===i!.locationId).map(id=>hook('enemy-entered',id,target)):[])]);break;
   }
   case 'c-auto-engage':{
-   const enemy=enemies(x,target).find(id=>!s.cards[id].bearer&&ready(x,id)&&!keyword(x,id,'Aloof')&&!keyword(x,id,'Massive'));if(!enemy)break;
+   const present=living(x).filter(id=>investigator(x,id).locationId===target);
+   const enemy=enemies(x,target).find(id=>!s.cards[id].bearer&&ready(x,id)&&!keyword(x,id,'Aloof')&&!keyword(x,id,'Massive')&&present.some(actor=>code(x,id)!=='12009'||investigator(x,actor).investigatorCode==='12007'));if(!enemy)break;
    let candidates=living(x).filter(id=>investigator(x,id).locationId===target);
    if(code(x,enemy)==='12009')candidates=candidates.filter(id=>investigator(x,id).investigatorCode==='12007');
    if(!candidates.length)break;
@@ -167,11 +176,13 @@ function resolve(x:Ctx,e:Effect):void {
    push(x,[hook('enemy-spawned',actor,source),...living(x).filter(id=>investigator(x,id).locationId===loc).map(actor=>hook('enemy-entered',actor,source)),{type:'c-auto-engage',target:loc}]);break;
   }
   case 'c-attack':{
+   if(e.data?.keyword&&!ready(x,source!))break;
    if(!inPlay(x,source!)||locationOf(s,source!)!==i!.locationId||used(x,'cannot-attack:'+source+':'+actor))break;
    const nextEffect:Effect={...e,type:'c-attack-resolve'};
-   const candidates=living(x).filter(id=>investigator(x,id).locationId===i!.locationId&&!e.data?.passed?.includes(id)).flatMap(id=>cardsIn(s,'hand',id).filter(card=>code(x,card)==='12026'&&canPay(x,id,card)).map(card=>({actor:id,card})));
+   const candidates=living(x).filter(id=>mayTrigger(x,id)&&investigator(x,id).locationId===i!.locationId&&!e.data?.passed?.includes(id)).flatMap(id=>cardsIn(s,'hand',id).filter(card=>code(x,card)==='12026'&&canPay(x,id,card)).map(card=>({actor:id,card})));
    if(!candidates.length){push(x,[nextEffect]);break;}
-   const first=candidates[0];choose(x,first.actor,'Play Counterattack before the enemy attacks?', [{id:first.card,label:'Counterattack (1 resource)',cardId:first.card,effects:[{type:'c-pay-event',actor:first.actor,source:first.card,data:{effects:[enemyDamage(source!,1,first.actor)],cancelEffects:[{...e,data:{...e.data,passed:[...(e.data?.passed??[]),first.actor]}}]}}]},{id:'pass',label:'Pass',effects:[{...e,data:{...e.data,passed:[...(e.data?.passed??[]),first.actor]}}]}]);break;
+   const who=candidates[0].actor,continuation={...e,data:{...e.data,passed:[...(e.data?.passed??[]),who]}};
+   choose(x,who,'Play Counterattack before the enemy attacks?', [...candidates.filter(candidate=>candidate.actor===who).map(({card})=>({id:card,label:'Counterattack (1 resource)',cardId:card,effects:[{type:'c-pay-event',actor:who,source:card,data:{effects:[enemyDamage(source!,1,who)],cancelEffects:[continuation]}}]})),{id:'pass',label:'Pass',effects:[continuation]}]);break;
   }
   case 'c-attack-resolve':if(inPlay(x,source!)){s.engine.attacked[source+':'+actor]=s.engine.round;push(x,[damage(actor!,number(x,source!,'enemy_damage'),number(x,source!,'enemy_horror')),{type:'c-attack-after',actor,source,data:e.data}]);}break;
   case 'c-attack-after':push(x,[hook('attacked',actor,source,undefined,e.data)]);break;
@@ -213,7 +224,7 @@ function resolve(x:Ctx,e:Effect):void {
   case 'c-asset-enter':push(x,[hook('asset-entered',actor,source)]);break;
   case 'c-play-offer':if(playable(x,actor!,source!))requestPlay(x,actor!,source!,e.data?.discount??0,!!e.data?.free,true);break;
   case 'c-test':{
-   const t={id:next(x,'test'),actor:actor!,source,target,skill:e.data!.skill,difficulty:e.data!.difficulty,bonus:(e.data!.bonus??0)+(['12077','12085'].includes(code(x,source)!)&&i!.sanity-i!.horror<=3?1:0),damage:e.data!.damage??1,action:e.data!.action,stage:0,committed:[],tokens:[],tokenModifier:0,participants:[],peril:e.data?.peril,data:e.data};
+   const t={id:next(x,'test'),actor:actor!,source,target,skill:e.data!.skill,difficulty:e.data!.difficulty,bonus:(e.data!.bonus??0)+(['12077','12085'].includes(code(x,source)!)&&i!.sanity-i!.horror<=3?1:0),damage:e.data!.damage??1,action:e.data!.action,stage:0,committed:[],tokens:[],tokenModifier:0,participants:[],peril:e.data?.peril||(p.encounters??[]).some(scope=>scope.peril),data:e.data};
    if(s.test)s.queuedTests.push(t);else {s.test=t;push(x,[{type:'c-test-step'}]);}break;
   }
   case 'c-test-step':case 'c-test-end':case 'c-commit':resolveTest(x,e);break;
@@ -235,26 +246,27 @@ function resolve(x:Ctx,e:Effect):void {
    const amount=Math.min(s.cards[target!].tokens.clues??0,e.amount??1);if(amount){s.cards[target!].tokens.clues-=amount;i!.clues+=amount;push(x,[hook('clues-discovered',actor,target,undefined,{amount})]);}break;
   }
   case 'c-drop-clue':{const amount=Math.min(i!.clues,e.amount??1);i!.clues-=amount;s.cards[i!.locationId].tokens.clues=(s.cards[i!.locationId].tokens.clues??0)+amount;break;}
-  case 'c-evade':if(inPlay(x,target!)){s.cards[target!].exhausted=true;if(!keyword(x,target!,'Massive'))moveCard(s,target!,'enemies','scenario',c);push(x,[hook('evaded',actor,target)]);}break;
+  case 'c-evade':if(inPlay(x,target!)){s.cards[target!].exhausted=true;if(!keyword(x,target!,'Massive'))moveCard(s,target!,'enemies','scenario',c);push(x,[hook('evaded',actor,target,undefined,{successful:e.data?.successful===true})]);}break;
   case 'c-encounter-draw':{
-   if(!cardsIn(s,'encounterDeck').length){for(const id of [...cardsIn(s,'encounterDiscard')])moveCard(s,id,'encounterDeck','scenario',c);zone(s,'encounterDeck').cards=shuffle(cardsIn(s,'encounterDeck'),s.rng);}
+   if(!cardsIn(s,'encounterDeck').length){for(const id of [...cardsIn(s,'encounterDiscard')])moveCard(s,id,'encounterDeck','scenario',c);shuffleZone(s,'encounterDeck');}
    const id=cardsIn(s,'encounterDeck')[0];if(id)push(x,[{type:'c-encounter',actor,source:id,data:e.data}]);break;
   }
   case 'c-encounter':{
+   (p.encounters??=[]).push({cardId:source!,actor:actor!,peril:keyword(x,source!,'Peril')});
    moveCard(s,source!,'resolving','scenario',c);
-   if(definition(x,source!).type==='enemy'){push(x,[cardEffect(actor!,source!,'spawn'),...(e.data?.surge?[{type:'c-encounter-draw',actor}]:[])]);break;}
-   const ward=cardsIn(s,'hand',actor!).find(id=>code(x,id)==='12065'&&canPay(x,actor!,id)&&!weakness(x,source!));
+   if(definition(x,source!).type==='enemy'){push(x,[cardEffect(actor!,source!,'spawn'),{type:'c-encounter-cleanup',actor,source,data:e.data}]);break;}
+   const wards=cardsIn(s,'hand',actor!).filter(id=>code(x,id)==='12065'&&canPay(x,actor!,id)&&!weakness(x,source!));
    const effects:Effect[]=[{type:'c-revelation',actor,source,data:e.data}];
-   if(ward)choose(x,actor!,'Play Ward of Protection?', [{id:ward,label:'Cancel revelation (1 resource, 1 horror)',cardId:ward,effects:[{type:'c-pay-event',actor,source:ward,data:{effects:[damage(actor!,0,1),{type:'c-encounter-cleanup',actor,source,data:e.data}],cancelEffects:effects}}]},{id:'pass',label:'Pass',effects}]);else push(x,effects);break;
+   if(wards.length)choose(x,actor!,'Play Ward of Protection?', [...wards.map(ward=>({id:ward,label:'Cancel revelation (1 resource, 1 horror)',cardId:ward,effects:[{type:'c-pay-event',actor,source:ward,data:{effects:[damage(actor!,0,1),{type:'c-encounter-cleanup',actor,source,data:e.data}],cancelEffects:effects}}]})),{id:'pass',label:'Pass',effects}]);else push(x,effects);break;
   }
   case 'c-revelation':push(x,[cardEffect(actor!,source!,'revelation'),{type:'c-encounter-cleanup',actor,source,data:e.data}]);break;
-  case 'c-encounter-cleanup':{const queued=s.queuedTests.find(t=>t.source===source);if(queued){queued.data??={};queued.data.afterEffects=[...(queued.data.afterEffects??[]),e];break;}const surge=e.data?.surge||s.cards[source!].tokens.surge||keyword(x,source!,'Surge');delete s.cards[source!].tokens.surge;if(currentZone(x,source!).kind==='resolving')discardCard(s,source!,c);if(surge)push(x,[{type:'c-encounter-draw',actor}]);break;}
+  case 'c-encounter-cleanup':{const queued=s.queuedTests.find(t=>t.source===source);if(queued){queued.data??={};queued.data.afterEffects=[...(queued.data.afterEffects??[]),e];break;}const scope=(p.encounters??[]).map(scope=>scope.cardId).lastIndexOf(source!);if(scope>=0)p.encounters!.splice(scope,1);const surge=e.data?.surge||s.cards[source!].tokens.surge||keyword(x,source!,'Surge');delete s.cards[source!].tokens.surge;if(currentZone(x,source!).kind==='resolving')discardCard(s,source!,c);if(surge)push(x,[{type:'c-encounter-draw',actor}]);break;}
   case 'c-search':search(x,e);break;
   case 'c-search-finish':{
    for(const id of [...cardsIn(s,'search',actor!)])moveCard(s,id,e.data?.origins?.[id]==='encounterDiscard'?'encounterDiscard':e.data?.encounter?'encounterDeck':'deck',e.data?.encounter?'scenario':actor!,c);
-   if(e.data?.shuffle!==false){const z=zone(s,e.data?.encounter?'encounterDeck':'deck',e.data?.encounter?'scenario':actor!);z.cards=shuffle(z.cards,s.rng);}break;
+   if(e.data?.shuffle!==false){const z=zone(s,e.data?.encounter?'encounterDeck':'deck',e.data?.encounter?'scenario':actor!);shuffleZone(s,z.kind,z.owner);}break;
   }
-  case 'c-shuffle':{const z=zone(s,e.data?.encounter?'encounterDeck':'deck',e.data?.encounter?'scenario':actor!);z.cards=shuffle(z.cards,s.rng);break;}
+  case 'c-shuffle':{const z=zone(s,e.data?.encounter?'encounterDeck':'deck',e.data?.encounter?'scenario':actor!);shuffleZone(s,z.kind,z.owner);break;}
   case 'c-turn-next':{
    s.engine.activeInvestigatorId=null;const alive=living(x).filter(id=>!investigator(x,id).turnEnded);
    if(!alive.length){push(x,[{type:'c-phase-end'}]);break;}
@@ -279,7 +291,7 @@ function resolve(x:Ctx,e:Effect):void {
    const ids=engaged(x,actor!).filter(id=>ready(x,id)&&!used(x,'enemy-phase:'+id+':'+actor));
    select(x,actor!,'Choose the next attacking enemy',ids,id=>[mark('enemy-phase:'+id+':'+actor),{type:'c-attack',actor,source:id},...(!keyword(x,id,'Massive')?[{type:'c-exhaust',source:id}]:[]),e]);break;
   }
-  case 'c-upkeep':s.engine.phase='upkeep';for(const card of Object.values(s.cards).filter(c=>inPlay(x,c.id))){if(card.tokens.skipReady){delete card.tokens.skipReady;continue;}card.exhausted=false;}push(x,[...s.scenario.locations.map(l=>({type:'c-auto-engage',target:l.cardId})),...living(x).flatMap(actor=>[draw(actor),gain(actor),{type:'c-hand-limit',actor}]),{type:'c-window',data:{actors:living(x)}},{type:'c-round-end'}]);break;
+  case 'c-upkeep':s.engine.phase='upkeep';for(const card of Object.values(s.cards).filter(c=>inPlay(x,c.id))){if(card.tokens.skipReady){delete card.tokens.skipReady;continue;}card.exhausted=false;}push(x,[...s.scenario.locations.map(l=>({type:'c-auto-engage',target:l.cardId})),...living(x).map(actor=>draw(actor)),...living(x).map(actor=>gain(actor)),...living(x).map(actor=>({type:'c-hand-limit',actor})),{type:'c-window',data:{actors:living(x)}},{type:'c-round-end'}]);break;
   case 'c-hand-limit':{
    const excess=cardsIn(s,'hand',actor!).length-(8+2*assets(x,actor!).filter(id=>code(x,id)==='12032').length),eligible=cardsIn(s,'hand',actor!).filter(id=>!weakness(x,id));
    if(excess>0&&eligible.length)ask(x,actor!,'Discard to your hand limit',eligible.map(id=>({id,label:name(x,id),cardId:id})),{kind:'discard-hand'},Math.min(excess,eligible.length),Math.min(excess,eligible.length),true);break;
@@ -292,7 +304,7 @@ function resolve(x:Ctx,e:Effect):void {
    const eligible=living(x).filter(id=>investigator(x,id).clues>0&&(!e.data?.location||investigator(x,id).locationId===e.data.location));
    choose(x,actor??s.leadInvestigatorId,'Choose who spends a clue',eligible.map(id=>({id,label:investigator(x,id).name,effects:[{type:'c-card',actor:id,data:{op:'spend-clue'}},{...e,amount:amount-1}]})));break;
   }
-  case 'c-order':{const effects:Effect[]=e.data!.effects;if(effects.length<2){push(x,effects);break;}choose(x,actor??s.leadInvestigatorId,e.data!.prompt??'Choose the next simultaneous effect',effects.map((eff,n)=>({id:String(n),label:eff.data?.label??(eff.source?name(x,eff.source):eff.type),effects:[eff,{...e,data:{...e.data,effects:effects.filter((_,i)=>i!==n)}}]})));break;}
+  case 'c-order':{const effects:Effect[]=e.data!.effects;if(effects.length<2){push(x,effects);break;}choose(x,actor??s.leadInvestigatorId,e.data!.prompt??'Choose the next simultaneous effect',effects.map((eff,n)=>({id:String(n),label:effectLabel(x,eff),effects:[eff,{...e,data:{...e.data,effects:effects.filter((_,i)=>i!==n)}}]})));break;}
   case 'c-random-discard':{
    const hand=cardsIn(s,'hand',actor!);if(hand.length){const id=hand[randomIndex(s.rng,hand.length)];s.engine.outcomes.push({kind:'random-discard',value:id});discardCard(s,id,c);if((e.amount??1)>1)push(x,[{...e,amount:e.amount!-1}]);}break;
   }
@@ -323,7 +335,8 @@ export function applyEngineCommand(s:GameState,command:GameCommand,c:Catalog,bou
   const ctx=p.context!,actor=command.investigatorId,ids=command.type==='pass'?p.options?.some(o=>o.id==='pass')?['pass']:[]:command.optionIds;
   if(new Set(ids).size!==ids.length||ids.length<(p.min??1)||ids.length>(p.max??1)||ids.some(id=>!p.options?.some(o=>o.id===id)))throw new Error('Select a legal set of options.');
   if(ctx.kind==='payment'&&command.type!=='pass')throw new Error('Confirm payment sources or cancel.');s.pendingChoices=[];
-  if(ctx.kind==='effects')push(x,JSON.parse(ctx[ids[0]]));
+  if(ctx.kind==='test-result')acknowledgeTestResult(s,p,command);
+  else if(ctx.kind==='effects')push(x,JSON.parse(ctx[ids[0]]));
   else if(ctx.kind==='commit')push(x,[{type:'c-commit',actor,data:{ids}}]);
   else if(ctx.kind==='discard-hand')push(x,ids.map(discard));
   else if(ctx.kind==='search'){

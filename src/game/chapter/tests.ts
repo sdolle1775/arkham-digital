@@ -1,13 +1,15 @@
 import type { Effect, SkillTest } from '../../shared/types.js';
-import { cardsIn, discardCard, moveCard, zone } from '../zones.js';
-import { randomIndex, shuffle } from '../random.js';
+import { cardsIn, discardCard, moveCard, zone, shuffleZone } from '../zones.js';
+import { randomIndex } from '../random.js';
 import { cardEffect, canPay } from './actions.js';
 import { calculateReport, recordTest } from './reporting.js';
 import { signed, tokenName } from '../../shared/test-results.js';
-import { type Ctx, type Option, ask, assets, choose, clue, code, damage, definition, discard, draw, enemies, engaged, has, enemyDamage, exhaust, gain, heal, hook, inPlay, investigator, keyword, living, log, mark, name, number, push, ready, select, shroud, stat, test, token, trait, used, weakness } from './context.js';
+import { pauseForTestResult } from '../test-result-review.js';
+import { type Ctx, type Option, ask, assets, choose, clue, code, damage, definition, discard, draw, enemies, engaged, has, enemyDamage, exhaust, gain, heal, hook, inPlay, investigator, keyword, living, mayTrigger, log, mark, name, number, push, ready, select, shroud, stat, test, token, trait, used, weakness } from './context.js';
 
 const singleCommit=(x:Ctx,id:string)=>/Max 1 committed per skill test/i.test(definition(x,id).faces[0].text);
 export function commitEligible(x:Ctx,t:SkillTest,actor:string,late=false,discarded=false):string[]{
+ if(!mayTrigger(x,actor))return[];
  return cardsIn(x.s,discarded?'discard':'hand',actor).filter(id=>{
   const d=definition(x,id);if(weakness(x,id)||number(x,id,'skill_'+t.skill)+number(x,id,'skill_wild')===0)return false;
   if(discarded&&d.type!=='skill'||late&&code(x,id)!=='12081')return false;
@@ -74,7 +76,7 @@ function successfulEffects(x:Ctx,t:SkillTest):Effect[]{
   effects.push(enemyDamage(t.target!,amount,t.actor));
  }
  if(t.action==='investigate')effects.push(clue(t.actor,t.target!, (t.data!.clues??1)+t.committed.filter(id=>code(x,id)==='12039').length+(t.data!.clueBoost??0)));
- if(t.action==='evade')effects.push({type:'c-evade',actor:t.actor,target:t.target});
+ if(t.action==='evade')effects.push({type:'c-evade',actor:t.actor,target:t.target,data:{successful:true}});
  if(['discard-target','discard-source','necronomicon'].includes(t.action))effects.push(discard(t.action==='discard-target'?t.target!:t.source!));
  if(t.action==='codex4'||t.action==='codex5')effects.push({type:'c-scenario',actor:t.actor,source:t.source,data:{op:'codex',entry:t.action==='codex4'?4:5}});
  if(t.action==='sluice')effects.push({type:'c-finish',data:{resolution:3}});
@@ -93,7 +95,7 @@ function successfulEffects(x:Ctx,t:SkillTest):Effect[]{
  return effects;
 }
 function results(x:Ctx,t:SkillTest):void {
- const {s}=x,i=investigator(x,t.actor),effects:Effect[]=[],optional:Effect[]=[];
+ const {s}=x,i=investigator(x,t.actor),effects:Effect[]=[],afterResults:Effect[]=[],optional:Effect[]=[];
  const react=(who:string,source:string,prompt:string,eff:Effect[])=>optional.push({type:'c-choice',actor:who,source,data:{prompt,optional:true,options:[{id:'use',label:prompt,cardId:source,effects:eff}]}});
  if(t.success){effects.push(...successfulEffects(x,t));
   if(t.action==='investigate'&&i.investigatorCode==='12004'&&!used(x,'joe:'+t.actor))react(t.actor,i.cardId,'Joe Diamond: draw 1',[mark('joe:'+t.actor),draw(t.actor)]);
@@ -108,9 +110,9 @@ function results(x:Ctx,t:SkillTest):void {
  }else{
   if(t.action==='fight'&&t.target&&inPlay(x,t.target)){
    const bearer=s.cards[t.target].bearer;if(bearer&&bearer!==t.actor)effects.push(damage(bearer,code(x,t.source)==='12029'?Math.min(5,-t.margin!):t.damage));
-   if(keyword(x,t.target,'Retaliate')&&ready(x,t.target))effects.push({type:'c-attack',actor:t.actor,source:t.target});
+   if(keyword(x,t.target,'Retaliate')&&ready(x,t.target))afterResults.push({type:'c-attack',actor:t.actor,source:t.target,data:{keyword:'Retaliate'}});
   }
-  if(t.action==='evade'&&t.target&&inPlay(x,t.target)&&keyword(x,t.target,'Alert')&&ready(x,t.target))effects.push({type:'c-attack',actor:t.actor,source:t.target});
+  if(t.action==='evade'&&t.target&&inPlay(x,t.target)&&keyword(x,t.target,'Alert')&&ready(x,t.target))afterResults.push({type:'c-attack',actor:t.actor,source:t.target,data:{keyword:'Alert'}});
   if(t.action==='necronomicon')effects.push(cardEffect(t.actor,t.source!,'shuffle-self'),damage(t.actor,0,1));
   if(t.action==='agenda-horror')effects.push(damage(t.actor,0,1));
   if(t.action==='agenda-damage')effects.push(damage(t.actor,1));
@@ -118,7 +120,7 @@ function results(x:Ctx,t:SkillTest):void {
   if(t.action==='investigate'&&t.margin!>=-2)for(const id of cardsIn(s,'hand',t.actor).filter(id=>code(x,id)==='12078'&&canPay(x,t.actor,id)))react(t.actor,id,'Look What I Found! (2 resources)',[{type:'c-pay-event',actor:t.actor,source:id,data:{effects:[clue(t.actor,i.locationId,2)]}}]);
   for(const id of t.committed.filter(id=>code(x,id)==='12084'))effects.push(...t.committed.filter(other=>other!==id).map(source=>({type:'c-return',source})),draw(s.cards[id].owner));
  }
- if(t.target&&inPlay(x,t.target)&&t.action==='fight'&&keyword(x,t.target,'Elusive'))effects.push(cardEffect(t.actor,t.target,'elusive'));
+ if(t.target&&inPlay(x,t.target)&&t.action==='fight'&&keyword(x,t.target,'Elusive'))(t.data!.afterEffects??=[]).push(cardEffect(t.actor,t.target,'elusive'));
  if(t.elderSign){
   if(i.investigatorCode==='12007')(t.data!.afterEffects??=[]).push(cardEffect(t.actor,i.cardId,'trish-elder'));
   if(i.investigatorCode==='12010')effects.push(cardEffect(t.actor,i.cardId,'return-asset'));
@@ -128,16 +130,17 @@ function results(x:Ctx,t:SkillTest):void {
   if(!t.success&&symbol==='tablet')effects.push(s.campaign.scenarioNumber===1?damage(t.actor,1):s.campaign.scenarioNumber===2?{type:'c-drop-clue',actor:t.actor,amount:1}:{type:'c-gain',actor:t.actor,amount:0});
   if(!t.success&&symbol==='elder-thing'&&s.campaign.scenarioNumber!==2&&(s.campaign.scenarioNumber===3||hard||t.margin!<=-2)){const fire=[...cardsIn(s,'encounterDiscard')].reverse().find(id=>code(x,id)==='12129');if(fire)effects.push({type:'c-encounter',actor:t.actor,source:fire});}
  }
- if(t.source)effects.push(cardEffect(t.actor,t.source,'test-result'));
+ const resultScripts=t.success?['12037','12041','12053','12057','12079','12033','12050','12070']:['12079','12083','12126','12127','12128','12130','12131','12158','12161','12165','12167','12176','12190','12191','12192','12194','12195'];
+ if(t.source&&resultScripts.includes(code(x,t.source)!))effects.push(cardEffect(t.actor,t.source,'test-result'));
  if(code(x,t.source)==='12014'&&!t.data?.followup&&ready(x,t.source!)&&s.cards[t.source!].tokens.ammo>0)optional.push(cardEffect(t.actor,t.source!,'twin-followup'));
- push(x,[{type:'c-order',actor:t.actor,data:{prompt:'Order simultaneous test results',effects}},...(optional.length?[{type:'c-order',actor:t.actor,data:{prompt:'Order available reactions',effects:optional}}]:[]),{type:'c-test-end'}]);
+ push(x,[{type:'c-order',actor:t.actor,data:{prompt:'Order simultaneous test results',effects}},...afterResults,...(optional.length?[{type:'c-order',actor:t.actor,data:{prompt:'Order available reactions',effects:optional}}]:[]),{type:'c-test-end'}]);
 }
 export function resolveTest(x:Ctx,e:Effect):void {
  if(e.data?.op==='begin-queued'){if(!x.s.test&&x.s.queuedTests.length){x.s.test=x.s.queuedTests.shift()!;push(x,[{type:'c-test-step'}]);}return;}
  const {s,c}=x,t=s.test;if(!t)return;t.data??={};
  if(e.type==='c-commit'){commit(x,e,t);return;}
  if(e.type==='c-test-end'){
-  for(const id of t.committed.filter(id=>cardsIn(s,'committed').includes(id))){if(s.cards[id].tokens.shuffleAfterTest){moveCard(s,id,'deck',s.cards[id].owner,c);zone(s,'deck',s.cards[id].owner).cards=shuffle(cardsIn(s,'deck',s.cards[id].owner),s.rng);delete s.cards[id].tokens.shuffleAfterTest;}else discardCard(s,id,c);}
+  for(const id of t.committed.filter(id=>cardsIn(s,'committed').includes(id))){if(s.cards[id].tokens.shuffleAfterTest){moveCard(s,id,'deck',s.cards[id].owner,c);shuffleZone(s,'deck',s.cards[id].owner);delete s.cards[id].tokens.shuffleAfterTest;}else discardCard(s,id,c);}
   s.engine.modifiers=s.engine.modifiers.filter(m=>m.expires!=='test');s.test=null;push(x,[...(t.data.afterEffects??[]),{type:'c-test-step',data:{op:'begin-queued'}}]);return;
  }
  if(e.data?.op==='mask-reveal'){
@@ -172,6 +175,12 @@ export function resolveTest(x:Ctx,e:Effect):void {
   if(!t.success&&t.tokens.some(token=>token!=='auto-fail')){const scrap=cardsIn(s,'hand',t.actor).filter(id=>code(x,id)==='12082'&&canPay(x,t.actor,id));if(scrap.length)choose(x,t.actor,'Play Scrape By to succeed by 0?',scrap.map(id=>({id,label:'Scrape By (1 resource)',cardId:id,effects:[{type:'c-pay-event',actor:t.actor,source:id,data:{effects:[{type:'c-test-step',data:{op:'scrape'}},...(t.tokens.some(token=>!/^[+-]?\d+$/.test(token))?[damage(t.actor,0,1)]:[])]}}]})),true,true);}return;
  }
  if(t.stage===6){
+  if(!t.data.resultReviewed){
+   // Older snapshots can reach this stage without a structured report.
+   t.result??=calculateReport(x,t);
+   if(t.data.scraped&&!t.result.override)t.result.override='Scrape By changes the result to success by 0';
+   recordTest(x,t);pauseForTestResult(s,'c-test-step');return;
+  }
   t.stage=7;push(x,[{type:'c-test-step'}]);if(!t.success||!t.source||has(x,t.actor,'12012')&&definition(x,t.source).type==='asset')return;
   const cd=code(x,t.source),options:Option[]=[];
   if(cd==='12020'&&ready(x,t.source)&&engaged(x,t.actor).length===1&&engaged(x,t.actor).includes(t.target!))options.push({id:'machete',label:'Exhaust Machete for +1 damage',effects:[exhaust(t.source),{type:'c-test-step',data:{op:'boost',key:'damageBoost',amount:1}}]});

@@ -13,11 +13,13 @@ export const weakness=(x:Ctx,id:string)=>['weakness','basicweakness'].includes(d
 export const currentZone=({s}:Ctx,id:string)=>Object.values(s.zones).find(z=>z.cards.includes(id))!;
 export const inPlay=(x:Ctx,id:string)=>['assets','threat','enemies','locations','attachments','identity'].includes(currentZone(x,id)?.kind);
 export const living=({s}:Ctx)=>{const start=s.setup.order.indexOf(s.leadInvestigatorId),order=[...s.setup.order.slice(start),...s.setup.order.slice(0,start)];return order.filter(id=>!s.investigators.find(i=>i.id===id)!.eliminated);};
+export const mayTrigger=(x:Ctx,actor:string)=>!(x.s.engine.chapter?.encounters??[]).some(scope=>scope.peril&&scope.actor!==actor);
 export const assets=(x:Ctx,actor:string)=>cardsIn(x.s,'assets',actor);
 export const has=(x:Ctx,actor:string,cardCode:string)=>[...assets(x,actor),...cardsIn(x.s,'threat',actor)].some(id=>code(x,id)===cardCode);
 export const enemies=(x:Ctx,loc?:string)=>Object.values(x.s.cards).filter(c=>definition(x,c.id).type==='enemy'&&inPlay(x,c.id)&&(!loc||locationOf(x.s,c.id)===loc)).map(c=>c.id);
-export const keyword=(x:Ctx,id:string,k:string)=>new RegExp('(?:^|[.\\s>])'+k+'(?:[.\\s<]|$)','i').test(text(x,id));
+export const keyword=(x:Ctx,id:string,k:string)=>new RegExp('(?:^|\\.\\s*)'+k+'(?:\\s*\\([^\\n]*?\\))?\\.','im').test(text(x,id));
 export const engaged=(x:Ctx,actor:string)=>enemies(x,investigator(x,actor).locationId).filter(id=>x.s.cards[id].bearer===actor||keyword(x,id,'Massive')&&!x.s.cards[id].exhausted);
+export const attackable=(x:Ctx,id:string)=>!keyword(x,id,'Aloof')||living(x).some(actor=>engaged(x,actor).includes(id));
 export function movementCost(x:Ctx,actor:string,to:string):{actions:number;clues:number} {
  const from=investigator(x,actor).locationId;
  return {actions:cardsIn(x.s,'attachments').filter(id=>code(x,id)==='12157'&&[from,to].includes(x.s.cards[id].attachedTo!)).length,clues:x.s.cards[to].face==='back'?(code(x,to)==='12174'?3:code(x,to)==='12175'?1:0)*x.s.investigators.length:0};

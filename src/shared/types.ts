@@ -1,8 +1,8 @@
 import type * as Legacy from './legacy-types.js';
-export const BUILD_VERSION = '0.4.2';
+export const BUILD_VERSION = '0.4.5-audit.1';
 export const SCHEMA_VERSION = 2;
-export const SCRIPT_VERSION = 'chapter2-2';
-export const SUPPORTED_SCRIPT_VERSIONS = ['pilot-1', 'pilot-2', 'pilot-3', 'chapter2-1', SCRIPT_VERSION] as const;
+export const SCRIPT_VERSION = 'chapter2-3';
+export const SUPPORTED_SCRIPT_VERSIONS = ['pilot-1', 'pilot-2', 'pilot-3', 'chapter2-1', 'chapter2-2', SCRIPT_VERSION] as const;
 export type Difficulty = Legacy.Difficulty;
 export type PlayMode = Legacy.PlayMode;
 export type CardFace = Legacy.CardFace;
@@ -45,6 +45,7 @@ export interface GameState {
   engine: { pilot: boolean; round: number; phase: 'investigation'|'enemy'|'upkeep'|'mythos'; activeInvestigatorId: string|null; nextId: number; actionDepth: number; log: string[]; testResults?:TestResult[]; blockedReason?: string; limits: Record<string, number>; attacked: Record<string, number>; modifiers: Modifier[]; experiencePenalty: Record<string,number>; outcomes: { kind: string; value: string }[]; chapter?: ChapterProgress };
 }
 export interface ChapterProgress {
+  encounters?: {cardId:string;actor:string;peril:boolean}[];
   turn: number; actionsTaken: number; pendingEndTurn: Effect[]; sealedTokens: Record<string,string>;
   beneath: Record<string,string>; underAct: string[]; harbinger?: string; outcome?: string;
   logReview?: {entries:string[];pending:boolean};
@@ -55,17 +56,21 @@ export type GameCommand = Exclude<Legacy.GameCommand,{type:'campaign-log'}> | {t
 export interface CommandEnvelope { commandId: string; expectedRevision: number; command: GameCommand; }
 export type Viewer = Legacy.Viewer;
 export interface PileView { id: string; kind: ZoneKind; owner: string; count: number; cards: string[]; visibility: 'visible'|'concealed'; }
-export interface PromptView extends Omit<PendingChoice, 'context'> { presentation: 'cards'|'popup'|'search'|'mulligan'|'payment'; }
+export interface PromptView extends Omit<PendingChoice, 'context'> { presentation: 'cards'|'popup'|'search'|'mulligan'|'payment'|'test-result'; }
 export interface PaymentView { choiceId: string; investigatorId: string; cardId: string; cost: number; sources: PaymentSource[]; defaults: PaymentContribution[]; }
 export interface SearchView { choiceId: string; investigatorId: string; cards: string[]; legalCardIds: string[]; }
+/** Ephemeral presentation only; never saved as game state or used to resolve rules. */
+export type TableMotion = {kind:'shuffle';pile:string} | {kind:'move';from:string;to:string;back:'player'|'encounter';cardId?:string;code?:string;face?:'front'|'back';faceUpFrom:boolean;faceUpTo:boolean};
+export interface TableAnimation {fromCheckpointId:string;events:TableMotion[];}
 export interface InvestigatorView extends InvestigatorState { skills:Record<Skill,{base:number;value:number}>; deckCount: number; handCount: number; hand: string[]; assets: string[]; threat: string[]; discard: string[]; canControl: boolean; }
 export interface SessionView extends Omit<GameState, 'rng'|'investigators'|'cards'|'zones'|'scenario'|'resolutionStack'|'queuedTests'|'test'|'engine'|'pendingChoices'> {
   waitingFor?:string|null;
+  tableAnimation?:TableAnimation;
   investigators: InvestigatorView[]; cards: Record<string, CardInstance>; checkpointId: string;
-  scenario: Omit<Legacy.GameState['scenario'], 'encounterDeck'|'id'|'locations'> & { locations: (LocationState & {facedownCount?:number})[]; id: GameState['scenario']['id']; encounterDeckCount: number; actCount: number; agendaCount: number; removed: string[]; enemies: string[] };
+  scenario: Omit<Legacy.GameState['scenario'], 'encounterDeck'|'id'|'locations'> & { locations: (LocationState & {facedownCount?:number})[]; id: GameState['scenario']['id']; encounterDeckCount: number; actCount: number; agendaCount: number; doom?:{agenda:number;total:number;threshold:number|null}|null; removed: string[]; enemies: string[] };
   pendingChoices: PromptView[]; piles: PileView[]; search: SearchView|null; payment: PaymentView|null; allowedActions: AllowedAction[]; engine: Pick<GameState['engine'],'pilot'|'round'|'phase'|'activeInvestigatorId'|'log'|'testResults'|'blockedReason'>;
   campaignProgress?: {outcome?:string;canContinue:boolean;nextScenario:1|2|3|null;missing:string[];review?:{entries:string[];pending:boolean};killed:string[];earned:string[]};
-  test: Pick<SkillTest,'id'|'actor'|'skill'|'difficulty'|'tokens'|'tokenModifier'|'stage'|'success'|'margin'|'result'>|null;
+  test: (Pick<SkillTest,'id'|'actor'|'skill'|'difficulty'|'tokens'|'tokenModifier'|'stage'|'success'|'margin'|'result'> & {awaitingResult?:boolean})|null;
 }
 export type SessionSummary = Legacy.SessionSummary;
 export type HistoryEntry = Legacy.HistoryEntry;

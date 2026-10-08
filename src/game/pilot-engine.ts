@@ -1,9 +1,10 @@
 import type { AllowedAction, Catalog, ChoiceOption, Effect, GameCommand, GameState, PaymentContribution, PendingChoice, Skill, SkillTest } from '../shared/types.js';
 import { defaultPayment, paymentSources, RESOURCE_POOL, spendPayment, usesPaymentChoices } from './payments.js';
 import { abilities, cardEffects, cardNumber, scripted } from './cards.js';
-import { attachCard, cardsIn, discardCard, locationOf, moveCard, zone } from './zones.js';
-import { randomIndex, shuffle } from './random.js';
+import { attachCard, cardsIn, discardCard, locationOf, moveCard, zone, shuffleZone } from './zones.js';
+import { randomIndex } from './random.js';
 import { numericReadings, recordNumbers, recordTest } from './chapter/reporting.js';
+import { acknowledgeTestResult, pauseForTestResult } from './test-result-review.js';
 
 export type Boundary=(state:GameState,label:string)=>void;
 const inv=(s:GameState,id:string)=>{const i=s.investigators.find(i=>i.id===id);if(!i)throw new Error('Unknown investigator.');return i;};
@@ -128,7 +129,7 @@ function window(s:GameState,c:Catalog,actors:string[],continuation:Effect[],requ
 }
 function draw(s:GameState,c:Catalog,actor:string):void {
   let deck=cardsIn(s,'deck',actor);
-  if(!deck.length){const pile=[...cardsIn(s,'discard',actor)];for(const id of pile)moveCard(s,id,'deck',actor,c);zone(s,'deck',actor).cards=shuffle(cardsIn(s,'deck',actor),s.rng);pushEffects(s,[{type:'damage',actor,amount:0,data:{horror:1}}]);deck=cardsIn(s,'deck',actor);}
+  if(!deck.length){const pile=[...cardsIn(s,'discard',actor)];for(const id of pile)moveCard(s,id,'deck',actor,c);shuffleZone(s,'deck',actor);pushEffects(s,[{type:'damage',actor,amount:0,data:{horror:1}}]);deck=cardsIn(s,'deck',actor);}
   if(!deck.length)return;
   const id=deck[0],d=c.cards[s.cards[id].code];moveCard(s,id,'hand',actor,c);log(s,inv(s,actor).name+' drew a card.');
   if(d.subtype==='weakness'||d.subtype==='basicweakness'){
@@ -190,12 +191,16 @@ function testStep(s:GameState,c:Catalog):void {
     }return;
   }
   if(t.stage===4){
+    if(!t.data?.resultReviewed){
     const icons=t.committed.reduce((n,id)=>n+cardNumber(c,code(s,id)!,'skill_'+t.skill)+cardNumber(c,code(s,id)!,'skill_wild'),0);
     const score=Math.max(0,stat(s,c,t.actor,t.skill)+t.bonus+icons+t.tokenModifier);
-    t.success=!t.tokens.includes('auto-fail')&&score>=t.difficulty;t.margin=(t.tokens.includes('auto-fail')?0:score)-t.difficulty;t.stage=7;
+    t.success=!t.tokens.includes('auto-fail')&&score>=t.difficulty;t.margin=(t.tokens.includes('auto-fail')?0:score)-t.difficulty;
     const base=cardNumber(c,inv(s,t.actor).investigatorCode,'skill_'+t.skill),automaticFailure=t.tokens.includes('auto-fail');
     t.result={id:t.id,actor:t.actor,skill:t.skill,action:t.action,base,modifiers:stat(s,c,t.actor,t.skill)-base,bonus:t.bonus,committed:icons,tokens:[...t.tokens],tokenModifier:t.tokenModifier,calculatedTotal:score,total:automaticFailure?0:score,difficulty:t.difficulty,success:t.success,margin:t.margin,automaticFailure};
     recordTest({s,c},t);
+    pauseForTestResult(s,'test-step');return;
+    }
+    t.stage=7;
     const effects:Effect[]=[];
     if(t.success){
       if(t.action==='fight')effects.push({type:'enemy-damage',actor:t.actor,target:t.target,amount:t.damage+t.committed.filter(id=>code(s,id)==='12025').length});
@@ -205,11 +210,11 @@ function testStep(s:GameState,c:Catalog):void {
       for(const id of t.committed)if(code(s,id)==='12093')effects.push({type:'draw',actor:t.actor,amount:1});
       if(t.elderSign&&inv(s,t.actor).investigatorCode==='12004')effects.push({type:'draw',actor:t.actor,amount:1},{type:'gain',actor:t.actor,amount:1});
     }else{
-      if(t.action==='smoke')effects.push({type:'damage',actor:t.actor,amount:Math.max(0,-t.margin),data:{horror:0}});
+      if(t.action==='smoke')effects.push({type:'damage',actor:t.actor,amount:Math.max(0,-t.result!.margin),data:{horror:0}});
       if(t.action==='agenda')effects.push({type:'damage',actor:t.actor,amount:0,data:{horror:1}});
       if(t.action==='fight'&&t.target){const enemy=s.cards[t.target];if(enemy.bearer&&enemy.bearer!==t.actor)effects.push({type:'damage',actor:enemy.bearer,amount:t.damage,data:{horror:0}});if(['12114','12121'].includes(enemy.code)&&usable(s,enemy.id))effects.push({type:'attack',actor:t.actor,source:enemy.id});}
       if(t.tokens.includes('tablet'))effects.push({type:'damage',actor:t.actor,amount:t.tokens.filter(x=>x==='tablet').length,data:{horror:0}});
-      if(t.tokens.includes('elder-thing')&&(['hard','expert'].includes(s.difficulty)||t.margin<=-2)){const fire=[...cardsIn(s,'encounterDiscard')].reverse().find(id=>code(s,id)==='12129');if(fire)effects.push({type:'encounter',actor:t.actor,source:fire});}
+      if(t.tokens.includes('elder-thing')&&(['hard','expert'].includes(s.difficulty)||t.result!.margin<=-2)){const fire=[...cardsIn(s,'encounterDiscard')].reverse().find(id=>code(s,id)==='12129');if(fire)effects.push({type:'encounter',actor:t.actor,source:fire});}
     }
     pushEffects(s,[...effects,{type:'test-step'}]);return;
   }
@@ -303,7 +308,7 @@ function resolve(s:GameState,c:Catalog,e:Effect):void {
       if(!targets.length&&s.rules.scriptVersion==='pilot-1')pushEffects(s,[{type:'shuffle',actor}]);
       else ask(s,actor!,targets.length?'Choose a Tool or Weapon from the searched cards':'No matching cards. Inspect the searched cards, then continue.',targets.map(id=>({id,label:label(s,c,id),cardId:id})),{kind:'search'},targets.length?1:0,0,true);break;
     }
-    case 'shuffle':for(const id of [...cardsIn(s,'search',actor!)])moveCard(s,id,'deck',actor!);zone(s,'deck',actor!).cards=shuffle(cardsIn(s,'deck',actor!),s.rng);break;
+    case 'shuffle':for(const id of [...cardsIn(s,'search',actor!)])moveCard(s,id,'deck',actor!);shuffleZone(s,'deck',actor!);break;
     case 'cosmic':chooseEffects(s,actor!,'Cosmic Evils — Peril',[
       {id:'doom',label:'Place 1 doom (may advance)',effects:[{type:'doom',amount:1}]},
       {id:'harm',label:'Take 1 direct damage and horror; surge',effects:[{type:'damage',actor,amount:1,data:{horror:1,direct:true}},{type:'mark-surge',source}]},
@@ -326,7 +331,7 @@ function resolve(s:GameState,c:Catalog,e:Effect):void {
     case 'encounter-cleanup':{const surge=s.cards[source!].tokens.surge;delete s.cards[source!].tokens.surge;if(cardsIn(s,'resolving').includes(source!))discardCard(s,source!,c);if(surge)pushEffects(s,[{type:'encounter-draw',actor}]);break;}
     case 'investigation-begin':s.engine.phase='investigation';pushEffects(s,[{type:'turn-next'}]);break;
     case 'encounter-draw':{
-      if(!cardsIn(s,'encounterDeck').length){for(const id of [...cardsIn(s,'encounterDiscard')])moveCard(s,id,'encounterDeck');zone(s,'encounterDeck').cards=shuffle(cardsIn(s,'encounterDeck'),s.rng);}
+      if(!cardsIn(s,'encounterDeck').length){for(const id of [...cardsIn(s,'encounterDiscard')])moveCard(s,id,'encounterDeck');shuffleZone(s,'encounterDeck');}
       const source=cardsIn(s,'encounterDeck')[0];if(source)pushEffects(s,[{type:'encounter',actor,source}]);break;
     }
     case 'test':startTest(s,e);break;
@@ -417,6 +422,7 @@ export function applyEngineCommand(s:GameState,command:GameCommand,c:Catalog,bou
     if(new Set(selected).size!==selected.length||selected.length<(choice.min??1)||selected.length>(choice.max??1)||selected.some(id=>!choice.options?.some(o=>o.id===id)))throw new Error('Select a legal set of options.');
     s.pendingChoices=[];const actor=command.investigatorId,ctx=choice.context!;
     switch(ctx.kind){
+      case 'test-result':acknowledgeTestResult(s,choice,command);break;
       case 'payment':break; // Cancel before paying any resources or actions.
       case 'effects':pushEffects(s,JSON.parse(ctx[selected[0]]));break;
       case 'lead':s.leadInvestigatorId=selected[0];break;

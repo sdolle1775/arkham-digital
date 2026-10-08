@@ -4,6 +4,7 @@ import { api, ApiError, commandId, downloadArchive, post } from './api';
 import { CardInspector, EmptyState, Icon, Sigil } from './components';
 import { AssetProgress, CampaignScreen, CreditsScreen, DecksScreen, Home, LoadScreen, PageTitle, type Screen } from './Screens';
 import { Board } from './Board';
+import { installTableAudio } from './table-sounds';
 import {CampaignContinueDialog} from './CampaignContinueDialog';
 import { HistoryDialog, InviteDialog, LogDialog, SaveDialog, type Invitations, type Tunnel } from './Dialogs';
 
@@ -12,6 +13,7 @@ type Notice={text:string;error:boolean};
 const stopped:Tunnel={status:'stopped',url:null,error:null};
 
 export default function App() {
+  useEffect(installTableAudio,[]);
   const [serverStopped,setServerStopped]=useState(false);
   const [bootstrap,setBootstrap]=useState<Bootstrap|null>(null);const [catalog,setCatalog]=useState<Catalog|null>(null);const [loading,setLoading]=useState(true);const [fatal,setFatal]=useState('');
   const [screen,setScreen]=useState<Screen>('home');const [decks,setDecks]=useState<DeckRevision[]>([]);const [saves,setSaves]=useState<SaveSummary[]>([]);const [session,setSession]=useState<SessionView|null>(null);const [busy,setBusy]=useState(false);const [notice,setNotice]=useState<Notice|null>(null);const [assets,setAssets]=useState<AssetStatus|null>(null);const [connection,setConnection]=useState('Connecting…');

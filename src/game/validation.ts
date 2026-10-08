@@ -19,7 +19,7 @@ const schema=z.object({schemaVersion:z.literal(2),sessionId:id,name:text,buildVe
  campaign:z.object({id:z.literal('brethren_of_ash'),name:z.literal('Brethren of Ash'),scenarioNumber:z.union([z.literal(1),z.literal(2),z.literal(3)]),log:z.object({entries:text,items:z.array(z.object({id,text:z.string().max(2000).regex(/^[^\r\n]*$/),scenario:z.union([z.literal(1),z.literal(2),z.literal(3),z.null()])}).strict()).max(1000).optional(),records:z.record(id,z.object({experience:n,physicalTrauma:n,mentalTrauma:n,notes:text}).strict()),flags:ids}).strict()}).strict(),
  rng:z.object({algorithm:z.literal('xoshiro128ss-v1'),state:z.tuple([z.number().int().min(0).max(0xffffffff),z.number().int().min(0).max(0xffffffff),z.number().int().min(0).max(0xffffffff),z.number().int().min(0).max(0xffffffff)])}).strict(),
  setup:z.object({order:ids,completed:ids}).strict(),pendingChoices:z.array(z.object({id,type:z.enum(['mulligan','decision']),investigatorId:id,prompt:text.optional(),options:z.array(z.object({id:z.string().max(300),label:text,cardId:id.optional()}).strict()).optional(),min:n.optional(),max:n.optional(),private:z.boolean().optional(),context:z.record(z.string(),text).optional()}).strict()).max(4),
- resolutionStack:z.array(effect).max(1000),queuedTests:z.array(test).max(100),test:test.nullable(),engine:z.object({pilot:z.boolean(),round:n,phase:z.enum(['investigation','enemy','upkeep','mythos']),activeInvestigatorId:id.nullable(),nextId:n,actionDepth:n,log:z.array(text).max(300),testResults:z.array(testResult).max(20).optional(),blockedReason:text.optional(),limits:z.record(z.string(),n),attacked:z.record(z.string(),n),modifiers:z.array(z.object({id,source:id,target:id,stat:text,amount:z.number().int(),expires:z.enum(['test','phase','round','game'])}).strict()),experiencePenalty:z.record(id,n),outcomes:z.array(z.object({kind:text,value:text}).strict()).max(100000),chapter:z.object({turn:n,actionsTaken:n,pendingEndTurn:z.array(z.record(z.string(),z.unknown())).max(100),sealedTokens:z.record(id,text),beneath:z.record(id,id),underAct:ids,harbinger:id.optional(),outcome:text.optional(),logReview:z.object({entries:z.array(z.string().max(2000).regex(/^[^\r\n]*$/)).max(100),pending:z.boolean()}).strict().optional(),resigned:ids,killed:ids,story:z.record(id,ids),earned:ids}).strict().optional()}).strict()
+ resolutionStack:z.array(effect).max(1000),queuedTests:z.array(test).max(100),test:test.nullable(),engine:z.object({pilot:z.boolean(),round:n,phase:z.enum(['investigation','enemy','upkeep','mythos']),activeInvestigatorId:id.nullable(),nextId:n,actionDepth:n,log:z.array(text).max(300),testResults:z.array(testResult).max(20).optional(),blockedReason:text.optional(),limits:z.record(z.string(),n),attacked:z.record(z.string(),n),modifiers:z.array(z.object({id,source:id,target:id,stat:text,amount:z.number().int(),expires:z.enum(['test','phase','round','game'])}).strict()),experiencePenalty:z.record(id,n),outcomes:z.array(z.object({kind:text,value:text}).strict()).max(100000),chapter:z.object({encounters:z.array(z.object({cardId:id,actor:id,peril:z.boolean()}).strict()).max(100).optional(),turn:n,actionsTaken:n,pendingEndTurn:z.array(z.record(z.string(),z.unknown())).max(100),sealedTokens:z.record(id,text),beneath:z.record(id,id),underAct:ids,harbinger:id.optional(),outcome:text.optional(),logReview:z.object({entries:z.array(z.string().max(2000).regex(/^[^\r\n]*$/)).max(100),pending:z.boolean()}).strict().optional(),resigned:ids,killed:ids,story:z.record(id,ids),earned:ids}).strict().optional()}).strict()
 }).strict();
 function requireState(ok:unknown,message:string):asserts ok{if(!ok)throw new Error('Invalid save: '+message);}
 export function validateGameState(input:unknown,catalog:Catalog):asserts input is GameState {
@@ -77,17 +77,27 @@ export function validateGameState(input:unknown,catalog:Catalog):asserts input i
    if(['c-invoke','c-action-costs'].includes(e.type))requireState(typeof e.data.actionId==='string'&&e.data.actionId.split('|').length===3,'invalid chapter action');
    if(e.type==='c-choice'){requireState(typeof e.data.prompt==='string'&&Array.isArray(e.data.options)&&e.data.options.length<=2000,'invalid nested choice');for(const option of e.data.options){requireState(typeof option.id==='string'&&typeof option.label==='string'&&Array.isArray(option.effects),'invalid nested option');option.effects.forEach((child:any)=>validateEffect(child,depth+1));}}
    if(e.data?.test)validateEffect(e.data.test,depth+1);
+   if(e.type==='c-assignment'){
+    requireState(e.data.allocations&&typeof e.data.allocations==='object'&&!Array.isArray(e.data.allocations),'invalid damage allocations');
+    for(const [key,amount]of Object.entries(e.data.allocations)){const suffix=key.lastIndexOf(':'),target=key.slice(0,suffix),kind=key.slice(suffix+1);requireState(!!s.cards[target]&&['damage','horror'].includes(kind)&&typeof amount==='number'&&Number.isSafeInteger(amount)&&amount>=0&&amount<=1000,'invalid damage allocation');}
+    if(e.data.afterPlacement!==undefined)requireState(typeof e.data.afterPlacement==='boolean'&&Array.isArray(e.data.afterEffects),'invalid assignment continuation');
+   }
   }
-  for(const key of ['effects','continuation','cancelEffects'])if(e.data?.[key]){requireState(Array.isArray(e.data[key])&&e.data[key].length<=1000,'invalid continuation');e.data[key].forEach((child:any)=>validateEffect(child,depth+1));}
+  for(const key of ['effects','continuation','cancelEffects','afterEffects'])if(e.data?.[key]){requireState(Array.isArray(e.data[key])&&e.data[key].length<=1000,'invalid continuation');e.data[key].forEach((child:any)=>validateEffect(child,depth+1));}
  };
  for(const frame of s.resolutionStack)validateEffect(frame);
  for(const p of s.pendingChoices)if(p.type==='decision'){
-  requireState(p.context&&['effects','turn','lead','commit','heal','search','attach','hunter','discard-hand','payment'].includes(p.context.kind),'unknown choice continuation');
+  requireState(p.context&&['effects','turn','lead','commit','heal','search','attach','hunter','discard-hand','payment','test-result'].includes(p.context.kind),'unknown choice continuation');
   requireState((p.min??1)<=(p.max??1),'invalid choice bounds');
   requireState((p.min??1)<=(p.options?.length??0),'choice has too few options');
   if(['turn','lead'].includes(p.context.kind))requireState(p.options?.every(o=>investigators.has(o.id)),'unknown investigator choice');
   if(['search','commit','discard-hand'].includes(p.context.kind))requireState(p.options?.every(o=>cardsIn(s,p.context!.kind==='search'?'search':'hand',p.investigatorId).includes(o.id)),'choice does not match its private area');
   if(p.context.kind==='commit')requireState(s.test,'commit choice has no skill test');
+  if(p.context.kind==='test-result'){
+    requireState(p.min===0&&p.max===0&&p.options?.length===0&&p.private===false,'invalid result review');
+    requireState(s.test?.result&&s.test.id===p.context.testId&&s.test.actor===p.investigatorId&&!s.test.data?.resultReviewed&&s.test.stage===(chapterGame(s)?6:4),'result review does not match the current test');
+    requireState(s.resolutionStack.at(-1)?.type===(chapterGame(s)?'c-test-step':'test-step'),'missing result review continuation');
+  }
   if(p.context.kind==='payment'){
     requireState(usesPaymentChoices(s)&&p.private===true&&p.min===0&&p.max===0&&p.options?.length===0,'invalid payment choice');
     const actionId=p.context.actionId;
@@ -106,6 +116,7 @@ export function validateGameState(input:unknown,catalog:Catalog):asserts input i
   requireState(new Set(p.underAct).size===p.underAct.length&&p.underAct.every(id=>cardsIn(s,'underAct').includes(id)),'invalid under-act cards');
   requireState(Object.entries(p.beneath).every(([loc,id])=>cardsIn(s,'locations').includes(loc)&&cardsIn(s,'setAside').includes(id))&&new Set(Object.values(p.beneath)).size===Object.values(p.beneath).length,'invalid hidden cards');
   if(p.harbinger)requireState(cardsIn(s,'setAside').includes(p.harbinger)&&!Object.values(p.beneath).includes(p.harbinger),'invalid harbinger');
+  for(const scope of p.encounters??[]){requireState(s.cards[scope.cardId]&&investigators.has(scope.actor),'invalid encounter resolution scope');}
   const bag=[...s.scenario.chaosBag];for(const [id,token]of Object.entries(p.sealedTokens)){requireState(s.cards[id]?.code==='12064'&&cardsIn(s,'assets',s.cards[id].controller).includes(id),'invalid sealed-token card');const index=bag.indexOf(token);requireState(index>=0,'unknown sealed chaos token');bag.splice(index,1);}
   requireState([...p.resigned,...p.killed,...Object.keys(p.story)].every(id=>investigators.has(id)),'invalid campaign investigator');
   requireState([...p.earned,...Object.values(p.story).flat()].every(code=>!!catalog.cards[code]),'unknown campaign reward');

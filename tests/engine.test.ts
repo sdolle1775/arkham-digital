@@ -177,7 +177,7 @@ test('mid-payment rollback resumes without paying twice or redrawing a chaos res
   const restored=store.resume(s.sessionId);assert.equal(restored.state.investigators[0].resources,cp.state.investigators[0].resources);assert.equal(restored.state.investigators[0].actions,2);assert.equal(restored.state.cards[gun].tokens.ammo,4);assert.equal(store.resume(s.sessionId).id,restored.id);
   let testState=restored.state;const checkpoints:GameState[]=[];
   testState=applyCommand(testState,{type:'action',investigatorId:'investigator-1',actionId:'investigate||'+testState.investigators[0].locationId},catalog);
-  while(testState.pendingChoices.length){const p=testState.pendingChoices[0];testState=applyCommand(testState,{type:'pass',investigatorId:p.investigatorId,choiceId:p.id},catalog,s=>checkpoints.push(structuredClone(s)));}
+  while(testState.pendingChoices.length){const p=testState.pendingChoices[0];testState=applyCommand(testState,p.context?.kind==='test-result'?{type:'choose',investigatorId:p.investigatorId,choiceId:p.id,optionIds:[]}:{type:'pass',investigatorId:p.investigatorId,choiceId:p.id},catalog,s=>checkpoints.push(structuredClone(s)));}
   const tokenState=checkpoints.find(s=>s.test?.stage===4)!;assert.ok(tokenState);const rng=structuredClone(tokenState.rng);advance(tokenState,catalog);assert.deepEqual(tokenState.rng,rng);assert.equal(tokenState.engine.outcomes.length,1);
   const undo=store.undo(s.sessionId,restored.state.revision,randomUUID());assert.equal(undo.state.investigators[0].resources,5);assert.equal(undo.state.investigators[0].actions,3);assert.ok(cardsIn(undo.state,'hand','investigator-1').includes(gun));
  }finally{store.close();rmSync(directory,{recursive:true,force:true});}

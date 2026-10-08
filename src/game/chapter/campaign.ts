@@ -1,7 +1,7 @@
 import type { Catalog, DeckRevision, GameState, RulesIdentity } from '../../shared/types.js';
 import { createGame } from '../setup.js';
-import { cardsIn, moveCard, zone } from '../zones.js';
-import { randomIndex, shuffle } from '../random.js';
+import { cardsIn, moveCard, zone, shuffleZone } from '../zones.js';
+import { randomIndex } from '../random.js';
 import { newProgress, setupScenario } from './scenarios.js';
 import { campaignRoute, logEntries, setLogEntries } from '../../shared/campaign-log.js';
 import { CHAOS_BAGS } from '../campaigns/brethren.js';
@@ -22,7 +22,7 @@ export function upgradeCost(old:DeckRevision,updated:DeckRevision,c:Catalog):num
 }
 export function continueCampaign(previous:GameState,decks:DeckRevision[],oldDecks:DeckRevision[],c:Catalog,rules:RulesIdentity):GameState {
  if(!previous.engine.chapter)throw new Error('This campaign does not have Chapter Two scenario data.');
- if(rules.scriptVersion!=='chapter2-2')throw new Error('Update required: current Chapter Two scenario scripts are unavailable.');
+ if(rules.scriptVersion!=='chapter2-3')throw new Error('Update required: current Chapter Two scenario scripts are unavailable.');
  const route=campaignRoute(previous.campaign.log.entries);if(!route.scenario)throw new Error('All scenarios are complete in the campaign log.');
  if(route.missing.length)throw new Error(route.missing.join(' '));const target=route.scenario;
  if(decks.length!==previous.investigators.length||new Set(decks.map(d=>d.investigatorCode)).size!==decks.length)throw new Error('Choose one distinct investigator deck for every seat.');
@@ -52,7 +52,7 @@ export function continueCampaign(previous:GameState,decks:DeckRevision[],oldDeck
  for(const i of s.investigators){
   for(const id of [...cardsIn(s,'hand',i.id),...cardsIn(s,'openingSetAside',i.id)])moveCard(s,id,'deck',i.id,c);
   for(const code of story[i.id]??[]){const id=next({s,c},'card');s.cards[id]={id,code,face:'front',exhausted:false,tokens:{},owner:i.id,controller:i.id};zone(s,'deck',i.id).cards.push(id);}
-  zone(s,'deck',i.id).cards=shuffle(cardsIn(s,'deck',i.id),s.rng);i.damage=records[i.id].physicalTrauma;i.horror=records[i.id].mentalTrauma;
+  shuffleZone(s,'deck',i.id);i.damage=records[i.id].physicalTrauma;i.horror=records[i.id].mentalTrauma;
  }
  setupScenario(s,c,target);
  for(const i of s.investigators){const size=5+cardsIn(s,'assets',i.id).filter(id=>s.cards[id].code==='12042').length;for(let n=0;n<size;){const id=cardsIn(s,'deck',i.id)[0];if(!id)throw new Error('Too few cards for an opening hand.');const weak=['weakness','basicweakness'].includes(c.cards[s.cards[id].code].subtype??'');moveCard(s,id,weak?'openingSetAside':'hand',i.id,c);if(!weak)n++;}}

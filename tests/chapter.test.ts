@@ -14,6 +14,9 @@ import { campaignLogFlags } from '../src/game/campaigns/brethren.js';
 import { cardActions, playUses } from '../src/game/chapter/actions.js';
 import { continueCampaign, upgradeCost } from '../src/game/chapter/campaign.js';
 import { handFanLayout } from '../src/client/table-model.js';
+import { createElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { TestResultPanel } from '../src/client/TestResultPanel.js';
 const rules=compileRules(loadCatalog('content'),bundledTaboo()),c=rules.catalog;
 const actor='investigator-1';
 function fixture(count=1,investigatorCode='12001'):GameState {
@@ -29,6 +32,59 @@ function choose(s:GameState,ids?:string[]):GameState {const p=s.pendingChoices[0
 function settle(s:GameState):GameState{for(let n=0;s.pendingChoices.length;n++){assert.ok(n<250,'Choice loop');s=choose(s);}validateGameState(s,c);return s;}
 function run(s:GameState,effects:Effect[]):GameState {s=structuredClone(s);push({s,c},effects);advance(s,c,ss=>validateGameState(ss,c));return settle(s);}
 function act(s:GameState,id:string):GameState{return settle(applyCommand(s,{type:'action',investigatorId:actor,actionId:id},c,ss=>validateGameState(ss,c)));}
+
+function untilReview(s:GameState):GameState {
+ for(let n=0;s.pendingChoices[0]?.context?.kind!=='test-result';n++){assert.ok(n<100&&s.pendingChoices.length,'Expected result review');s=choose(s);}
+ return s;
+}
+const resultMarkup=(s:GameState)=>renderToStaticMarkup(createElement(TestResultPanel,{session:projectState(s,{role:'host'},'review',c),catalog:c,openLog:()=>{}}));
+
+test('chaos results are temporary and precede successful-test abilities and damage',()=>{
+ let s=fixture();const weapon=add(s,'12020','assets'),enemy=add(s,'12114','threat');s.cards[enemy].bearer=actor;
+ s=untilReview(applyCommand(s,{type:'action',investigatorId:actor,actionId:'weapon-0|'+weapon+'|'+enemy},c));
+ assert.equal(s.test!.result!.success,true);assert.equal(s.cards[enemy].tokens.damage??0,0);assert.equal(s.cards[weapon].exhausted,false);assert.match(resultMarkup(s),/Chaos bag result/);
+ const saved=JSON.parse(JSON.stringify(s));validateGameState(saved,c);const rng=structuredClone(s.rng);
+ assert.throws(()=>applyCommand(s,{type:'pass',investigatorId:actor,choiceId:s.pendingChoices[0].id},c),/Continue the current/);
+ s=choose(s);assert.deepEqual(choose(saved),JSON.parse(JSON.stringify(s)));assert.match(s.pendingChoices[0].prompt!,/successful-test ability/);assert.equal(resultMarkup(s),'');assert.deepEqual(s.rng,rng);
+ s=settle(choose(s,['machete']));assert.equal(s.cards[enemy].tokens.damage,2);assert.equal(s.cards[weapon].exhausted,true);assert.equal(s.engine.testResults!.length,1);assert.equal(resultMarkup(s),'');
+});
+
+test('failure effects wait for review; preceding elder-sign and result-changing effects do not',()=>{
+ let s=fixture();s.scenario.chaosBag=['auto-fail'];s=untilReview(beginEffects(s,[{type:'c-test',actor,data:{skill:'willpower',difficulty:3,action:'agenda-direct-horror'}}]));
+ assert.equal(s.test!.result!.success,false);assert.equal(s.investigators[0].horror,0);s=settle(choose(s));assert.equal(s.investigators[0].horror,1);assert.equal(resultMarkup(s),'');
+ s=fixture();const enemy=add(s,'12114','enemies','scenario');s.cards[enemy].tokens.locationIndex=0;s.scenario.chaosBag=['elder-sign'];
+ s=untilReview(beginEffects(s,[{type:'c-test',actor,data:{skill:'willpower',difficulty:3,action:'report-check'}}]));assert.equal(s.cards[enemy].tokens.damage,1,'elder sign resolves before the result');
+ s=fixture();const scrape=add(s,'12082');s.scenario.chaosBag=['-1'];s=beginEffects(s,[{type:'c-test',actor,data:{skill:'intellect',difficulty:5,action:'report-check'}}]);
+ while(!s.pendingChoices[0].prompt?.startsWith('Play Scrape By'))s=choose(s);
+ assert.equal(resultMarkup(s),'','provisional failure is not presented as a final result');s=untilReview(choose(s,[scrape]));assert.equal(s.test!.result!.success,true);assert.equal(s.test!.result!.margin,0);assert.match(resultMarkup(s),/Scrape By/);assert.equal(s.investigators[0].resources,29);
+});
+
+test('result review is public but only its investigator can continue; queued tests get separate reviews',()=>{
+ let s=fixture(2);s.mode='separate';s=untilReview(beginEffects(s,[{type:'c-test',actor,data:{skill:'combat',difficulty:3,action:'report-check'}}]));
+ const host=projectState(s,{role:'host',investigatorId:actor},'cp',c),guest=projectState(s,{role:'seat',sessionId:s.sessionId,investigatorId:'investigator-2'},'cp',c);
+ assert.equal(host.pendingChoices[0].presentation,'test-result');assert.equal(guest.pendingChoices.length,0);assert.equal(guest.test!.awaitingResult,true);assert.deepEqual(host.test,guest.test);assert.equal(guest.investigators[0].hand.length,0);
+ assert.throws(()=>applyCommand(s,{type:'choose',investigatorId:'investigator-2',choiceId:s.pendingChoices[0].id,optionIds:[]},c),/not yours/);
+ for(const tamper of [(bad:GameState)=>{bad.pendingChoices[0].context!.testId='wrong';},(bad:GameState)=>{bad.test!.data!.resultReviewed=true;},(bad:GameState)=>{bad.resolutionStack.pop();}]){const bad=structuredClone(s);tamper(bad);assert.throws(()=>validateGameState(bad,c),/result review/);}
+ const first=s.test!.id;s.queuedTests.push({...structuredClone(s.test!),id:'queued-result',stage:0,result:undefined,success:undefined,margin:undefined,tokens:[],tokenModifier:0,participants:[],data:{}});
+ s=untilReview(choose(s));assert.notEqual(s.test!.id,first);assert.equal(s.test!.id,'queued-result');assert.equal(s.engine.testResults!.length,2);s=settle(choose(s));assert.equal(s.test,null);assert.equal(resultMarkup(s),'');
+});
+
+test('agenda doom projection follows in-play tokens, excludes stored cards, and resets with advancement',()=>{
+ let s=fixture();const agenda=cardsIn(s,'agendas')[0],view=()=>projectState(s,{role:'host'},'doom',c).scenario.doom;
+ assert.deepEqual(view(),{agenda:0,total:0,threshold:3});
+ s=run(s,[{type:'c-doom',amount:1}]);assert.deepEqual(view(),{agenda:1,total:1,threshold:3});
+ const enemy=add(s,'12121','enemies','scenario');s.cards[enemy].tokens.doom=1;s.cards[enemy].tokens.locationIndex=0;
+ for(const kind of ['hand','deck','discard','encounterDiscard','victory','setAside','removed'] as const){const id=add(s,'12121',kind,kind==='hand'||kind==='deck'||kind==='discard'?actor:'scenario');s.cards[id].tokens.doom=9;}
+ assert.deepEqual(view(),{agenda:1,total:2,threshold:3});
+ s=run(s,[{type:'c-doom',amount:1,data:{check:true}}]);assert.notEqual(cardsIn(s,'agendas')[0],agenda);assert.deepEqual(view(),{agenda:0,total:0,threshold:5});
+});
+
+test('older pre-result snapshots without a structured report resume without a new chaos draw',()=>{
+ let s=fixture();const scrape=add(s,'12082');s.scenario.chaosBag=['-1'];s=beginEffects(s,[{type:'c-test',actor,data:{skill:'intellect',difficulty:5,action:'report-check'}}]);
+ while(!s.pendingChoices[0].prompt?.startsWith('Play Scrape By'))s=choose(s);s=untilReview(choose(s,[scrape]));
+ const rng=structuredClone(s.rng);delete s.test!.result;delete s.engine.testResults;s.pendingChoices=[];
+ validateGameState(s,c);advance(s,c);validateGameState(s,c);assert.equal(s.pendingChoices[0].context?.kind,'test-result');assert.equal(s.test!.result!.success,true);assert.equal(s.test!.result!.margin,0);assert.match(s.test!.result!.override!,/Scrape By/);assert.deepEqual(s.rng,rng);
+});
 
 test('completed tests retain the exact base, modifiers, ability, commitment and chaos arithmetic',()=>{
  let s=fixture();add(s,'12018','assets');const skill=add(s,'12025');s.scenario.chaosBag=['-1'];

@@ -2,7 +2,7 @@ import type { Effect, Skill } from '../../shared/types.js';
 import { cardsIn, locationOf } from '../zones.js';
 import { paymentSources, defaultPayment } from '../payments.js';
 import { commitEligible } from './tests.js';
-import { type Ctx, type Action, action, assets, code, canMove, connections, definition, distance, engaged, enemies, has, investigator, keyword, living, name, number, ready, shroud, test, token, trait, used, weakness } from './context.js';
+import { type Ctx, type Action, action, attackable, assets, code, canMove, connections, definition, distance, engaged, enemies, has, investigator, keyword, living, mayTrigger, name, number, ready, shroud, test, token, trait, used, weakness } from './context.js';
 
 export const cardEffect=(actor:string,source:string,op='use',target?:string,data:Record<string,any>={}):Effect=>({type:'c-card',actor,source,target,data:{op,...data}});
 export const weapons:Record<string,{skill?:Skill;bonus:number;damage:number;uses?:string;actions?:number;exhaust?:boolean}[]>={
@@ -16,20 +16,20 @@ export const fastEvents=new Set(['12026','12022','12036','12038','12052','12064'
 export const playUses:Record<string,[string,number]>={'12014':['ammo',6],'12019':['ammo',4],'12029':['ammo',3],'12031':['supplies',3],'12033':['secret',4],'12040':['secret',4],'12045':['ammo',4],'12049':['supplies',6],'12059':['charge',3],'12061':['charge',4],'12062':['charge',3],'12068':['charge',3],'12071':['charge',4],'12073':['supplies',3],'12074':['supplies',3]};
 export function playable(x:Ctx,actor:string,id:string):boolean {
  const d=definition(x,id),p=x.s.engine.chapter!;
- if(!['asset','event'].includes(d.type)||d.raw.permanent||d.subtype==='basicweakness'||has(x,actor,'12012')&&d.type==='asset')return false;
+ if(!['asset','event'].includes(d.type)||d.raw.cost===null||d.raw.permanent||d.subtype==='basicweakness'||has(x,actor,'12012')&&d.type==='asset')return false;
  if(d.raw.is_unique&&Object.values(x.s.cards).some(c=>c.id!==id&&c.code===d.code&&['assets','threat'].some(k=>Object.values(x.s.zones).some(z=>z.kind===k&&z.cards.includes(c.id)))))return false;
  if(['12048','12054','12074'].includes(d.code)&&assets(x,actor).some(a=>['12048','12054','12074'].includes(code(x,a)!)&&definition(x,a).name===d.name))return false;
  if(x.s.engine.modifiers.some(m=>m.target===actor&&m.stat==='prohibit:'+d.type))return false;
  if(d.code==='12024'&&p.actionsTaken!==0)return false;
  if(['12037','12041','12079'].includes(d.code)&&!engaged(x,actor).length)return false;
- if(d.code==='12055'&&!enemies(x,investigator(x,actor).locationId).some(target=>!keyword(x,target,'Aloof')||engaged(x,actor).includes(target)))return false;
+ if(d.code==='12055'&&!enemies(x,investigator(x,actor).locationId).some(target=>attackable(x,target)))return false;
  if(['12024','12038'].includes(d.code)&&!x.s.cards[investigator(x,actor).locationId].tokens.clues)return false;
  return true;
 }
 export function playCost(x:Ctx,actor:string,id:string,discount=0):number {return Math.max(0,number(x,id,'cost')-discount);}
 export function canPay(x:Ctx,actor:string,id:string,cost=playCost(x,actor,id)):boolean {return defaultPayment(cost,paymentSources(x.s,x.c,actor,id)).reduce((n,p)=>n+p.amount,0)===cost;}
 export function fightActions(x:Ctx,actor:string,target:string,reaction=false):Action[] {
- const i=investigator(x,actor);if(keyword(x,target,'Aloof')&&!engaged(x,actor).includes(target))return[];
+ const i=investigator(x,actor);if(!attackable(x,target))return[];
  const result=[action(actor,'fight','Fight '+name(x,target),undefined,target,[test(actor,'combat',number(x,target,'enemy_fight'),'fight',undefined,target)],{noOpportunity:true})];
  for(const source of assets(x,actor)){
   if(has(x,actor,'12012'))break;
@@ -128,7 +128,7 @@ export function cardActions(x:Ctx,actor:string,window=false):Action[] {
  return out.filter(a=>a.actions<=i.actions||a.actions===0);
 }
 export function actions(x:Ctx,actor:string,window=false):Action[]{
- const s=x.s,i=investigator(x,actor);if(s.phase!=='playing'||i.eliminated||(!window&&(s.pendingChoices.length||s.resolutionStack.length||s.test)))return[];
+ const s=x.s,i=investigator(x,actor);if(s.phase!=='playing'||i.eliminated||!mayTrigger(x,actor)||(!window&&(s.pendingChoices.length||s.resolutionStack.length||s.test)))return[];
  const out=cardActions(x,actor,window),turn=s.engine.activeInvestigatorId===actor;
  if(!turn||window)return out.filter(a=>a.fast);
  if(i.actions>0){
